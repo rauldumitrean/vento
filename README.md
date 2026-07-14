@@ -1,35 +1,42 @@
-# App Clima y Outfit con IA
+# 🌤️ Ventoo - AI Fashion & Weather Assistant
 
-Aplicación web full-stack que recomienda un estilo de ropa personalizado dependiendo del clima en una ciudad específica, impulsado por Google Gemini.
+Ventoo es una innovadora aplicación web Full-Stack que combina datos meteorológicos en tiempo real con Inteligencia Artificial generativa para recomendar el outfit perfecto basado en tu ubicación y el clima actual.
 
-## Instalación y Ejecución
+## ✨ Características Principales
 
-### 1. Variables de entorno
-Dentro de la carpeta `backend`, edita el archivo `.env` e inserta tu clave de la API de Gemini:
-```env
-PORT=3000
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="supersecretjwtkeyforprototype"
-GEMINI_API_KEY="TU_CLAVE_DE_GEMINI_AQUI"
-```
+* **Recomendaciones Inteligentes:** Analiza la temperatura, humedad, viento y sensación térmica para sugerir ropa mediante **Google Gemini AI**.
+* **Armario Virtual:** Permite a los usuarios guardar sus propias prendas. La IA dará prioridad a la ropa del armario del usuario antes de recomendar artículos nuevos.
+* **Asistente de Estilo Conversacional:** Chat integrado en tiempo real donde puedes preguntarle a la IA dudas sobre el outfit sugerido o pedirle alternativas.
+* **Visualización Dinámica:** Generación de imágenes en tiempo real de cada prenda de ropa utilizando **Pollinations AI**.
+* **Geolocalización y Autocompletado:** Búsqueda inteligente de ciudades de todo el mundo mediante la API de Open-Meteo.
+* **Monetización Inteligente:** Enlaces de compra directos a Amazon generados mediante IA con etiquetas de afiliado integradas.
+* **Modo Oscuro:** Interfaz premium y adaptable a las preferencias del usuario.
 
-### 2. Levantar el Backend
-Abre una terminal y ejecuta:
-```bash
-cd backend
-npm install
-npx prisma generate
-npx prisma db push
-node server.js
-```
+## 🛠️ Tecnologías Utilizadas
 
-### 3. Levantar el Frontend
-Abre otra terminal y ejecuta:
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### Frontend
+* **React + Vite:** Para una experiencia de usuario extremadamente rápida.
+* **Tailwind CSS:** Para un diseño elegante, totalmente responsive y soporte nativo para Dark Mode.
+* **Framer Motion:** Para animaciones fluidas y transiciones de pantalla complejas (como el panel de inicio de sesión deslizable).
+* **Lucide React:** Iconografía moderna.
 
-### 4. Uso
-Entra a `http://localhost:5173`. Tendrás que registrarte obligatoriamente. Tras el registro, verás un anuncio simulado de 5 segundos, y luego podrás usar el buscador de clima o el botón de geolocalización.
+### Backend
+* **Node.js + Express:** Arquitectura robusta y escalable.
+* **Prisma ORM:** Interacción segura y tipada con la base de datos.
+* **PostgreSQL (Neon):** Base de datos relacional Serverless alojada en la nube.
+* **JWT (JSON Web Tokens):** Para autenticación segura de usuarios.
+
+### APIs de Inteligencia Artificial y Datos
+* **Google Gemini:** El cerebro detrás de las recomendaciones de moda y el chat conversacional.
+* **Pollinations AI:** Para la renderización dinámica de prendas.
+* **Open-Meteo API:** Proveedor de datos meteorológicos y geocodificación.
+
+## 🚀 Despliegue en Producción
+
+Toda la aplicación está diseñada con una arquitectura moderna **Serverless**:
+* **Frontend:** Desplegado en Vercel
+* **Backend:** Desplegado en Vercel Serverless Functions
+* **Base de datos:** Neon Tech Serverless Postgres
+
+---
+*Diseñado y programado por [Raul Florin Dumitrean](https://rfdportfolio.vercel.app/)*
