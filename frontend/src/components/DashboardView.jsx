@@ -144,14 +144,15 @@ export default function DashboardView({ token, onLogout }) {
     setLoading(true);
     setIsFavorite(false);
     try {
-      let url = 'http://localhost:3000/api/weather?';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      let url = `${API_URL}/api/weather?`;
       if (lat && lon) url += `lat=${lat}&lon=${lon}`;
       else url += `city=${city}`;
 
       const wRes = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       setWeather(wRes.data);
 
-      const oRes = await axios.post('http://localhost:3000/api/recommendation', {
+      const oRes = await axios.post(`${API_URL}/api/recomendacion`, {
         lat: wRes.data.lat,
         lon: wRes.data.lon,
         ubicacion: wRes.data.location,
@@ -197,7 +198,8 @@ export default function DashboardView({ token, onLogout }) {
     setMessage('');
 
     try {
-      const res = await axios.post('http://localhost:3000/api/chat', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await axios.post(`${API_URL}/api/chat`, {
         consultaId,
         mensaje: message
       }, { headers: { Authorization: `Bearer ${token}` } });
@@ -211,7 +213,8 @@ export default function DashboardView({ token, onLogout }) {
   const handleToggleFavorite = async () => {
     if (!consultaId) return;
     try {
-      await axios.put(`http://localhost:3000/api/historial/${consultaId}/favorito`, { isFavorite: !isFavorite }, { headers: { Authorization: `Bearer ${token}` } });
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      await axios.put(`${API_URL}/api/historial/${consultaId}/favorito`, { isFavorite: !isFavorite }, { headers: { Authorization: `Bearer ${token}` } });
       setIsFavorite(!isFavorite);
     } catch(e) {
       alert("Error guardando favorito");

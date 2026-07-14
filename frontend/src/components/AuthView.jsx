@@ -7,16 +7,21 @@ export default function AuthView({ setToken }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+  const handleAuth = async (endpoint) => {
     try {
-      const res = await axios.post(`http://localhost:3000${endpoint}`, { email, password });
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await axios.post(`${API_URL}${endpoint}`, { email, password });
       setToken(res.data.token);
     } catch (err) {
       setError(err.response?.data?.error || 'Error de conexión');
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+    await handleAuth(endpoint);
   };
 
   return (
