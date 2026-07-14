@@ -43,7 +43,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/recommendation', authMiddleware, async (req, res) => {
+router.post('/recomendacion', authMiddleware, async (req, res) => {
   try {
     const { lat, lon, ubicacion, clima } = req.body;
 

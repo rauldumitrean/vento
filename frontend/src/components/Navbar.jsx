@@ -7,7 +7,7 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center border shadow-sm">
-            <img src="/favicon.jpg" alt="Ventoo" className="w-full h-full object-cover" />
+            <img src="/favicon.svg" alt="Ventoo" className="w-full h-full object-cover p-1 bg-white" />
           </div>
           <h1 className="text-xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Ventoo</h1>
         </div>
