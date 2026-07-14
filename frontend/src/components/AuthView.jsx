@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
-import { Cloud, Wind, Sun } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cloud } from 'lucide-react';
 
 export default function AuthView({ setToken }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,36 +25,61 @@ export default function AuthView({ setToken }) {
     }
   };
 
+  const variants = {
+    enter: (direction) => {
+      return {
+        x: direction > 0 ? 300 : -300,
+        opacity: 0,
+      };
+    },
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction) => {
+      return {
+        zIndex: 0,
+        x: direction < 0 ? 300 : -300,
+        opacity: 0,
+      };
+    }
+  };
+
+  const direction = isLogin ? -1 : 1;
+
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden font-sans transition-colors duration-300">
-      <div className="w-full max-w-5xl h-[600px] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden relative flex">
-        
-        <motion.div 
-          className="flex w-[200%] h-full"
-          animate={{ x: isLogin ? "0%" : "-50%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          
-          {/* PANEL 1: INICIAR SESIÓN */}
-          <div className="w-1/2 h-full flex">
-            {/* Formulario Login */}
-            <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center relative">
-              <div className="absolute top-8 left-8 flex items-center gap-2">
-                <Cloud className="w-8 h-8 text-indigo-500" />
-                <span className="font-bold tracking-widest text-xl text-gray-900 dark:text-white">VENTOO</span>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 font-sans overflow-hidden">
+      
+      <div className="w-full max-w-md relative flex items-center justify-center">
+        <AnimatePresence mode="wait" custom={direction}>
+          {isLogin ? (
+            <motion.div
+              key="login"
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8"
+            >
+              <div className="flex flex-col items-center mb-8">
+                <Cloud className="w-12 h-12 text-indigo-500 mb-2" />
+                <h1 className="text-2xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">VENTOO</h1>
               </div>
+
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">Iniciar Sesión</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-center mb-8">Entra para descubrir tu outfit ideal</p>
               
-              <h2 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">Bienvenido</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-8">Inicia sesión para ver tu clima y estilo</p>
-              
-              <form onSubmit={(e) => handleAuth(e, '/api/auth/login')} className="space-y-6">
+              <form onSubmit={(e) => handleAuth(e, '/api/auth/login')} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo Electrónico</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo</label>
                   <input 
                     type="email" 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 dark:text-white"
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white transition-all"
                     placeholder="tu@email.com"
                     required
                   />
@@ -65,84 +90,63 @@ export default function AuthView({ setToken }) {
                     type="password" 
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 dark:text-white"
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white transition-all"
                     placeholder="••••••••"
                     required
                   />
                 </div>
                 
-                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                 
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl transition-all transform active:scale-[0.98] shadow-lg flex justify-center items-center"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-all"
                 >
                   {loading ? 'Cargando...' : 'Entrar'}
                 </button>
               </form>
 
-              <div className="mt-8 text-center md:hidden">
-                <p className="text-gray-500 dark:text-gray-400">¿No tienes cuenta?</p>
-                <button onClick={() => setIsLogin(false)} className="text-indigo-500 font-semibold mt-2">Crear una cuenta nueva</button>
+              <div className="mt-6 text-center">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">¿Nuevo aquí?</p>
+                <button 
+                  onClick={() => {
+                    setError('');
+                    setIsLogin(false);
+                  }} 
+                  className="text-indigo-500 font-semibold mt-1"
+                >
+                  Crear una cuenta gratis
+                </button>
               </div>
-            </div>
-
-            {/* Branding Login (Lado derecho del panel 1) */}
-            <div className="hidden md:flex w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 p-12 flex-col items-center justify-center text-white text-center relative overflow-hidden">
-              <Sun className="absolute top-10 right-10 w-24 h-24 text-white opacity-10" />
-              <Wind className="absolute bottom-10 left-10 w-32 h-32 text-white opacity-10" />
-              
-              <h2 className="text-4xl font-bold mb-4 z-10">¿Nuevo aquí?</h2>
-              <p className="text-lg text-indigo-100 mb-8 z-10 max-w-sm">
-                Regístrate para que nuestra Inteligencia Artificial te recomiende el outfit perfecto según el clima de tu ciudad.
-              </p>
-              <button 
-                onClick={() => setIsLogin(false)}
-                className="px-8 py-3 border-2 border-white/80 hover:bg-white hover:text-indigo-600 rounded-xl font-bold transition-all z-10"
-              >
-                Crear una cuenta
-              </button>
-            </div>
-          </div>
-
-          {/* PANEL 2: REGISTRO */}
-          <div className="w-1/2 h-full flex">
-            {/* Branding Registro (Lado izquierdo del panel 2) */}
-            <div className="hidden md:flex w-1/2 bg-gradient-to-br from-purple-700 to-indigo-600 p-12 flex-col items-center justify-center text-white text-center relative overflow-hidden">
-              <Cloud className="absolute top-20 left-10 w-24 h-24 text-white opacity-10" />
-              <Sun className="absolute bottom-20 right-10 w-24 h-24 text-white opacity-10" />
-              
-              <h2 className="text-4xl font-bold mb-4 z-10">¡Hola de nuevo!</h2>
-              <p className="text-lg text-indigo-100 mb-8 z-10 max-w-sm">
-                Si ya formas parte de Ventoo, inicia sesión para acceder a tu armario inteligente y a tus favoritos guardados.
-              </p>
-              <button 
-                onClick={() => setIsLogin(true)}
-                className="px-8 py-3 border-2 border-white/80 hover:bg-white hover:text-purple-600 rounded-xl font-bold transition-all z-10"
-              >
-                Iniciar Sesión
-              </button>
-            </div>
-
-            {/* Formulario Registro */}
-            <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center relative">
-              <div className="absolute top-8 right-8 flex items-center gap-2">
-                <span className="font-bold tracking-widest text-xl text-gray-900 dark:text-white">VENTOO</span>
-                <Cloud className="w-8 h-8 text-purple-500" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="register"
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8"
+            >
+              <div className="flex flex-col items-center mb-8">
+                <Cloud className="w-12 h-12 text-purple-500 mb-2" />
+                <h1 className="text-2xl font-bold tracking-widest bg-gradient-to-r from-purple-500 to-indigo-600 bg-clip-text text-transparent">VENTOO</h1>
               </div>
 
-              <h2 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">Regístrate</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-8">Crea tu cuenta gratis en segundos</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">Regístrate</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-center mb-8">Únete a nuestra IA meteorológica</p>
               
-              <form onSubmit={(e) => handleAuth(e, '/api/auth/register')} className="space-y-6">
+              <form onSubmit={(e) => handleAuth(e, '/api/auth/register')} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo Electrónico</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo</label>
                   <input 
                     type="email" 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-gray-900 dark:text-white"
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
                     placeholder="tu@email.com"
                     required
                   />
@@ -153,31 +157,38 @@ export default function AuthView({ setToken }) {
                     type="password" 
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-gray-900 dark:text-white"
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
                     placeholder="••••••••"
                     required
                   />
                 </div>
                 
-                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                 
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl transition-all transform active:scale-[0.98] shadow-lg flex justify-center items-center"
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-all"
                 >
-                  {loading ? 'Cargando...' : 'Crear Cuenta'}
+                  {loading ? 'Cargando...' : 'Crear cuenta'}
                 </button>
               </form>
 
-              <div className="mt-8 text-center md:hidden">
-                <p className="text-gray-500 dark:text-gray-400">¿Ya tienes cuenta?</p>
-                <button onClick={() => setIsLogin(true)} className="text-purple-500 font-semibold mt-2">Inicia sesión aquí</button>
+              <div className="mt-6 text-center">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">¿Ya formas parte de Ventoo?</p>
+                <button 
+                  onClick={() => {
+                    setError('');
+                    setIsLogin(true);
+                  }} 
+                  className="text-purple-500 font-semibold mt-1"
+                >
+                  Inicia sesión aquí
+                </button>
               </div>
-            </div>
-          </div>
-
-        </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
