@@ -62,7 +62,7 @@ export default function AuthView({ setToken }) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8"
+              className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-6 sm:p-8"
             >
               <div className="flex flex-col items-center mb-8">
                 <Cloud className="w-12 h-12 text-indigo-500 mb-2" />
@@ -129,7 +129,7 @@ export default function AuthView({ setToken }) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8"
+              className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-6 sm:p-8"
             >
               <div className="flex flex-col items-center mb-8">
                 <Cloud className="w-12 h-12 text-purple-500 mb-2" />

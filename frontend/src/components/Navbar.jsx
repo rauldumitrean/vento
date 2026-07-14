@@ -3,28 +3,28 @@ import { Sun, Moon, Shirt, MapPin, LogOut } from 'lucide-react';
 
 const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
   return (
-    <nav className={`w-full flex items-center justify-between p-4 mb-8 border-b ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3">
+    <nav className={`w-full flex flex-wrap items-center justify-between gap-4 p-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+      <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center border shadow-sm">
             <img src="/favicon.svg" alt="Ventoo" className="w-full h-full object-cover p-1 bg-white" />
           </div>
-          <h1 className="text-xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Ventoo</h1>
+          <h1 className="text-xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent hidden sm:block">Ventoo</h1>
         </div>
         
-        <div className="flex items-center gap-4 ml-8">
+        <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-8">
           <button 
             onClick={() => setView('dashboard')}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'dashboard' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
-            <MapPin size={16} /> Buscar
+            <MapPin size={16} /> <span className="hidden sm:inline">Buscar</span>
           </button>
           
           <button 
             onClick={() => setView('armario')}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'armario' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
-            <Shirt size={16} /> Armario & Historial
+            <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
           </button>
         </div>
       </div>
@@ -41,7 +41,7 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
           onClick={handleLogout}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors"
         >
-          <LogOut size={16} /> Salir
+          <LogOut size={16} /> <span className="hidden sm:inline">Salir</span>
         </button>
       </div>
     </nav>

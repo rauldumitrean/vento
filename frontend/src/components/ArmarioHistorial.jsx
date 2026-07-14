@@ -82,11 +82,11 @@ const ArmarioHistorial = ({ token, darkMode }) => {
         <div className="flex justify-center p-12"><div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"></div></div>
       ) : activeTab === 'armario' ? (
         <div>
-          <form onSubmit={handleAddPrenda} className={`flex gap-3 mb-8 p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+          <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
             <select 
               value={nuevaPrenda.categoria} 
               onChange={e => setNuevaPrenda({...nuevaPrenda, categoria: e.target.value})}
-              className={`p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+              className={`p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
             >
               <option value="top">Parte superior (Top)</option>
               <option value="bottom">Parte inferior (Bottom)</option>
@@ -99,7 +99,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               placeholder="Descripción (ej. Camiseta básica)" 
               value={nuevaPrenda.descripcion}
               onChange={e => setNuevaPrenda({...nuevaPrenda, descripcion: e.target.value})}
-              className={`flex-1 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+              className={`flex-1 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
               required
             />
             <input 
@@ -107,9 +107,9 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               placeholder="Color (opcional)" 
               value={nuevaPrenda.color}
               onChange={e => setNuevaPrenda({...nuevaPrenda, color: e.target.value})}
-              className={`w-32 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+              className={`w-full sm:w-32 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
             />
-            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded px-4 flex items-center gap-2 transition-colors">
+            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded px-4 flex items-center justify-center gap-2 transition-colors w-full sm:w-auto">
               <Plus size={16} /> Añadir
             </button>
           </form>
