@@ -10,6 +10,16 @@ export default function AdModal({ onClose }) {
     }
   }, [timeLeft]);
 
+  useEffect(() => {
+    try {
+      if (window.adsbygoogle && !window.adsbygoogle.loaded) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (e) {
+      console.error("AdSense error", e);
+    }
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="relative bg-white w-full max-w-lg aspect-video rounded flex items-center justify-center overflow-hidden">
@@ -19,12 +29,13 @@ export default function AdModal({ onClose }) {
           <p className="text-gray-600 mb-6 text-sm max-w-md">
             Para poder seguir ofreciéndote este servicio de Inteligencia Artificial de forma 100% gratuita, financiamos los servidores mediante publicidad.
           </p>
-          <div className="bg-gray-200 dark:bg-gray-700 w-full h-48 rounded flex flex-col items-center justify-center text-gray-500">
-            <span className="text-sm border border-gray-400 px-2 py-1 mb-2">PUBLICIDAD</span>
-            <p className="text-xs text-center px-4">
-              (Espacio reservado para Google AdSense) <br/><br/>
-              Copia y pega aquí tu código <code>&lt;ins class="adsbygoogle" ...&gt;</code> cuando Google apruebe tu cuenta.
-            </p>
+          <div className="w-full h-48 rounded overflow-hidden flex items-center justify-center bg-gray-50">
+            <ins className="adsbygoogle"
+                 style={{ display: 'inline-block', width: '100%', height: '100%' }}
+                 data-ad-client="ca-pub-7031196086140700"
+                 data-ad-slot="" // Aquí podrás poner el ID de un bloque de anuncios más adelante si quieres
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
           </div>
         </div>
 
