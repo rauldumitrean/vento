@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  consultas Consulta[]
+  prendas   PrendaArmario[]
+}
+
+model Consulta {
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  ubicacion          String
+  clima_json         String
+  recomendacion_json String
+  createdAt          DateTime @default(now())
+  isFavorite         Boolean  @default(false)
+  user               User     @relation(fields: [userId], references: [id])
+  mensajes           MensajeChat[]
+}
+
+model MensajeChat {
+  id         Int      @id @default(autoincrement())
+  consultaId Int
+  rol        String   // "user" or "model"
+  contenido  String
+  createdAt  DateTime @default(now())
+  consulta   Consulta @relation(fields: [consultaId], references: [id])
+}
+
+model PrendaArmario {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  categoria   String   // ej. "top", "bottom", "calzado", "abrigo"
+  descripcion String   // ej. "Camiseta básica manga corta"
+  color       String?  // ej. "Blanca"
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
