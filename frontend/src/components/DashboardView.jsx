@@ -230,12 +230,12 @@ export default function DashboardView({ token, onLogout }) {
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />
       ) : (
-        <main className="flex-1 px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             <motion.div 
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className={`p-6 rounded-xl shadow-sm border flex gap-4 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}
+              className={`p-4 sm:p-6 rounded-xl shadow-sm border flex gap-3 sm:gap-4 flex-col sm:flex-row ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}
             >
               <form onSubmit={handleSearch} className={`flex-1 flex items-center border-b relative ${darkMode ? 'border-gray-700' : 'border-neutral-200'}`}>
                 <Search className={`w-5 h-5 mr-2 ${darkMode ? 'text-gray-400' : 'text-neutral-400'}`} />
@@ -282,7 +282,7 @@ export default function DashboardView({ token, onLogout }) {
               </form>
               <button 
                 onClick={handleGeolocation}
-                className={`flex items-center gap-2 px-4 py-2 border rounded text-sm transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-neutral-200 hover:bg-neutral-50'}`}
+                className={`flex items-center justify-center gap-2 px-4 py-3 sm:py-2 border rounded text-sm transition-colors w-full sm:w-auto ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-neutral-200 hover:bg-neutral-50'}`}
               >
                 <MapPin className="w-4 h-4" /> Mi Ubicación
               </button>
@@ -291,7 +291,7 @@ export default function DashboardView({ token, onLogout }) {
             {loading && <p className="text-indigo-500 animate-pulse text-center mt-12">Analizando el clima y generando recomendación inteligente...</p>}
 
             {weather && !loading && (
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-8 rounded-xl shadow-sm border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-xl shadow-sm border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-4">
                   <span className="text-6xl font-light">{weather.current.temperature_2m}°</span>
@@ -304,7 +304,7 @@ export default function DashboardView({ token, onLogout }) {
             )}
 
             {outfit && !loading && (
-              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`p-8 rounded-xl shadow-sm border relative ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`p-6 sm:p-8 rounded-xl shadow-sm border relative ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <h2 className="text-sm tracking-widest uppercase opacity-50">Outfit Recomendado</h2>
                   <button onClick={handleToggleFavorite} className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-gray-400 hover:bg-gray-500/10'}`}>
@@ -339,7 +339,7 @@ export default function DashboardView({ token, onLogout }) {
             )}
           </div>
 
-          <div className={`rounded-xl shadow-sm border flex flex-col h-[600px] lg:h-auto lg:max-h-[calc(100vh-8rem)] ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
+          <div className={`rounded-xl shadow-sm border flex flex-col h-[500px] lg:h-auto lg:max-h-[calc(100vh-8rem)] ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
             <div className={`p-4 border-b ${darkMode ? 'border-gray-800' : 'border-neutral-100'}`}>
               <h2 className="text-sm tracking-widest uppercase opacity-50">Asistente de Estilo</h2>
             </div>

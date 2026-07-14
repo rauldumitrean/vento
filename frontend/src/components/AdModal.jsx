@@ -21,17 +21,17 @@ export default function AdModal({ onClose }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative bg-white w-full max-w-lg aspect-video rounded flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="relative bg-white w-full max-w-3xl aspect-[4/3] sm:aspect-video rounded flex items-center justify-center overflow-hidden shadow-2xl">
         {/* Simulación de anuncio */}
-        <div className="absolute inset-0 bg-neutral-100 flex flex-col items-center justify-center p-8 text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Apoya a Ventoo</h2>
-          <p className="text-gray-600 mb-6 text-sm max-w-md">
+        <div className="absolute inset-0 bg-neutral-100 flex flex-col items-center justify-center p-6 sm:p-12 text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Apoya a Ventoo</h2>
+          <p className="text-gray-600 mb-8 text-sm sm:text-base max-w-xl">
             Para poder seguir ofreciéndote este servicio de Inteligencia Artificial de forma 100% gratuita, financiamos los servidores mediante publicidad.
           </p>
-          <div className="w-full h-48 rounded overflow-hidden flex items-center justify-center bg-gray-50">
+          <div className="w-full flex-1 min-h-[250px] max-h-[400px] rounded overflow-hidden flex items-center justify-center bg-gray-50 border border-gray-200 shadow-inner">
             <ins className="adsbygoogle"
-                 style={{ display: 'inline-block', width: '100%', height: '100%' }}
+                 style={{ display: 'block', width: '100%', height: '100%' }}
                  data-ad-client="ca-pub-7031196086140700"
                  data-ad-slot="" // Aquí podrás poner el ID de un bloque de anuncios más adelante si quieres
                  data-ad-format="auto"
