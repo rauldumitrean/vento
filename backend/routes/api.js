@@ -76,6 +76,8 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       armarioText = "El usuario TIENE las siguientes prendas en su armario:\n" + armario.map(p => `- [${p.categoria}] ${p.descripcion} (${p.color || ''})`).join('\n') + "\nIMPORTANTE: PRIORIZA usar estas prendas exactas en tu recomendación si son adecuadas para el clima. Si necesitas algo que no tiene, recomiéndalo normalmente.";
     }
 
+    const amazonTag = process.env.AMAZON_AFFILIATE_TAG || 'ventoo-21';
+
     const prompt = `Eres un asesor de moda experto. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
 ${armarioText}
 
@@ -88,17 +90,17 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
       "categoria": "top", 
       "descripcion": "ej. Camiseta básica blanca de algodón", 
       "razon": "ej. Fresca para la temperatura",
-      "tienda_recomendada": "Zara",
-      "enlace_compra": "https://www.zara.com/es/es/search.html?searchTerm=camiseta%20basica%20blanca"
+      "tienda_recomendada": "Amazon",
+      "enlace_compra": "https://www.amazon.es/s?k=camiseta+basica+blanca+algodon&tag=${amazonTag}"
     },
     { 
       "categoria": "bottom", 
       "descripcion": "ej. Pantalón chino oscuro", 
       "razon": "ej. Cómodo y versátil",
-      "tienda_recomendada": "ASOS",
-      "enlace_compra": "https://www.asos.com/es/search/?q=pantalon+chino+oscuro"
+      "tienda_recomendada": "Amazon",
+      "enlace_compra": "https://www.amazon.es/s?k=pantalon+chino+oscuro&tag=${amazonTag}"
     }
-    // ... añade "tienda_recomendada" y "enlace_compra" funcional de búsqueda (Zalando, Zara, H&M...) para CADA prenda.
+    // ... OBLIGATORIO: La tienda siempre debe ser "Amazon". El enlace debe ser de búsqueda de amazon.es y debe contener EXACTAMENTE la etiqueta &tag=${amazonTag} al final.
   ],
   "consejo_extra": "Un consejo de estilo corto"
 }`;
