@@ -14,8 +14,12 @@ export default function AdModal({ onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="relative bg-white w-full max-w-lg aspect-video rounded flex items-center justify-center overflow-hidden">
         {/* Simulación de anuncio */}
-        <div className="absolute inset-0 bg-neutral-100 flex flex-col items-center justify-center p-6 text-center">
-          <div className="bg-gray-100 dark:bg-gray-700 h-48 rounded flex flex-col items-center justify-center text-gray-500 mb-6">
+        <div className="absolute inset-0 bg-neutral-100 flex flex-col items-center justify-center p-8 text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Apoya a Ventoo</h2>
+          <p className="text-gray-600 mb-6 text-sm max-w-md">
+            Para poder seguir ofreciéndote este servicio de Inteligencia Artificial de forma 100% gratuita, financiamos los servidores mediante publicidad.
+          </p>
+          <div className="bg-gray-200 dark:bg-gray-700 w-full h-48 rounded flex flex-col items-center justify-center text-gray-500">
             <span className="text-sm border border-gray-400 px-2 py-1 mb-2">PUBLICIDAD</span>
             <p className="text-xs text-center px-4">
               (Espacio reservado para Google AdSense) <br/><br/>
