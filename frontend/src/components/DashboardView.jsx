@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart } from 'lucide-react';
+import { Search, MapPin, Send, Heart, Camera, X } from 'lucide-react';
 import AdModal from './AdModal';
 import Navbar from './Navbar';
 import ArmarioHistorial from './ArmarioHistorial';
+import AdminView from './AdminView';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
@@ -91,6 +92,10 @@ export default function DashboardView({ token, onLogout }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingIndex, setLoadingIndex] = useState(0);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageBase64, setImageBase64] = useState('');
+  const [imageMimeType, setImageMimeType] = useState('');
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -189,19 +194,47 @@ export default function DashboardView({ token, onLogout }) {
     );
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        // Result is like "data:image/jpeg;base64,/9j/4AAQSk..."
+        const parts = result.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const base64 = parts[1];
+        
+        setSelectedImage(result);
+        setImageBase64(base64);
+        setImageMimeType(mime);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!message || !consultaId) return;
+    if ((!message && !imageBase64) || !consultaId) return;
 
-    const newChat = [...chat, { role: 'user', content: message }];
+    const newMessageContent = message + (selectedImage ? ' [Imagen adjunta]' : '');
+    const newChat = [...chat, { role: 'user', content: newMessageContent }];
     setChat(newChat);
     setMessage('');
+    
+    const currentBase64 = imageBase64;
+    const currentMime = imageMimeType;
+    setSelectedImage(null);
+    setImageBase64('');
+    setImageMimeType('');
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}/api/chat`, {
         consultaId,
-        mensaje: message
+        mensaje: newMessageContent,
+        imageBase64: currentBase64,
+        imageMimeType: currentMime
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
@@ -229,6 +262,8 @@ export default function DashboardView({ token, onLogout }) {
 
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />
+      ) : view === 'admin' ? (
+        <AdminView token={token} darkMode={darkMode} />
       ) : (
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           
@@ -358,23 +393,48 @@ export default function DashboardView({ token, onLogout }) {
               )}
             </div>
 
-            <form onSubmit={handleSendMessage} className={`p-4 border-t flex gap-2 ${darkMode ? 'border-gray-800' : 'border-neutral-100'}`}>
-              <input 
-                type="text"
-                placeholder="Escribe tu mensaje..."
-                className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-neutral-200'}`}
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                disabled={!outfit}
-              />
-              <button 
-                type="submit" 
-                disabled={!outfit || !message}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-lg disabled:opacity-50 transition-colors"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+            <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-gray-800' : 'border-neutral-100'}`}>
+              {selectedImage && (
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                  <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => setSelectedImage(null)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+              <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  capture="environment" 
+                  id="cameraInput" 
+                  className="hidden" 
+                  onChange={handleImageChange}
+                />
+                <label 
+                  htmlFor="cameraInput" 
+                  className={`p-2 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-800' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'}`}
+                >
+                  <Camera className="w-5 h-5" />
+                </label>
+
+                <input 
+                  type="text"
+                  placeholder="Escribe tu mensaje..."
+                  className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-neutral-200'}`}
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  disabled={!outfit}
+                />
+                <button 
+                  type="submit" 
+                  disabled={!outfit || (!message && !selectedImage)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-lg disabled:opacity-50 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
           </div>
 
         </main>

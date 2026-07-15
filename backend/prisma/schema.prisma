@@ -10,10 +10,12 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  consultas Consulta[]
-  prendas   PrendaArmario[]
+  password   String
+  role       String   @default("USER")
+  isPremium  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  consultas  Consulta[]
+  prendas    PrendaArmario[]
 }
 
 model Consulta {

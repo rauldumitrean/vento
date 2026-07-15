@@ -26,6 +26,15 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
           >
             <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
           </button>
+
+          {localStorage.getItem('userRole') === 'ADMIN' && (
+            <button 
+              onClick={() => setView('admin')}
+              className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'admin' ? 'text-purple-500' : 'text-gray-500 hover:text-purple-400'}`}
+            >
+              <span className="hidden sm:inline">Admin Panel</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
     });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al registrar usuario.' });
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
     if (!validPassword) return res.status(400).json({ error: 'Credenciales inválidas.' });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al iniciar sesión.' });

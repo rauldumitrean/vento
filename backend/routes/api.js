@@ -9,6 +9,16 @@ const prisma = new PrismaClient();
 // Fallback if no key is provided during prototype to prevent hard crashes on boot, though it will fail on use
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
 
+// Admin Middleware
+const adminMiddleware = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de Administrador.' });
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Error verificando rol de administrador' });
+  }
+};
 router.get('/weather', authMiddleware, async (req, res) => {
   try {
     const { lat, lon, city } = req.query;
@@ -139,7 +149,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
 
 router.post('/chat', authMiddleware, async (req, res) => {
   try {
-    const { consultaId, mensaje } = req.body;
+    const { consultaId, mensaje, imageBase64, imageMimeType } = req.body;
     if (!consultaId || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
 
     const consulta = await prisma.consulta.findUnique({ where: { id: consultaId }, include: { mensajes: true } });
@@ -156,13 +166,23 @@ router.post('/chat', authMiddleware, async (req, res) => {
     }));
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.1-flash-lite",
-      systemInstruction: `Eres un asesor de moda que acaba de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. Responde brevemente a las dudas del usuario con amabilidad.`
+      model: "gemini-3.1-flash-lite", // Soporta vision
+      systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. REGLA ESTRICTA E INQUEBRANTABLE: SÓLO puedes responder a preguntas relacionadas con moda, ropa, estilo, outfits o clima. Si el usuario te pregunta sobre resúmenes de libros (como El Quijote), programación, historia, o cualquier tema ajeno a la moda y el clima, DEBES NEGARTE educadamente a responder diciendo que tu único propósito en Ventoo es la asesoría de imagen y moda.`
     });
     
     const chat = model.startChat({ history });
 
-    const result = await chat.sendMessage(mensaje);
+    let parts = [{ text: mensaje }];
+    if (imageBase64 && imageMimeType) {
+      parts.push({
+        inlineData: {
+          data: imageBase64,
+          mimeType: imageMimeType
+        }
+      });
+    }
+
+    const result = await chat.sendMessage(parts);
     const textResponse = result.response.text();
 
     const nuevoMensaje = await prisma.mensajeChat.create({
@@ -233,6 +253,77 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
     res.json(consulta);
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar favorito' });
+  }
+});
+
+// ==========================================
+// ADMIN ROUTES
+// ==========================================
+router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, role: true, isPremium: true, createdAt: true }
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+});
+
+router.post('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { email, password, role, isPremium } = req.body;
+    // Esto es simplificado. En un entorno real se haría hash de la password de nuevo, 
+    // pero aquí delegaremos el hash asumiendo que Admin crea con password simple.
+    // Usaremos bcrypt si estuviéramos en authController. Para no engordar api.js lo guardamos como texto plano (o el admin manda hash)
+    // Para no importar bcrypt aquí, el admin creará el user y el user deberá hacer reset o login con auth.
+    // Vamos a importar bcrypt temporalmente o requerirlo.
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await prisma.user.create({
+      data: { 
+        email, 
+        password: hashedPassword, 
+        role: role || 'USER', 
+        isPremium: isPremium || false 
+      }
+    });
+    res.json({ id: newUser.id, email: newUser.email });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear usuario' });
+  }
+});
+
+router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { isPremium } = req.body;
+    const user = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: { isPremium }
+    });
+    res.json({ id: user.id, isPremium: user.isPremium });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar estado premium' });
+  }
+});
+
+router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    // Eliminar cascada manual (prendas, mensajes, consultas)
+    await prisma.prendaArmario.deleteMany({ where: { userId: id } });
+    const consultas = await prisma.consulta.findMany({ where: { userId: id } });
+    for (const c of consultas) {
+      await prisma.mensajeChat.deleteMany({ where: { consultaId: c.id } });
+    }
+    await prisma.consulta.deleteMany({ where: { userId: id } });
+    await prisma.user.delete({ where: { id } });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al eliminar usuario' });
   }
 });
 
