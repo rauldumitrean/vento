@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Save } from 'lucide-react';
+import { User, Save, Shirt } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -107,7 +107,9 @@ export default function ProfileSettings({ token, darkMode }) {
         </div>
 
         <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-indigo-900/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'}`}>
-          <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>👗 Tu Tipo de Estilo</h3>
+          <h3 className={`text-lg flex items-center font-bold mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+            <Shirt className="w-5 h-5 mr-2" /> Tu Tipo de Estilo
+          </h3>
           
           <div className="mb-4">
             <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estilo Principal</label>
