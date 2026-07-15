@@ -38,7 +38,9 @@ export default function LandingView({ token }) {
                 Iniciar Sesión
               </button>
               <button 
-                onClick={() => navigate('/login', { state: { isRegister: true } })}
+                onClick={() => {
+                  document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
               >
                 Registrarse
@@ -193,7 +195,7 @@ export default function LandingView({ token }) {
       </section>
 
       {/* Pricing / Premium */}
-      <section className="relative z-10 py-32 px-6 border-t border-white/5 bg-black">
+      <section id="pricing" className="relative z-10 py-32 px-6 border-t border-white/5 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black mb-6">Elige tu plan</h2>
