@@ -6,18 +6,9 @@ import { useEffect } from 'react';
 export default function LandingView({ token }) {
   const navigate = useNavigate();
 
-  // Scroll to top on mount and set background for iOS overscroll
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
-    const originalBodyBg = document.body.style.backgroundColor;
-    const originalHtmlBg = document.documentElement.style.backgroundColor;
-    document.body.style.backgroundColor = '#000000';
-    document.documentElement.style.backgroundColor = '#000000';
-    
-    return () => {
-      document.body.style.backgroundColor = originalBodyBg;
-      document.documentElement.style.backgroundColor = originalHtmlBg;
-    };
   }, []);
 
   return (
