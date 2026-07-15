@@ -24,7 +24,11 @@ function App() {
           />
           <Route 
             path="/" 
-            element={token ? <DashboardView token={token} onLogout={() => setToken(null)} /> : <Navigate to="/login" />} 
+            element={token ? <DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/admin" 
+            element={token && localStorage.getItem('userRole') === 'ADMIN' ? <DashboardView token={token} defaultView="admin" onLogout={() => setToken(null)} /> : <Navigate to="/" />} 
           />
         </Routes>
       </div>

@@ -78,9 +78,9 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   );
 };
 
-export default function DashboardView({ token, onLogout }) {
+export default function DashboardView({ token, defaultView = 'dashboard', onLogout }) {
   const [showAd, setShowAd] = useState(true);
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'armario'
+  const [view, setView] = useState(defaultView); // 'dashboard' | 'armario' | 'admin'
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   
   const [location, setLocation] = useState('');

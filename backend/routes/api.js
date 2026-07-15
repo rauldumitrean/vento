@@ -308,6 +308,24 @@ router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (r
   }
 });
 
+router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { email, role, password } = req.body;
+    const dataToUpdate = { email, role };
+    if (password && password.trim() !== '') {
+      const bcrypt = require('bcryptjs');
+      dataToUpdate.password = await bcrypt.hash(password, 10);
+    }
+    const user = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: dataToUpdate
+    });
+    res.json({ id: user.id, email: user.email, role: user.role });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al editar usuario' });
+  }
+});
+
 router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id);

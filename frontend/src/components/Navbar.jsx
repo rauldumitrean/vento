@@ -1,7 +1,10 @@
 import React from 'react';
-import { Sun, Moon, Shirt, MapPin, LogOut } from 'lucide-react';
+import { Sun, Moon, Shirt, MapPin, LogOut, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
+  const navigate = useNavigate();
+
   return (
     <nav className={`w-full flex flex-wrap items-center justify-between gap-4 p-4 mb-4 sm:mb-8 border-b ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
       <div className="flex items-center gap-4 sm:gap-6">
@@ -14,14 +17,14 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
         
         <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-8">
           <button 
-            onClick={() => setView('dashboard')}
+            onClick={() => { setView('dashboard'); navigate('/'); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'dashboard' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
-            <MapPin size={16} /> <span className="hidden sm:inline">Buscar</span>
+            <Search size={16} /> <span className="hidden sm:inline">Buscar</span>
           </button>
           
           <button 
-            onClick={() => setView('armario')}
+            onClick={() => { setView('armario'); navigate('/'); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'armario' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
             <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
@@ -29,7 +32,7 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
 
           {localStorage.getItem('userRole') === 'ADMIN' && (
             <button 
-              onClick={() => setView('admin')}
+              onClick={() => { setView('admin'); navigate('/admin'); }}
               className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'admin' ? 'text-purple-500' : 'text-gray-500 hover:text-purple-400'}`}
             >
               <span className="hidden sm:inline">Admin Panel</span>

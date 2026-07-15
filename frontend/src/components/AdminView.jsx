@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, Star, UserPlus, Shield } from 'lucide-react';
+import { Trash2, Star, UserPlus, Shield, Edit2, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AdminView = ({ token, darkMode }) => {
@@ -8,6 +8,8 @@ const AdminView = ({ token, darkMode }) => {
   const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ email: '', password: '', role: 'USER', isPremium: false });
   const [showAdd, setShowAdd] = useState(false);
+  const [editUserId, setEditUserId] = useState(null);
+  const [editUserData, setEditUserData] = useState({ email: '', role: '', password: '' });
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -55,6 +57,21 @@ const AdminView = ({ token, darkMode }) => {
       setUsers(users.filter(u => u.id !== id));
     } catch (error) {
       alert("Error eliminando usuario");
+    }
+  };
+
+  const startEdit = (user) => {
+    setEditUserId(user.id);
+    setEditUserData({ email: user.email, role: user.role, password: '' });
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const res = await axios.put(`${API_URL}/api/admin/users/${editUserId}`, editUserData, { headers: { Authorization: `Bearer ${token}` } });
+      setUsers(users.map(u => u.id === editUserId ? { ...u, ...res.data } : u));
+      setEditUserId(null);
+    } catch (error) {
+      alert("Error editando usuario");
     }
   };
 
@@ -140,12 +157,44 @@ const AdminView = ({ token, darkMode }) => {
               {users.map(u => (
                 <tr key={u.id} className={`${darkMode ? 'hover:bg-gray-800/50' : 'hover:bg-gray-50'}`}>
                   <td className="p-4 text-gray-500">#{u.id}</td>
-                  <td className="p-4 font-medium">{u.email}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-xs ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
-                      {u.role}
-                    </span>
-                  </td>
+                  {editUserId === u.id ? (
+                    <>
+                      <td className="p-4">
+                        <input 
+                          type="email" 
+                          value={editUserData.email} 
+                          onChange={e => setEditUserData({...editUserData, email: e.target.value})}
+                          className={`w-full p-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300'}`}
+                        />
+                        <input 
+                          type="password" 
+                          placeholder="Nueva contraseña (opcional)" 
+                          value={editUserData.password} 
+                          onChange={e => setEditUserData({...editUserData, password: e.target.value})}
+                          className={`w-full mt-1 p-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300'}`}
+                        />
+                      </td>
+                      <td className="p-4">
+                        <select 
+                          value={editUserData.role} 
+                          onChange={e => setEditUserData({...editUserData, role: e.target.value})}
+                          className={`p-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300'}`}
+                        >
+                          <option value="USER">USER</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="p-4 font-medium">{u.email}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 rounded text-xs ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
+                          {u.role}
+                        </span>
+                      </td>
+                    </>
+                  )}
                   <td className="p-4">
                     <button 
                       onClick={() => togglePremium(u.id, u.isPremium)}
@@ -156,9 +205,17 @@ const AdminView = ({ token, darkMode }) => {
                     </button>
                   </td>
                   <td className="p-4 text-right">
-                    <button onClick={() => handleDelete(u.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                      <Trash2 size={16} />
-                    </button>
+                    {editUserId === u.id ? (
+                      <div className="flex justify-end gap-2">
+                        <button onClick={handleSaveEdit} className="p-2 text-green-500 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-colors"><Save size={16} /></button>
+                        <button onClick={() => setEditUserId(null)} className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"><X size={16} /></button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => startEdit(u)} className="p-2 text-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(u.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"><Trash2 size={16} /></button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
