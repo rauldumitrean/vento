@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart, Camera, X } from 'lucide-react';
+import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart } from 'lucide-react';
 import AdModal from './AdModal';
 import Navbar from './Navbar';
 import ArmarioHistorial from './ArmarioHistorial';
@@ -82,17 +82,23 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
         </span>
         <span className="font-bold text-lg leading-tight mb-2">{prenda.descripcion}</span>
         <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed">{prenda.razon}</span>
-        
-        {(prenda.enlace_compra && prenda.tienda_recomendada) && (
-          <a 
-            href={prenda.enlace_compra} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-indigo-500/20"
-          >
-            🛒 Buscar en {prenda.tienda_recomendada}
-          </a>
-        )}
+        <div className="mt-auto flex justify-end">
+          {(prenda.enlace_compra && prenda.tienda_recomendada) && (
+            <a 
+              href={prenda.enlace_compra} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-center bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-full transition-all duration-300 shadow-md shadow-indigo-500/20 overflow-hidden h-10 w-10 hover:w-[170px]"
+            >
+              <div className="flex-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-4 text-sm">
+                Buscar en {prenda.tienda_recomendada}
+              </div>
+              <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                <ShoppingCart size={18} />
+              </div>
+            </a>
+          )}
+        </div>
       </div>
     </motion.div>
   );
