@@ -182,7 +182,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     if (payment === 'success') {
       alert(`¡Gracias por tu compra! Tu plan ${plan} ha sido activado.`);
+      sessionStorage.setItem('isPremium', 'true');
+      sessionStorage.setItem('premiumPlan', plan);
       window.history.replaceState({}, '', '/app');
+      window.location.reload();
     }
     if (payment === 'cancelled') {
       alert('Has cancelado el proceso de pago. Puedes retomarlo cuando quieras.');

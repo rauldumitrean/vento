@@ -270,7 +270,7 @@ export default function LandingView({ token }) {
       <footer className="relative z-10 border-t border-white/10 bg-black py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <Sparkles className="text-indigo-500" size={20} />
+            <Cloud className="text-indigo-500 fill-indigo-500/20" size={24} strokeWidth={2.5} />
             <span className="text-xl font-black tracking-widest text-white">VENTOO</span>
           </div>
           <p className="text-gray-500 text-sm">
