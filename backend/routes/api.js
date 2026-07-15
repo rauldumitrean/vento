@@ -107,8 +107,16 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
     }
 
     const amazonTag = process.env.AMAZON_AFFILIATE_TAG || 'ventoo-21';
+    
+    let genderText = "";
+    if (dbUser.gender) {
+      const g = dbUser.gender.toLowerCase();
+      if (g === 'hombre') genderText = "IMPORTANTE: El cliente es un HOMBRE. Asegúrate de recomendar exclusivamente ropa de hombre o masculina.";
+      else if (g === 'mujer') genderText = "IMPORTANTE: El cliente es una MUJER. Asegúrate de recomendar exclusivamente ropa de mujer o femenina.";
+    }
 
     const prompt = `Eres un asesor de moda experto. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
+${genderText}
 ${armarioText}
 
 Genera un outfit elegante y moderno, combinando prendas adecuadamente.
@@ -324,7 +332,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
 
     const users = await prisma.user.findMany({
       select: { 
-        id: true, email: true, role: true, isPremium: true, createdAt: true,
+        id: true, email: true, name: true, gender: true, role: true, isPremium: true, createdAt: true,
         consultas: {
           where: { createdAt: { gte: startOfDay } },
           select: { id: true }
@@ -335,6 +343,8 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
     const result = users.map(u => ({
       id: u.id,
       email: u.email,
+      name: u.name,
+      gender: u.gender,
       role: u.role,
       isPremium: u.isPremium,
       createdAt: u.createdAt,
@@ -349,12 +359,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
 
 router.post('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { email, password, role, isPremium } = req.body;
-    // Esto es simplificado. En un entorno real se haría hash de la password de nuevo, 
-    // pero aquí delegaremos el hash asumiendo que Admin crea con password simple.
-    // Usaremos bcrypt si estuviéramos en authController. Para no engordar api.js lo guardamos como texto plano (o el admin manda hash)
-    // Para no importar bcrypt aquí, el admin creará el user y el user deberá hacer reset o login con auth.
-    // Vamos a importar bcrypt temporalmente o requerirlo.
+    const { email, password, name, gender, role, isPremium } = req.body;
     const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -362,11 +367,13 @@ router.post('/admin/users', authMiddleware, adminMiddleware, async (req, res) =>
       data: { 
         email, 
         password: hashedPassword, 
+        name,
+        gender,
         role: role || 'USER', 
         isPremium: isPremium || false 
       }
     });
-    res.json({ id: newUser.id, email: newUser.email });
+    res.json({ id: newUser.id, email: newUser.email, name: newUser.name, gender: newUser.gender });
   } catch (error) {
     res.status(500).json({ error: 'Error al crear usuario' });
   }
@@ -387,8 +394,8 @@ router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (r
 
 router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { email, role, password } = req.body;
-    const dataToUpdate = { email, role };
+    const { email, name, gender, role, password } = req.body;
+    const dataToUpdate = { email, name, gender, role };
     if (password && password.trim() !== '') {
       const bcrypt = require('bcryptjs');
       dataToUpdate.password = await bcrypt.hash(password, 10);
@@ -397,7 +404,7 @@ router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res)
       where: { id: parseInt(req.params.id) },
       data: dataToUpdate
     });
-    res.json({ id: user.id, email: user.email, role: user.role });
+    res.json({ id: user.id, email: user.email, name: user.name, gender: user.gender, role: user.role });
   } catch (error) {
     res.status(500).json({ error: 'Error al editar usuario' });
   }

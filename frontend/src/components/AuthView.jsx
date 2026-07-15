@@ -7,6 +7,8 @@ export default function AuthView({ setToken }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [gender, setGender] = useState('Mujer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,9 +18,11 @@ export default function AuthView({ setToken }) {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const res = await axios.post(`${API_URL}${endpoint}`, { email, password });
-      setToken(res.data.token);
+      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender });
       sessionStorage.setItem('userRole', res.data.user?.role || 'USER');
+      if (res.data.user?.name) sessionStorage.setItem('userName', res.data.user.name);
+      if (res.data.user?.gender) sessionStorage.setItem('userGender', res.data.user.gender);
+      setToken(res.data.token);
     } catch (err) {
       setError(err.response?.data?.error || 'Error de conexión');
     } finally {
@@ -140,9 +144,32 @@ export default function AuthView({ setToken }) {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">Regístrate</h2>
               <p className="text-gray-500 dark:text-gray-400 text-center mb-8">Únete a nuestra IA meteorológica</p>
               
-              <form onSubmit={(e) => handleAuth(e, '/api/auth/register')} className="space-y-5">
+              <form onSubmit={(e) => handleAuth(e, '/api/auth/register')} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
+                  <input 
+                    type="text" 
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
+                    placeholder="Tu nombre"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Género</label>
+                  <select 
+                    value={gender}
+                    onChange={e => setGender(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
+                  >
+                    <option value="Mujer">Mujer</option>
+                    <option value="Hombre">Hombre</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo</label>
                   <input 
                     type="email" 
                     value={email}
@@ -153,7 +180,7 @@ export default function AuthView({ setToken }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
                   <input 
                     type="password" 
                     value={password}

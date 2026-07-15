@@ -3,9 +3,10 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart } from 'lucide-react';
 import AdModal from './AdModal';
-import Navbar from './Navbar';
-import ArmarioHistorial from './ArmarioHistorial';
 import AdminView from './AdminView';
+import ArmarioHistorial from './ArmarioHistorial';
+import ProfileSettings from './ProfileSettings';
+import Navbar from './Navbar';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
@@ -162,6 +163,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const userName = sessionStorage.getItem('userName');
+  
+  const defaultCities = [
+    { name: 'Madrid', admin1: 'Comunidad de Madrid', country: 'España', latitude: 40.4165, longitude: -3.70256 },
+    { name: 'Barcelona', admin1: 'Cataluña', country: 'España', latitude: 41.38879, longitude: 2.15899 },
+    { name: 'Londres', admin1: 'Inglaterra', country: 'Reino Unido', latitude: 51.50853, longitude: -0.12574 },
+    { name: 'Nueva York', admin1: 'Nueva York', country: 'Estados Unidos', latitude: 40.71427, longitude: -74.00597 },
+    { name: 'Tokio', admin1: 'Tokio', country: 'Japón', latitude: 35.6895, longitude: 139.69171 }
+  ];
 
   useEffect(() => {
     if (sessionStorage.getItem('adShown')) {
@@ -171,8 +181,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (location.trim().length < 2) {
-        setSuggestions([]);
+      if (!location.trim()) {
+        setSuggestions(defaultCities);
         return;
       }
       try {
@@ -189,7 +199,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     const timeoutId = setTimeout(() => {
       fetchSuggestions();
-    }, 300); // 300ms de debounce para no saturar la API
+    }, 150); // 150ms de debounce para que sea casi instantáneo
 
     return () => clearTimeout(timeoutId);
   }, [location]);
@@ -346,10 +356,17 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         <ArmarioHistorial token={token} darkMode={darkMode} />
       ) : view === 'admin' ? (
         <AdminView token={token} darkMode={darkMode} />
+      ) : view === 'profile' ? (
+        <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full pt-8">
+          <ProfileSettings token={token} darkMode={darkMode} />
+        </main>
       ) : (
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            <div className="mb-2">
+              <h2 className="text-3xl font-extrabold tracking-tight">Hola de nuevo, {userName || 'aventurero'} 👋</h2>
+              <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Qué destino nos espera hoy?</p>
+            </div>
             <motion.div 
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
               className={`p-4 sm:p-6 rounded-3xl shadow-xl flex gap-3 sm:gap-4 flex-col sm:flex-row transition-colors backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}

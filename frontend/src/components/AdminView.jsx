@@ -10,10 +10,10 @@ const AdminView = ({ token }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const [newUser, setNewUser] = useState({ email: '', password: '', role: 'USER', isPremium: false });
+  const [newUser, setNewUser] = useState({ email: '', password: '', name: '', gender: 'Mujer', role: 'USER', isPremium: false });
   const [showAdd, setShowAdd] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
-  const [editUserData, setEditUserData] = useState({ email: '', role: '', password: '' });
+  const [editUserData, setEditUserData] = useState({ email: '', name: '', gender: '', role: '', password: '' });
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -54,7 +54,7 @@ const AdminView = ({ token }) => {
       await axios.post(`${API_URL}/api/admin/users`, newUser, { headers: { Authorization: `Bearer ${token}` } });
       fetchData();
       setShowAdd(false);
-      setNewUser({ email: '', password: '', role: 'USER', isPremium: false });
+      setNewUser({ email: '', password: '', name: '', gender: 'Mujer', role: 'USER', isPremium: false });
     } catch (error) {
       alert("Error creando usuario");
     }
@@ -83,7 +83,7 @@ const AdminView = ({ token }) => {
 
   const startEdit = (user) => {
     setEditUserId(user.id);
-    setEditUserData({ email: user.email, role: user.role, password: '' });
+    setEditUserData({ email: user.email, name: user.name || '', gender: user.gender || 'Mujer', role: user.role, password: '' });
   };
 
   const handleSaveEdit = async () => {
@@ -285,6 +285,19 @@ const AdminView = ({ token }) => {
                           value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})}
                           className="p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
+                        <input 
+                          type="text" placeholder="Nombre"
+                          value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})}
+                          className="p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                        <select
+                          value={newUser.gender} onChange={e => setNewUser({...newUser, gender: e.target.value})}
+                          className="p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                          <option value="Mujer">Mujer</option>
+                          <option value="Hombre">Hombre</option>
+                          <option value="Otro">Otro</option>
+                        </select>
                         <div className="flex items-center gap-6 p-2">
                           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                             <input type="checkbox" checked={newUser.role === 'ADMIN'} onChange={e => setNewUser({...newUser, role: e.target.checked ? 'ADMIN' : 'USER'})} className="rounded text-purple-600 focus:ring-purple-500" />
@@ -319,14 +332,26 @@ const AdminView = ({ token }) => {
                             
                             {editUserId === u.id ? (
                               <td className="px-6 py-4" colSpan="3">
-                                <div className="flex items-center gap-4">
+                                <div className="flex flex-wrap items-center gap-4">
                                   <input 
                                     type="email" value={editUserData.email} onChange={e => setEditUserData({...editUserData, email: e.target.value})}
-                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-64 text-sm"
+                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-48 text-sm"
                                   />
                                   <input 
-                                    type="text" placeholder="Nueva contraseña (opcional)" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})}
-                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-48 text-sm"
+                                    type="text" placeholder="Nombre" value={editUserData.name} onChange={e => setEditUserData({...editUserData, name: e.target.value})}
+                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-32 text-sm"
+                                  />
+                                  <select 
+                                    value={editUserData.gender} onChange={e => setEditUserData({...editUserData, gender: e.target.value})}
+                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 text-sm"
+                                  >
+                                    <option value="Mujer">Mujer</option>
+                                    <option value="Hombre">Hombre</option>
+                                    <option value="Otro">Otro</option>
+                                  </select>
+                                  <input 
+                                    type="text" placeholder="Nueva contraseña" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})}
+                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-40 text-sm"
                                   />
                                   <select 
                                     value={editUserData.role} onChange={e => setEditUserData({...editUserData, role: e.target.value})}
@@ -346,6 +371,7 @@ const AdminView = ({ token }) => {
                                     </div>
                                     <div className="flex flex-col">
                                       <span className="font-medium text-gray-900">{u.email}</span>
+                                      <span className="text-xs text-gray-500">{u.name ? `${u.name} (${u.gender})` : 'Sin nombre'}</span>
                                       <span className="text-xs text-gray-400">ID: #{u.id}</span>
                                     </div>
                                   </div>

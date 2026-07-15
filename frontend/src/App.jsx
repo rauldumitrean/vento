@@ -16,6 +16,8 @@ function App() {
     } else {
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('userRole');
+      sessionStorage.removeItem('userName');
+      sessionStorage.removeItem('userGender');
     }
   }, [token]);
 
