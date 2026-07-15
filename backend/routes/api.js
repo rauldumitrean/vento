@@ -155,8 +155,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
   "consejo_extra": "Un consejo de estilo corto"
 }`;
 
-    // FIX: Corrected Gemini model name (gemini-3.1-flash-lite does not exist)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     const result = await model.generateContent(prompt);
     let textResult = result.response.text();
     
@@ -207,8 +206,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
     }));
 
     const model = genAI.getGenerativeModel({ 
-      // FIX: Corrected Gemini model name
-      model: "gemini-1.5-flash", // Soporta vision
+      // FIX: Use gemini-3.1-flash-lite as it supports vision and is in the user's quota
+      model: "gemini-3.1-flash-lite", // Soporta vision
       systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
 REGLA ESTRICTA 1: SÓLO puedes responder a preguntas de moda y clima. Niégate educadamente a otros temas.
 REGLA ESTRICTA 2: SIEMPRE RESPONDE EN FORMATO JSON VÁLIDO puro, sin etiquetas markdown de bloque de código (\`\`\`json).
