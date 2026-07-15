@@ -4,6 +4,7 @@ import AuthView from './components/AuthView';
 import DashboardView from './components/DashboardView';
 import AdminView from './components/AdminView';
 import AdminLoginView from './components/AdminLoginView';
+import LandingView from './components/LandingView';
 
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('token'));
@@ -31,11 +32,15 @@ function App() {
       <div className="min-h-screen">
         <Routes>
           <Route 
-            path="/login" 
-            element={!token ? <AuthView setToken={setToken} /> : <Navigate to="/" />} 
+            path="/" 
+            element={!token ? <LandingView /> : <Navigate to="/app" />} 
           />
           <Route 
-            path="/" 
+            path="/login" 
+            element={!token ? <AuthView setToken={setToken} /> : <Navigate to="/app" />} 
+          />
+          <Route 
+            path="/app" 
             element={token ? <DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /> : <Navigate to="/login" />} 
           />
           <Route 

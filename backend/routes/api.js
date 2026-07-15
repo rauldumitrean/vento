@@ -182,7 +182,17 @@ router.post('/chat', authMiddleware, async (req, res) => {
 
     const model = genAI.getGenerativeModel({ 
       model: "gemini-3.1-flash-lite", // Soporta vision
-      systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. REGLA ESTRICTA E INQUEBRANTABLE: SÓLO puedes responder a preguntas relacionadas con moda, ropa, estilo, outfits o clima. Si el usuario te pregunta sobre resúmenes de libros (como El Quijote), programación, historia, o cualquier tema ajeno a la moda y el clima, DEBES NEGARTE educadamente a responder diciendo que tu único propósito en Ventoo es la asesoría de imagen y moda.`
+      systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
+REGLA ESTRICTA 1: SÓLO puedes responder a preguntas de moda y clima. Niégate educadamente a otros temas.
+REGLA ESTRICTA 2: SIEMPRE RESPONDE EN FORMATO JSON VÁLIDO puro, sin etiquetas markdown de bloque de código (\`\`\`json).
+Estructura obligatoria del JSON:
+{
+  "texto": "Tu respuesta amigable y conversacional",
+  "nuevas_prendas": [
+    // OPCIONAL. SÓLO si el usuario pide cambiar el outfit o sugiere otra prenda, añade aquí la prenda.
+    // { "categoria": "TOP" (o BOTTOM, CALZADO), "descripcion": "...", "razon": "...", "color": "...", "enlace_compra": "https://amazon.es/s?k=...", "tienda_recomendada": "Amazon" }
+  ]
+}`
     });
     
     const chat = model.startChat({ history });

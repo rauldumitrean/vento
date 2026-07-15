@@ -12,11 +12,24 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [imgSrc, setImgSrc] = useState(null);
 
   useEffect(() => {
+    let timeoutId;
     if (canLoad && imgStatus === 'waiting') {
       setImgStatus('loading');
       // enhance=false salta el LLM intermedio y width=300 genera un renderizado un 40% más veloz
-      setImgSrc(`https://image.pollinations.ai/prompt/${encodeURIComponent(prenda.categoria + " " + prenda.descripcion)}?width=300&height=300&nologo=true&enhance=false`);
+      // Simplificamos el prompt para mayor velocidad
+      const simplePrompt = `${prenda.categoria} ropa ${prenda.color || ''}`.trim();
+      setImgSrc(`https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=300&height=300&nologo=true&enhance=false`);
+      
+      // 5 seconds timeout fallback
+      timeoutId = setTimeout(() => {
+        if (imgStatus !== 'loaded') {
+          handleError(true); // force error to show placeholder
+        }
+      }, 5000);
     }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [canLoad, imgStatus, prenda]);
 
   const handleSuccess = () => {
@@ -26,11 +39,16 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
     }
   };
 
-  const handleError = () => {
+  const handleError = (isTimeout = false) => {
     if (imgSrc && imgSrc.includes('pollinations')) {
-      // Si falla la IA, usamos el placeholder
-      const fallbackUrl = `https://placehold.co/400x400/${darkMode ? '1f2937/9ca3af' : 'f3f4f6/9ca3af'}?text=${encodeURIComponent(prenda.categoria.toUpperCase())}`;
+      // Si falla la IA o hay timeout, usamos el placeholder
+      const categoryName = prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria;
+      const fallbackUrl = `https://placehold.co/400x400/${darkMode ? '1f2937/9ca3af' : 'f3f4f6/9ca3af'}?text=${encodeURIComponent(categoryName)}`;
       setImgSrc(fallbackUrl);
+      if (isTimeout) {
+        setImgStatus('error');
+        if (onLoadComplete) onLoadComplete();
+      }
     } else {
       if (imgStatus !== 'error') {
         setImgStatus('error');
@@ -59,7 +77,9 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
         )}
       </div>
       <div className="p-4 flex flex-col flex-1 relative z-20 bg-inherit">
-        <span className="text-xs uppercase tracking-widest text-indigo-500 mb-1">{prenda.categoria}</span>
+        <span className="text-xs uppercase tracking-widest text-indigo-500 mb-1">
+          {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
+        </span>
         <span className="font-medium text-base leading-tight">{prenda.descripcion}</span>
         <span className="text-sm opacity-60 mt-2 mb-4 flex-1">{prenda.razon}</span>
         
@@ -74,6 +94,43 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
           </a>
         )}
       </div>
+    </motion.div>
+  );
+};
+
+const ChatMessage = ({ msg, darkMode }) => {
+  if (msg.role === 'user') {
+    return (
+      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-3 rounded-lg text-sm max-w-[85%] bg-indigo-600 text-white self-end">
+        {msg.content}
+      </motion.div>
+    );
+  }
+
+  let textContent = msg.content;
+  let nuevasPrendas = [];
+
+  try {
+    const cleaned = msg.content.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    if (parsed.texto) textContent = parsed.texto;
+    if (parsed.nuevas_prendas && Array.isArray(parsed.nuevas_prendas)) nuevasPrendas = parsed.nuevas_prendas;
+  } catch (e) {
+    // Es texto normal o falló el parseo
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-2 max-w-[95%] self-start">
+      <div className={`p-3 rounded-lg text-sm ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-neutral-100 text-neutral-900'}`}>
+        {textContent}
+      </div>
+      {nuevasPrendas.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+          {nuevasPrendas.map((prenda, idx) => (
+            <PrendaCard key={idx} prenda={prenda} darkMode={darkMode} canLoad={true} />
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -398,9 +455,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
               ) : (
                 chat.map((msg, idx) => (
-                  <motion.div initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} key={idx} className={`p-3 rounded-lg text-sm max-w-[85%] ${msg.role === 'user' ? 'bg-indigo-600 text-white self-end' : (darkMode ? 'bg-gray-800 text-gray-200 self-start' : 'bg-neutral-100 text-neutral-900 self-start')}`}>
-                    {msg.content}
-                  </motion.div>
+                  <ChatMessage key={idx} msg={msg} darkMode={darkMode} />
                 ))
               )}
             </div>

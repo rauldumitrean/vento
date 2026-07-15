@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, Shirt, MapPin, LogOut, Search } from 'lucide-react';
+import { Sun, Moon, Shirt, MapPin, LogOut, Search, Wind } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
@@ -17,14 +17,14 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
         
         <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-8">
           <button 
-            onClick={() => { setView('dashboard'); navigate('/'); }}
+            onClick={() => { setView('dashboard'); navigate('/app'); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'dashboard' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
             <Search size={16} /> <span className="hidden sm:inline">Buscar</span>
           </button>
           
           <button 
-            onClick={() => { setView('armario'); navigate('/'); }}
+            onClick={() => { setView('armario'); navigate('/app'); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'armario' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
             <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
