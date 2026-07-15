@@ -259,6 +259,26 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
+router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const totalUsers = await prisma.user.count();
+    const premiumUsers = await prisma.user.count({ where: { isPremium: true } });
+    const totalOutfits = await prisma.consulta.count();
+    const totalMessages = await prisma.mensajeChat.count();
+    const totalClothes = await prisma.prendaArmario.count();
+
+    res.json({
+      totalUsers,
+      premiumUsers,
+      totalOutfits,
+      totalMessages,
+      totalClothes
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener estadísticas' });
+  }
+});
+
 router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const users = await prisma.user.findMany({

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AuthView from './components/AuthView';
 import DashboardView from './components/DashboardView';
+import AdminView from './components/AdminView';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -28,7 +29,7 @@ function App() {
           />
           <Route 
             path="/admin" 
-            element={token && localStorage.getItem('userRole') === 'ADMIN' ? <DashboardView token={token} defaultView="admin" onLogout={() => setToken(null)} /> : <Navigate to="/" />} 
+            element={token && localStorage.getItem('userRole') === 'ADMIN' ? <AdminView token={token} /> : <Navigate to="/" />} 
           />
         </Routes>
       </div>
