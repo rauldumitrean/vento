@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2 } from 'lucide-react';
+import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -140,8 +140,24 @@ const AdminView = ({ token }) => {
                 <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Analíticas del Negocio</h2>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                    {/* Stat Card 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
+                    {/* Stat Card 1 - Online Users */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-green-50 text-green-500 rounded-xl relative">
+                          <Radio size={24} />
+                          <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                          </span>
+                        </div>
+                        <h3 className="text-gray-500 font-medium">Usuarios Online</h3>
+                      </div>
+                      <span className="text-4xl font-bold text-gray-900">{stats.onlineUsers}</span>
+                      <p className="text-xs text-gray-400 mt-2">Activos últimos 5 min</p>
+                    </div>
+
+                    {/* Stat Card 2 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Users size={24} /></div>
@@ -150,7 +166,7 @@ const AdminView = ({ token }) => {
                       <span className="text-4xl font-bold text-gray-900">{stats.totalUsers}</span>
                     </div>
 
-                    {/* Stat Card 2 */}
+                    {/* Stat Card 3 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl"><Star size={24} /></div>
@@ -159,7 +175,7 @@ const AdminView = ({ token }) => {
                       <span className="text-4xl font-bold text-gray-900">{stats.premiumUsers}</span>
                     </div>
 
-                    {/* Stat Card 3 */}
+                    {/* Stat Card 4 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Activity size={24} /></div>
@@ -168,13 +184,48 @@ const AdminView = ({ token }) => {
                       <span className="text-4xl font-bold text-gray-900">{stats.totalOutfits}</span>
                     </div>
 
-                    {/* Stat Card 4 */}
+                    {/* Stat Card 5 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><MessageSquare size={24} /></div>
                         <h3 className="text-gray-500 font-medium">Mensajes de IA</h3>
                       </div>
                       <span className="text-4xl font-bold text-gray-900">{stats.totalMessages}</span>
+                    </div>
+                  </div>
+
+                  {/* Database Capacity Widget */}
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 mb-8">
+                    <div className="relative w-32 h-32 flex-shrink-0">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f3f4f6" strokeWidth="12" />
+                        <circle 
+                          cx="50" cy="50" r="40" fill="transparent" 
+                          stroke="#a855f7" strokeWidth="12" 
+                          strokeDasharray="251.2" 
+                          strokeDashoffset={251.2 - (251.2 * (stats.totalUsers / stats.maxUsersCapacity))}
+                          strokeLinecap="round" 
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-lg font-bold text-gray-900">{((stats.totalUsers / stats.maxUsersCapacity) * 100).toFixed(2)}%</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-2"><Database size={20} className="text-purple-500"/> Capacidad de Base de Datos (Neon Free Tier)</h3>
+                      <p className="text-gray-500 text-sm mb-4">
+                        Actualmente Neon otorga 0.5 GB de almacenamiento gratuito. Calculando un promedio de 10 KB de datos relacionales generados por usuario activo (historial, ropa, chats, etc.), el límite seguro aproximado es de <strong className="text-gray-900">50,000 usuarios</strong>.
+                      </p>
+                      <div className="flex gap-4">
+                        <div className="bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                          <span className="text-xs text-gray-400 block uppercase font-bold tracking-wider mb-1">Usados</span>
+                          <span className="text-lg font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</span>
+                        </div>
+                        <div className="bg-purple-50 px-4 py-2 rounded-lg border border-purple-100">
+                          <span className="text-xs text-purple-400 block uppercase font-bold tracking-wider mb-1">Restantes</span>
+                          <span className="text-lg font-bold text-purple-700">{(stats.maxUsersCapacity - stats.totalUsers).toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>

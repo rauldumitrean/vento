@@ -266,13 +266,21 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
     const totalOutfits = await prisma.consulta.count();
     const totalMessages = await prisma.mensajeChat.count();
     const totalClothes = await prisma.prendaArmario.count();
+    
+    // Online users (active in the last 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const onlineUsers = await prisma.user.count({
+      where: { lastActive: { gte: fiveMinutesAgo } }
+    });
 
     res.json({
       totalUsers,
       premiumUsers,
       totalOutfits,
       totalMessages,
-      totalClothes
+      totalClothes,
+      onlineUsers,
+      maxUsersCapacity: 50000 // Free tier calculation estimate
     });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener estadísticas' });
