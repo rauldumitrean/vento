@@ -41,7 +41,7 @@ export default function LandingView({ token }) {
                 onClick={() => navigate('/login')}
                 className="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
               >
-                Entrar
+                Registrarse
               </button>
             </>
           ) : (
