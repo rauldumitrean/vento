@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Trash2, Heart, Clock, Plus, Shirt, Check, MapPin } from 'lucide-react';
+// FIX: Removed unused imports: Check, Shirt
+import { Trash2, Heart, Clock, Plus, MapPin } from 'lucide-react';
+
+// FIX: Use env variable instead of hardcoded localhost
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const ArmarioHistorial = ({ token, darkMode }) => {
   const [activeTab, setActiveTab] = useState('armario');
@@ -10,15 +14,17 @@ const ArmarioHistorial = ({ token, darkMode }) => {
   const [nuevaPrenda, setNuevaPrenda] = useState({ categoria: 'top', descripcion: '', color: '' });
   const [loading, setLoading] = useState(true);
 
+  // FIX: Added token to dependency array to avoid stale closure
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const resArmario = await axios.get('http://localhost:3000/api/armario', { headers: { Authorization: `Bearer ${token}` } });
-      const resHistorial = await axios.get('http://localhost:3000/api/historial', { headers: { Authorization: `Bearer ${token}` } });
+      // FIX: Using API_URL env variable
+      const resArmario = await axios.get(`${API_URL}/api/armario`, { headers: { Authorization: `Bearer ${token}` } });
+      const resHistorial = await axios.get(`${API_URL}/api/historial`, { headers: { Authorization: `Bearer ${token}` } });
       setArmario(resArmario.data);
       setHistorial(resHistorial.data);
     } catch (error) {
@@ -32,7 +38,8 @@ const ArmarioHistorial = ({ token, darkMode }) => {
     e.preventDefault();
     if (!nuevaPrenda.descripcion) return;
     try {
-      const res = await axios.post('http://localhost:3000/api/armario', nuevaPrenda, { headers: { Authorization: `Bearer ${token}` } });
+      // FIX: Using API_URL env variable
+      const res = await axios.post(`${API_URL}/api/armario`, nuevaPrenda, { headers: { Authorization: `Bearer ${token}` } });
       setArmario([...armario, res.data]);
       setNuevaPrenda({ categoria: 'top', descripcion: '', color: '' });
     } catch (error) {
@@ -41,8 +48,11 @@ const ArmarioHistorial = ({ token, darkMode }) => {
   };
 
   const handleDeletePrenda = async (id) => {
+    // FIX: Added confirmation dialog before delete
+    if (!window.confirm('¿Seguro que quieres eliminar esta prenda? Esta acción no se puede deshacer.')) return;
     try {
-      await axios.delete(`http://localhost:3000/api/armario/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      // FIX: Using API_URL env variable
+      await axios.delete(`${API_URL}/api/armario/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setArmario(armario.filter(p => p.id !== id));
     } catch (error) {
       alert("Error al borrar prenda");
@@ -51,7 +61,8 @@ const ArmarioHistorial = ({ token, darkMode }) => {
 
   const toggleFavorite = async (id, isFav) => {
     try {
-      await axios.put(`http://localhost:3000/api/historial/${id}/favorito`, { isFavorite: !isFav }, { headers: { Authorization: `Bearer ${token}` } });
+      // FIX: Using API_URL env variable
+      await axios.put(`${API_URL}/api/historial/${id}/favorito`, { isFavorite: !isFav }, { headers: { Authorization: `Bearer ${token}` } });
       setHistorial(historial.map(h => h.id === id ? { ...h, isFavorite: !isFav } : h));
     } catch (error) {
       alert("Error al actualizar favorito");
@@ -139,13 +150,17 @@ const ArmarioHistorial = ({ token, darkMode }) => {
             <p className="text-gray-500 text-center py-8">No tienes historial de consultas todavía.</p>
           ) : (
             historial.map(h => {
-              const clima = JSON.parse(h.clima_json);
-              const outfit = JSON.parse(h.recomendacion_json);
+              // FIX: JSON.parse wrapped in try/catch to avoid crashes on malformed data
+              let clima = {};
+              let outfit = { resumen: '', prendas: [] };
+              try { clima = JSON.parse(h.clima_json); } catch (e) { console.error('Error parsing clima_json', e); }
+              try { outfit = JSON.parse(h.recomendacion_json); } catch (e) { console.error('Error parsing recomendacion_json', e); }
+
               return (
                 <div key={h.id} className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Clock size={16} /> {new Date(h.createdAt).toLocaleDateString()} - <MapPin size={16} className="ml-2"/> {h.ubicacion} ({clima.temperature_2m}ºC)
+                      <Clock size={16} /> {new Date(h.createdAt).toLocaleDateString()} - <MapPin size={16} className="ml-2"/> {h.ubicacion} {clima.temperature_2m != null ? `(${clima.temperature_2m}ºC)` : ''}
                     </div>
                     <button 
                       onClick={() => toggleFavorite(h.id, h.isFavorite)}
@@ -154,9 +169,9 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                       <Heart size={20} fill={h.isFavorite ? "currentColor" : "none"} />
                     </button>
                   </div>
-                  <p className={`font-medium mb-4 italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>"{outfit.resumen}"</p>
+                  {outfit.resumen && <p className={`font-medium mb-4 italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>"{outfit.resumen}"</p>}
                   <div className="flex flex-wrap gap-2">
-                    {outfit.prendas.map((p, i) => (
+                    {(outfit.prendas || []).map((p, i) => (
                       <span key={i} className={`text-xs px-2 py-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'}`}>
                         {p.descripcion}
                       </span>

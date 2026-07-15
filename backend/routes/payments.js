@@ -69,16 +69,18 @@ router.post('/webhook', async (req, res) => {
 
   let event;
 
-  if (webhookSecret) {
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    } catch (err) {
-      console.error(`Webhook Error: ${err.message}`);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-  } else {
-    // Si no hay webhook secret configurado, parseamos directamente (no recomendado para producción)
-    event = JSON.parse(req.body.toString());
+  // FIX: Removed insecure fallback that accepted unverified payloads.
+  // If no webhook secret is configured, reject the request immediately.
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    return res.status(500).send('Webhook secret not configured');
+  }
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.error(`Webhook signature verification failed: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Handle the event
@@ -88,7 +90,7 @@ router.post('/webhook', async (req, res) => {
       const userId = parseInt(session.client_reference_id || session.metadata?.userId);
       const plan = session.metadata?.plan;
 
-      if (userId) {
+      if (userId && !isNaN(userId)) {
         await prisma.user.update({
           where: { id: userId },
           data: {
@@ -99,6 +101,8 @@ router.post('/webhook', async (req, res) => {
           }
         });
         console.log(`Usuario ${userId} actualizado a plan ${plan} correctamente.`);
+      } else {
+        console.error(`Webhook: userId inválido recibido: ${session.client_reference_id}`);
       }
     } else if (event.type === 'customer.subscription.deleted') {
        // Manejar cancelación de suscripción
@@ -119,7 +123,9 @@ router.post('/webhook', async (req, res) => {
        }
     }
   } catch (err) {
+    // FIX: Return 500 so Stripe retries delivery if DB update fails
     console.error('Error procesando el evento de Stripe:', err);
+    return res.status(500).send('Error procesando el evento');
   }
 
   res.json({received: true});

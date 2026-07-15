@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Check, Crown, Zap } from 'lucide-react';
+import { Cloud, Crown, Zap } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+
+// FIX: API_URL extracted once at module level, not duplicated inside try/catch blocks
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function AuthView({ setToken }) {
   const location = useLocation();
@@ -22,7 +25,6 @@ export default function AuthView({ setToken }) {
     setError('');
     setLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender });
       sessionStorage.setItem('userRole', res.data.user?.role || 'USER');
       if (res.data.user?.name) sessionStorage.setItem('userName', res.data.user.name);
@@ -32,7 +34,6 @@ export default function AuthView({ setToken }) {
       
       if (location.state?.plan && location.state.plan !== 'free') {
         try {
-          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
           const checkoutRes = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan: location.state.plan }, {
             headers: { Authorization: `Bearer ${res.data.token}` }
           });
@@ -43,6 +44,7 @@ export default function AuthView({ setToken }) {
           }
         } catch (e) {
           console.error(e);
+          setError('Error iniciando el pago. Puedes intentarlo desde los ajustes de perfil.');
         }
       }
       
@@ -84,7 +86,6 @@ export default function AuthView({ setToken }) {
   const handleDirectCheckout = async (plan) => {
     setCheckoutLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan }, {
         headers: { Authorization: `Bearer ${pendingAuth.token}` }
       });
@@ -104,6 +105,13 @@ export default function AuthView({ setToken }) {
     return (
       <div className="min-h-screen bg-black font-sans flex items-center justify-center p-4">
         <div className="max-w-5xl w-full">
+          {/* FIX: Added back button to avoid being stuck on plan selection */}
+          <button
+            onClick={() => { setShowPlans(false); setPendingAuth(null); }}
+            className="text-gray-400 hover:text-white text-sm flex items-center gap-2 mb-8 transition-colors"
+          >
+            ← Volver al registro
+          </button>
           <h2 className="text-4xl md:text-5xl font-black text-white text-center mb-12">¡Cuenta creada! Elige tu plan</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Básico */}
@@ -220,6 +228,8 @@ export default function AuthView({ setToken }) {
                 <button 
                   onClick={() => {
                     setError('');
+                    // FIX: Clear password when switching to avoid carrying over stale credentials
+                    setPassword('');
                     setIsLogin(false);
                   }} 
                   className="text-indigo-500 font-semibold mt-1"
@@ -254,7 +264,7 @@ export default function AuthView({ setToken }) {
                     type="text" 
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
                     placeholder="Tu nombre"
                     required
                   />
@@ -264,7 +274,7 @@ export default function AuthView({ setToken }) {
                   <select 
                     value={gender}
                     onChange={e => setGender(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
+                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
                   >
                     <option value="Mujer">Mujer</option>
                     <option value="Hombre">Hombre</option>
@@ -289,7 +299,8 @@ export default function AuthView({ setToken }) {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white transition-all"
-                    placeholder="••••••••"
+                    placeholder="Mínimo 6 caracteres"
+                    minLength={6}
                     required
                   />
                 </div>
@@ -310,6 +321,8 @@ export default function AuthView({ setToken }) {
                 <button 
                   onClick={() => {
                     setError('');
+                    // FIX: Clear password when switching to avoid carrying over stale credentials
+                    setPassword('');
                     setIsLogin(true);
                   }} 
                   className="text-purple-500 font-semibold mt-1"

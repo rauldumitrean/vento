@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Save } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export default function ProfileSettings({ token, darkMode }) {
   const [name, setName] = useState(sessionStorage.getItem('userName') || '');
   const [gender, setGender] = useState(sessionStorage.getItem('userGender') || 'Mujer');
@@ -14,15 +16,17 @@ export default function ProfileSettings({ token, darkMode }) {
     setLoading(true);
     setMessage('');
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       sessionStorage.setItem('userName', res.data.user.name);
       sessionStorage.setItem('userGender', res.data.user.gender);
       setMessage('Perfil actualizado con éxito');
+      // FIX: Auto-dismiss success message after 4 seconds
+      setTimeout(() => setMessage(''), 4000);
     } catch (err) {
       setMessage('Error al actualizar el perfil');
+      setTimeout(() => setMessage(''), 4000);
     } finally {
       setLoading(false);
     }
@@ -32,7 +36,6 @@ export default function ProfileSettings({ token, darkMode }) {
     setCheckoutLoading(true);
     setMessage('');
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -42,6 +45,7 @@ export default function ProfileSettings({ token, darkMode }) {
     } catch (err) {
       setMessage('Error iniciando el pago.');
       setCheckoutLoading(false);
+      setTimeout(() => setMessage(''), 4000);
     }
   };
 
@@ -77,7 +81,8 @@ export default function ProfileSettings({ token, darkMode }) {
             <option value="Hombre">Hombre</option>
             <option value="Otro">Otro</option>
           </select>
-          <p className={`mt-2 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>Esta información se usa para mejorar las recomendaciones de estilo.</p>
+          {/* FIX: Simplified useless ternary - both branches were 'text-gray-500' */}
+          <p className="mt-2 text-xs text-gray-500">Esta información se usa para mejorar las recomendaciones de estilo.</p>
         </div>
 
         <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>

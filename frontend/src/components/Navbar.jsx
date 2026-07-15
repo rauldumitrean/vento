@@ -1,5 +1,6 @@
 import React from 'react';
-import { Sun, Moon, Shirt, MapPin, LogOut, Search, Wind } from 'lucide-react';
+// FIX: Removed unused imports: Wind, MapPin
+import { Sun, Moon, Shirt, LogOut, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
@@ -17,14 +18,16 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
         
         <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-8">
           <button 
-            onClick={() => { setView('dashboard'); navigate('/app'); }}
+            // FIX: Use replace:true to avoid polluting browser history with same-page navigation
+            onClick={() => { setView('dashboard'); navigate('/app', { replace: true }); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'dashboard' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
             <Search size={16} /> <span className="hidden sm:inline">Buscar</span>
           </button>
           
           <button 
-            onClick={() => { setView('armario'); navigate('/app'); }}
+            // FIX: Use replace:true to avoid polluting browser history
+            onClick={() => { setView('armario'); navigate('/app', { replace: true }); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'armario' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
             <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
@@ -35,8 +38,10 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
       <div className="flex items-center gap-4">
         <button 
           onClick={() => setView('profile')}
-          className={`p-2 rounded-full transition-colors ${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+          // FIX: Added active state for profile button to match other nav buttons
+          className={`p-2 rounded-full transition-colors ${view === 'profile' ? (darkMode ? 'bg-indigo-900/50 text-indigo-400' : 'bg-indigo-100 text-indigo-600') : (darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}`}
           title="Ajustes de Perfil"
+          aria-label="Ajustes de Perfil"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>

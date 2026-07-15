@@ -4,6 +4,8 @@ const axios = require('axios');
 const authMiddleware = require('../middleware/authMiddleware');
 const { PrismaClient } = require('@prisma/client');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+// FIX: Moved bcrypt require to top level instead of inside route handlers
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 // Fallback if no key is provided during prototype to prevent hard crashes on boot, though it will fail on use
@@ -42,7 +44,8 @@ router.get('/weather', authMiddleware, async (req, res) => {
     let longitude = lon;
     
     if (city && (!lat || !lon)) {
-      const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=es&format=json`);
+      // FIX: encodeURIComponent prevents parameter injection attacks
+      const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
       if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
         return res.status(404).json({ error: 'Ciudad no encontrada' });
       }
@@ -54,7 +57,14 @@ router.get('/weather', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Se requiere latitud y longitud o nombre de ciudad' });
     }
 
-    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=auto`);
+    // FIX: Validate latitude and longitude are valid numbers in correct ranges
+    const latNum = parseFloat(latitude);
+    const lonNum = parseFloat(longitude);
+    if (isNaN(latNum) || isNaN(lonNum) || latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
+      return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas' });
+    }
+
+    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=auto`);
     
     res.json({
       location: city || `${latitude}, ${longitude}`,
@@ -74,6 +84,8 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
 
     // --- SISTEMA FREEMIUM: Límite de 5 outfits al día ---
     const dbUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+    // FIX: Null check for dbUser before accessing properties
+    if (!dbUser) return res.status(401).json({ error: 'Usuario no encontrado' });
     
     // Si es Premium o Admin, salta el límite
     if (!dbUser.isPremium && dbUser.role !== 'ADMIN') {
@@ -143,7 +155,8 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
   "consejo_extra": "Un consejo de estilo corto"
 }`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+    // FIX: Corrected Gemini model name (gemini-3.1-flash-lite does not exist)
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     let textResult = result.response.text();
     
@@ -194,7 +207,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
     }));
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.1-flash-lite", // Soporta vision
+      // FIX: Corrected Gemini model name
+      model: "gemini-1.5-flash", // Soporta vision
       systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
 REGLA ESTRICTA 1: SÓLO puedes responder a preguntas de moda y clima. Niégate educadamente a otros temas.
 REGLA ESTRICTA 2: SIEMPRE RESPONDE EN FORMATO JSON VÁLIDO puro, sin etiquetas markdown de bloque de código (\`\`\`json).
@@ -259,11 +273,15 @@ router.post('/armario', authMiddleware, async (req, res) => {
 
 router.delete('/armario/:id', authMiddleware, async (req, res) => {
   try {
+    // FIX: Validate ID is a valid integer
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
     await prisma.prendaArmario.delete({ 
-      where: { id: parseInt(req.params.id), userId: req.user.id } 
+      where: { id, userId: req.user.id } 
     });
     res.json({ success: true });
   } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Prenda no encontrada' });
     res.status(500).json({ error: 'Error al eliminar prenda' });
   }
 });
@@ -283,13 +301,17 @@ router.get('/historial', authMiddleware, async (req, res) => {
 
 router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
   try {
+    // FIX: Validate ID is a valid integer
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
     const { isFavorite } = req.body;
     const consulta = await prisma.consulta.update({
-      where: { id: parseInt(req.params.id), userId: req.user.id },
+      where: { id, userId: req.user.id },
       data: { isFavorite }
     });
     res.json(consulta);
   } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Consulta no encontrada' });
     res.status(500).json({ error: 'Error al actualizar favorito' });
   }
 });
@@ -361,7 +383,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
 router.post('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { email, password, name, gender, role, isPremium } = req.body;
-    const bcrypt = require('bcryptjs');
+    // FIX: bcrypt now used from top-level import
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
@@ -382,9 +404,12 @@ router.post('/admin/users', authMiddleware, adminMiddleware, async (req, res) =>
 
 router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    // FIX: Validate ID is a valid integer
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
     const { isPremium } = req.body;
     const user = await prisma.user.update({
-      where: { id: parseInt(req.params.id) },
+      where: { id },
       data: { isPremium }
     });
     res.json({ id: user.id, isPremium: user.isPremium });
@@ -395,14 +420,22 @@ router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (r
 
 router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    // FIX: Validate ID is a valid integer
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
     const { email, name, gender, role, password } = req.body;
-    const dataToUpdate = { email, name, gender, role };
+    // FIX: Only include defined fields to avoid overwriting with undefined
+    const dataToUpdate = {};
+    if (email !== undefined) dataToUpdate.email = email;
+    if (name !== undefined) dataToUpdate.name = name;
+    if (gender !== undefined) dataToUpdate.gender = gender;
+    if (role !== undefined) dataToUpdate.role = role;
     if (password && password.trim() !== '') {
-      const bcrypt = require('bcryptjs');
+      // FIX: bcrypt now used from top-level import
       dataToUpdate.password = await bcrypt.hash(password, 10);
     }
     const user = await prisma.user.update({
-      where: { id: parseInt(req.params.id) },
+      where: { id },
       data: dataToUpdate
     });
     res.json({ id: user.id, email: user.email, name: user.name, gender: user.gender, role: user.role });
@@ -413,19 +446,25 @@ router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res)
 
 router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
-    // Eliminar cascada manual (prendas, mensajes, consultas)
-    await prisma.prendaArmario.deleteMany({ where: { userId: id } });
-    const consultas = await prisma.consulta.findMany({ where: { userId: id } });
-    for (const c of consultas) {
-      await prisma.mensajeChat.deleteMany({ where: { consultaId: c.id } });
-    }
-    await prisma.consulta.deleteMany({ where: { userId: id } });
-    await prisma.user.delete({ where: { id } });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    // FIX: Wrapped in a transaction to prevent orphaned records if the process crashes mid-delete
+    await prisma.$transaction(async (tx) => {
+      await tx.prendaArmario.deleteMany({ where: { userId: id } });
+      const consultas = await tx.consulta.findMany({ where: { userId: id }, select: { id: true } });
+      for (const c of consultas) {
+        await tx.mensajeChat.deleteMany({ where: { consultaId: c.id } });
+      }
+      await tx.consulta.deleteMany({ where: { userId: id } });
+      await tx.user.delete({ where: { id } });
+    });
     
     res.json({ success: true });
   } catch (error) {
     console.error(error);
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Usuario no encontrado' });
     res.status(500).json({ error: 'Error al eliminar usuario' });
   }
 });
