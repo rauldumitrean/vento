@@ -1,6 +1,6 @@
 <div align="center">
   <img src="frontend/public/favicon.svg" alt="Ventoo Logo" width="100"/>
-  <h1>Ventoo - AI Fashion & Weather Assistant</h1>
+  <h1>Ventoo</h1>
   <p>Una innovadora aplicación web Full-Stack que combina datos meteorológicos en tiempo real con Inteligencia Artificial generativa para recomendar el outfit perfecto basado en tu ubicación y el clima actual.</p>
 </div>
 
