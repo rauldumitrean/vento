@@ -3,7 +3,7 @@ import { ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star,
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
-export default function LandingView() {
+export default function LandingView({ token }) {
   const navigate = useNavigate();
 
   // Scroll to top on mount
@@ -31,19 +31,30 @@ export default function LandingView() {
             <span className="text-2xl font-black tracking-widest text-white">VENTOO</span>
           </div>
           <div className="flex gap-4">
+            {!token ? (
+            <>
+              <button 
+                onClick={() => navigate('/login')}
+                className="px-5 py-2 text-gray-300 font-medium hover:text-white transition-colors hidden sm:block"
+              >
+                Iniciar Sesión
+              </button>
+              <button 
+                onClick={() => navigate('/login')}
+                className="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+              >
+                Entrar
+              </button>
+            </>
+          ) : (
             <button 
-              onClick={() => navigate('/login')}
-              className="px-5 py-2 text-gray-300 font-medium hover:text-white transition-colors hidden sm:block"
+              onClick={() => navigate('/app')}
+              className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-full hover:from-indigo-400 hover:to-purple-400 transition-colors shadow-[0_0_15px_rgba(99,102,241,0.5)] flex items-center gap-2"
             >
-              Iniciar Sesión
+              Ir al Panel <ArrowRight size={18} />
             </button>
-            <button 
-              onClick={() => navigate('/login')}
-              className="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-            >
-              Entrar
-            </button>
-          </div>
+          )}
+        </div>
         </div>
       </nav>
 
@@ -73,10 +84,10 @@ export default function LandingView() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(token ? '/app' : '/login')}
               className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:shadow-[0_0_50px_rgba(99,102,241,0.7)] flex items-center justify-center gap-3 group hover:-translate-y-1"
             >
-              Comenzar tu prueba gratuita
+              {token ? 'Entrar al Panel de Control' : 'Comenzar tu prueba gratuita'}
               <ArrowRight className="group-hover:translate-x-2 transition-transform" />
             </button>
           </div>
@@ -205,8 +216,8 @@ export default function LandingView() {
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Armario virtual (limitado)</span></li>
               </ul>
               
-              <button onClick={() => navigate('/login')} className="w-full py-4 rounded-xl border border-gray-700 hover:bg-gray-800 font-bold transition-colors">
-                Crear cuenta gratis
+              <button onClick={() => navigate(token ? '/app' : '/login')} className="w-full py-4 rounded-xl border border-gray-700 hover:bg-gray-800 font-bold transition-colors">
+                {token ? 'Ver mi panel' : 'Crear cuenta gratis'}
               </button>
             </div>
 
@@ -229,8 +240,8 @@ export default function LandingView() {
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Soporte prioritario</span></li>
               </ul>
               
-              <button onClick={() => navigate('/login')} className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50">
-                Mejorar a Premium
+              <button onClick={() => navigate(token ? '/app' : '/login')} className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50">
+                {token ? 'Acceder al panel' : 'Mejorar a Premium'}
               </button>
             </div>
           </div>

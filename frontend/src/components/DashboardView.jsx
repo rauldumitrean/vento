@@ -20,12 +20,12 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
       const simplePrompt = `${prenda.categoria} ropa ${prenda.color || ''}`.trim();
       setImgSrc(`https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=300&height=300&nologo=true&enhance=false`);
       
-      // 5 seconds timeout fallback
+      // 3.5 seconds timeout fallback
       timeoutId = setTimeout(() => {
         if (imgStatus !== 'loaded') {
           handleError(true); // force error to show placeholder
         }
-      }, 5000);
+      }, 3500);
     }
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -58,39 +58,39 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   };
 
   return (
-    <motion.div whileHover={{ scale: 1.02 }} className={`border overflow-hidden rounded-xl flex flex-col ${darkMode ? 'border-gray-800 bg-gray-800/50' : 'border-neutral-100 bg-white'}`}>
-      <div className={`w-full h-48 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+    <motion.div whileHover={{ scale: 1.03, y: -5 }} className={`overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}>
+      <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
-          <div className={`absolute inset-0 z-10 animate-pulse ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}></div>
+          <div className={`absolute inset-0 z-10 animate-pulse ${darkMode ? 'bg-gray-700/50' : 'bg-gray-200/50'}`}></div>
         )}
 
         {imgSrc && (
           <img 
             src={imgSrc} 
             alt={prenda.descripcion} 
-            className={`w-full h-full object-cover hover:scale-105 transition-all duration-700 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
+            className={`w-full h-full object-cover hover:scale-110 transition-transform duration-700 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
             loading="lazy"
             onLoad={handleSuccess}
-            onError={handleError}
+            onError={() => handleError(false)}
           />
         )}
       </div>
-      <div className="p-4 flex flex-col flex-1 relative z-20 bg-inherit">
-        <span className="text-xs uppercase tracking-widest text-indigo-500 mb-1">
+      <div className="p-5 flex flex-col flex-1 relative z-20">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-2">
           {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
         </span>
-        <span className="font-medium text-base leading-tight">{prenda.descripcion}</span>
-        <span className="text-sm opacity-60 mt-2 mb-4 flex-1">{prenda.razon}</span>
+        <span className="font-bold text-lg leading-tight mb-2">{prenda.descripcion}</span>
+        <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed">{prenda.razon}</span>
         
         {(prenda.enlace_compra && prenda.tienda_recomendada) && (
           <a 
             href={prenda.enlace_compra} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="mt-auto flex items-center justify-center gap-2 w-full py-2 bg-neutral-900 hover:bg-neutral-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors"
+            className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-indigo-500/20"
           >
-            🛒 Ver en {prenda.tienda_recomendada}
+            🛒 Buscar en {prenda.tienda_recomendada}
           </a>
         )}
       </div>
@@ -326,8 +326,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-950 text-gray-100' : 'bg-neutral-50 text-neutral-900'} font-sans`}>
-      <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
+    <div className={`min-h-screen transition-colors duration-300 relative ${darkMode ? 'bg-gray-950 text-gray-100' : 'bg-neutral-50 text-neutral-900'} font-sans overflow-x-hidden`}>
+      {/* Background blobs for glassmorphism effect */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full mix-blend-multiply filter blur-[120px] opacity-30 ${darkMode ? 'bg-indigo-900' : 'bg-indigo-200'}`}></div>
+        <div className={`absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full mix-blend-multiply filter blur-[150px] opacity-30 ${darkMode ? 'bg-purple-900' : 'bg-purple-200'}`}></div>
+      </div>
+
+      <div className="relative z-10">
+        <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
 
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />
@@ -339,7 +346,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             <motion.div 
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className={`p-4 sm:p-6 rounded-xl shadow-sm border flex gap-3 sm:gap-4 flex-col sm:flex-row ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}
+              className={`p-4 sm:p-6 rounded-3xl shadow-xl flex gap-3 sm:gap-4 flex-col sm:flex-row transition-colors backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}
             >
               <form onSubmit={handleSearch} className={`flex-1 flex items-center border-b relative ${darkMode ? 'border-gray-700' : 'border-neutral-200'}`}>
                 <Search className={`w-5 h-5 mr-2 ${darkMode ? 'text-gray-400' : 'text-neutral-400'}`} />
@@ -386,7 +393,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </form>
               <button 
                 onClick={handleGeolocation}
-                className={`flex items-center justify-center gap-2 px-4 py-3 sm:py-2 border rounded text-sm transition-colors w-full sm:w-auto ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-neutral-200 hover:bg-neutral-50'}`}
+                className={`flex items-center justify-center gap-2 px-6 py-3 sm:py-2 rounded-xl text-sm transition-all shadow-md w-full sm:w-auto font-medium ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white shadow-black/50 border border-white/10' : 'bg-white hover:bg-neutral-50 text-neutral-800 shadow-indigo-900/10 border border-white'}`}
               >
                 <MapPin className="w-4 h-4" /> Mi Ubicación
               </button>
@@ -395,7 +402,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             {loading && <p className="text-indigo-500 animate-pulse text-center mt-12">Analizando el clima y generando recomendación inteligente...</p>}
 
             {weather && !loading && (
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-xl shadow-sm border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-4">
                   <span className="text-6xl font-light">{weather.current.temperature_2m}°</span>
@@ -408,7 +415,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             )}
 
             {outfit && !loading && (
-              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`p-6 sm:p-8 rounded-xl shadow-sm border relative ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border relative ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <h2 className="text-sm tracking-widest uppercase opacity-50">Outfit Recomendado</h2>
                   <button onClick={handleToggleFavorite} className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-gray-400 hover:bg-gray-500/10'}`}>
@@ -443,9 +450,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             )}
           </div>
 
-          <div className={`rounded-xl shadow-sm border flex flex-col h-[500px] lg:h-auto lg:max-h-[calc(100vh-8rem)] ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-neutral-100'}`}>
-            <div className={`p-4 border-b ${darkMode ? 'border-gray-800' : 'border-neutral-100'}`}>
-              <h2 className="text-sm tracking-widest uppercase opacity-50">Asistente de Estilo</h2>
+          <div className={`rounded-3xl shadow-xl flex flex-col h-[500px] lg:h-auto lg:max-h-[calc(100vh-8rem)] backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
+            <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
+              <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold">Asistente de Estilo</h2>
             </div>
             
             <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
@@ -460,9 +467,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               )}
             </div>
 
-            <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-gray-800' : 'border-neutral-100'}`}>
+            <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
               {selectedImage && (
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
                   <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
                   <button type="button" onClick={() => setSelectedImage(null)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
                     <X size={12} />
@@ -480,7 +487,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 />
                 <label 
                   htmlFor="cameraInput" 
-                  className={`p-2 rounded-lg cursor-pointer transition-colors ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-800' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'}`}
+                  className={`p-3 rounded-xl cursor-pointer transition-colors shadow-sm ${darkMode ? 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700' : 'bg-white text-gray-500 hover:text-indigo-600 hover:bg-gray-50 border border-gray-100'}`}
                 >
                   <Camera className="w-5 h-5" />
                 </label>
@@ -488,7 +495,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <input 
                   type="text"
                   placeholder="Escribe tu mensaje..."
-                  className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-neutral-200'}`}
+                  className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors ${darkMode ? 'bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-500' : 'bg-white/50 border-neutral-200/50'}`}
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   disabled={!outfit}
@@ -496,9 +503,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <button 
                   type="submit" 
                   disabled={!outfit || (!message && !selectedImage)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 px-4 rounded-lg disabled:opacity-50 transition-colors"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 px-5 rounded-xl disabled:opacity-50 transition-all shadow-md shadow-indigo-600/20"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-5 h-5" />
                 </button>
               </form>
             </div>
@@ -506,6 +513,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
         </main>
       )}
+      </div>
     </div>
   );
 }

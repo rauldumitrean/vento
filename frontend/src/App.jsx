@@ -33,7 +33,7 @@ function App() {
         <Routes>
           <Route 
             path="/" 
-            element={!token ? <LandingView /> : <Navigate to="/app" />} 
+            element={<LandingView token={token} />} 
           />
           <Route 
             path="/login" 
