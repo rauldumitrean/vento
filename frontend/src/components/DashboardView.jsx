@@ -82,18 +82,18 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
         </span>
         <span className="font-bold text-lg leading-tight mb-2">{prenda.descripcion}</span>
         <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed">{prenda.razon}</span>
-        <div className="mt-auto flex justify-end">
+        <div className="mt-auto flex justify-center">
           {(prenda.enlace_compra && prenda.tienda_recomendada) && (
             <a 
               href={prenda.enlace_compra} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group flex items-center bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-full transition-all duration-300 shadow-md shadow-indigo-500/20 overflow-hidden h-10 w-10 hover:w-[170px]"
+              className="group relative flex items-center bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-full transition-all duration-300 shadow-md shadow-indigo-500/20 overflow-hidden h-10 w-10 hover:w-[200px]"
             >
-              <div className="flex-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-4 text-sm">
+              <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 text-sm absolute left-5">
                 Buscar en {prenda.tienda_recomendada}
-              </div>
-              <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+              </span>
+              <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center absolute right-0">
                 <ShoppingCart size={18} />
               </div>
             </a>
