@@ -138,15 +138,7 @@ const ChatMessage = ({ msg, darkMode }) => {
           ))}
         </div>
       )}
-
-      {showStyleOnboarding && (
-        <StyleOnboardingModal 
-          token={token} 
-          darkMode={darkMode} 
-          onClose={() => setShowStyleOnboarding(false)} 
-        />
-      )}
-    </div>
+    </motion.div>
   );
 };
 
