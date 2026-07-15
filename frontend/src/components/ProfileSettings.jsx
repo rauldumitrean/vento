@@ -59,7 +59,44 @@ export default function ProfileSettings({ token, darkMode }) {
             <option value="Hombre">Hombre</option>
             <option value="Otro">Otro</option>
           </select>
-          <p className={`mt-2 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>Esta información se usa para mejorar las recomendaciones de estilo de la inteligencia artificial.</p>
+          <p className={`mt-2 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>Esta información se usa para mejorar las recomendaciones de estilo.</p>
+        </div>
+
+        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+          <h3 className={`text-sm font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Tu Plan Actual</h3>
+          {sessionStorage.getItem('isPremium') === 'true' ? (
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-indigo-500/20 text-indigo-500 text-xs font-bold rounded-full uppercase tracking-wider">
+                {sessionStorage.getItem('premiumPlan') === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
+              </span>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-gray-500/20 text-gray-500 text-xs font-bold rounded-full uppercase tracking-wider">
+                  Básico (Gratis)
+                </span>
+              </div>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Mejora a Premium para obtener outfits ilimitados y funciones IA avanzadas.</p>
+              <div className="flex gap-2 mt-1">
+                <button 
+                  type="button" 
+                  onClick={() => window.location.href = '/app?checkout=monthly'}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors"
+                >
+                  Suscripción (1,99€/mes)
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => window.location.href = '/app?checkout=lifetime'} 
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors"
+                >
+                  Pago único (20€)
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {message && (

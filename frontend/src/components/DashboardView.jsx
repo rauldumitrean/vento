@@ -165,6 +165,45 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [showSuggestions, setShowSuggestions] = useState(false);
   const userName = sessionStorage.getItem('userName');
   
+  // Lógica de checkout y pagos
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    const payment = params.get('payment');
+    const plan = params.get('plan');
+    const pendingCheckout = sessionStorage.getItem('pendingCheckout');
+
+    if (pendingCheckout) {
+      sessionStorage.removeItem('pendingCheckout');
+      handleCheckout(pendingCheckout);
+    } else if (checkout) {
+      handleCheckout(checkout);
+    }
+
+    if (payment === 'success') {
+      alert(`¡Gracias por tu compra! Tu plan ${plan} ha sido activado.`);
+      window.history.replaceState({}, '', '/app');
+    }
+    if (payment === 'cancelled') {
+      alert('Has cancelado el proceso de pago. Puedes retomarlo cuando quieras.');
+      window.history.replaceState({}, '', '/app');
+    }
+  }, []);
+
+  const handleCheckout = async (planType) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan: planType }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (err) {
+      alert('Error al iniciar el pago: ' + (err.response?.data?.error || err.message));
+    }
+  };
+
   const defaultCities = [
     { name: 'Madrid', admin1: 'Comunidad de Madrid', country: 'España', latitude: 40.4165, longitude: -3.70256 },
     { name: 'Barcelona', admin1: 'Cataluña', country: 'España', latitude: 41.38879, longitude: 2.15899 },

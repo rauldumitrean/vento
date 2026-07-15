@@ -6,13 +6,19 @@ dotenv.config();
 
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
+const paymentsRoutes = require('./routes/payments');
 
 const app = express();
 
 app.use(cors());
+
+// El webhook de Stripe necesita el body en crudo (raw)
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/payments', paymentsRoutes);
 app.use('/api', apiRoutes);
 
 const PORT = process.env.PORT || 3000;

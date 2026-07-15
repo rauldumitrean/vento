@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
     });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, name: user.name, gender: user.gender } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al registrar usuario.' });
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
     if (!validPassword) return res.status(400).json({ error: 'Credenciales inválidas.' });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, name: user.name, gender: user.gender } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al iniciar sesión.' });
@@ -56,7 +56,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
       where: { id: req.user.id },
       data: { name, gender }
     });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, name: user.name, gender: user.gender } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar perfil.' });

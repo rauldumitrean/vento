@@ -19,6 +19,9 @@ function App() {
       sessionStorage.removeItem('userRole');
       sessionStorage.removeItem('userName');
       sessionStorage.removeItem('userGender');
+      sessionStorage.removeItem('isPremium');
+      sessionStorage.removeItem('premiumPlan');
+      sessionStorage.removeItem('pendingCheckout');
     }
   }, [token]);
 

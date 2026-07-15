@@ -24,6 +24,13 @@ export default function AuthView({ setToken }) {
       sessionStorage.setItem('userRole', res.data.user?.role || 'USER');
       if (res.data.user?.name) sessionStorage.setItem('userName', res.data.user.name);
       if (res.data.user?.gender) sessionStorage.setItem('userGender', res.data.user.gender);
+      if (res.data.user?.isPremium !== undefined) sessionStorage.setItem('isPremium', res.data.user.isPremium);
+      if (res.data.user?.premiumPlan) sessionStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+      
+      if (location.state?.plan && location.state.plan !== 'free') {
+        sessionStorage.setItem('pendingCheckout', location.state.plan);
+      }
+      
       setToken(res.data.token);
     } catch (err) {
       setError(err.response?.data?.error || 'Error de conexión');
