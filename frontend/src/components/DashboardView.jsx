@@ -7,6 +7,7 @@ import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import Navbar from './Navbar';
+import StyleOnboardingModal from './StyleOnboardingModal';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
@@ -137,7 +138,15 @@ const ChatMessage = ({ msg, darkMode }) => {
           ))}
         </div>
       )}
-    </motion.div>
+
+      {showStyleOnboarding && (
+        <StyleOnboardingModal 
+          token={token} 
+          darkMode={darkMode} 
+          onClose={() => setShowStyleOnboarding(false)} 
+        />
+      )}
+    </div>
   );
 };
 
@@ -167,6 +176,27 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const userName = sessionStorage.getItem('userName');
+  
+  const [showStyleOnboarding, setShowStyleOnboarding] = useState(false);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const res = await axios.get(`${API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.user && !res.data.user.estiloPersonal) {
+          setShowStyleOnboarding(true);
+        }
+      } catch (err) {
+        console.error("Error checking profile:", err);
+      }
+    };
+    if (token) {
+      checkOnboarding();
+    }
+  }, [token]);
 
   // Seleccionar frase aleatoria solo una vez al montar el componente
   const [randomGreeting] = useState(() => {
@@ -626,6 +656,14 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         </main>
       )}
       </div>
+
+      {showStyleOnboarding && (
+        <StyleOnboardingModal 
+          token={token} 
+          darkMode={darkMode} 
+          onClose={() => setShowStyleOnboarding(false)} 
+        />
+      )}
     </div>
   );
 }
