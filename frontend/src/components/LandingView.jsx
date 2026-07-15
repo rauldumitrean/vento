@@ -277,7 +277,7 @@ export default function LandingView({ token }) {
             <span className="text-xl font-black tracking-widest text-white">VENTOO</span>
           </div>
           <p className="text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Ventoo. Diseñado por IA para el mundo real.
+            &copy; {new Date().getFullYear()} Ventoo. Desarrollado con ❤️ por Raul. Todos los derechos reservados.
           </p>
           {/* FIX: Added legal links required for payment-accepting apps */}
           <div className="flex items-center gap-4 text-xs text-gray-600">
