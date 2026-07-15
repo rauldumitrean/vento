@@ -19,7 +19,22 @@ const adminMiddleware = async (req, res, next) => {
     res.status(500).json({ error: 'Error verificando rol de administrador' });
   }
 };
+
+// Heartbeat: update lastActive so we know who has the tab open right now
+router.post('/ping', authMiddleware, async (req, res) => {
+  try {
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { lastActive: new Date() }
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Ping error' });
+  }
+});
+
 router.get('/weather', authMiddleware, async (req, res) => {
+
   try {
     const { lat, lon, city } = req.query;
     
@@ -267,10 +282,10 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
     const totalMessages = await prisma.mensajeChat.count();
     const totalClothes = await prisma.prendaArmario.count();
     
-    // Online users (active in the last 5 minutes)
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    // Online = pinged in the last 90 seconds (heartbeat every 30s)
+    const ninetySecondsAgo = new Date(Date.now() - 90 * 1000);
     const onlineUsers = await prisma.user.count({
-      where: { lastActive: { gte: fiveMinutesAgo } }
+      where: { lastActive: { gte: ninetySecondsAgo } }
     });
 
     res.json({

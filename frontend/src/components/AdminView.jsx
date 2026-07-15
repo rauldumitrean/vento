@@ -18,8 +18,18 @@ const AdminView = ({ token }) => {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } });
+      setStats(res.data);
+    } catch (_) {}
+  };
+
   useEffect(() => {
     fetchData();
+    // Auto-refresh stats (online users) every 30 seconds
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchData = async () => {

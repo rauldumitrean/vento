@@ -140,6 +140,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   }, [darkMode]);
 
+  // Heartbeat: ping the server every 30s so the admin dashboard knows this user has the tab open
+  useEffect(() => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const ping = () => axios.post(`${API_URL}/api/ping`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).catch(() => {});
+
+    ping(); // ping immediately on mount
+    const interval = setInterval(ping, 30000); // then every 30 seconds
+    return () => clearInterval(interval); // cleanup on unmount (tab closed / logout)
+  }, [token]);
+
   const handleCloseAd = () => {
     setShowAd(false);
     sessionStorage.setItem('adShown', 'true');
