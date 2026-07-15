@@ -2,23 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
 const { PrismaClient } = require('@prisma/client');
-
 const prisma = new PrismaClient();
+const authMiddleware = require('../middleware/authMiddleware');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-
-// Middleware para verificar token en rutas protegidas
-const authMiddleware = require('./auth').verifyToken || async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Acceso denegado' });
-  try {
-    const jwt = require('jsonwebtoken');
-    const verified = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    req.user = verified;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Token inválido' });
-  }
-};
 
 router.post('/create-checkout-session', authMiddleware, async (req, res) => {
   const { plan } = req.body; // 'monthly' o 'lifetime'
