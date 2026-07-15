@@ -159,7 +159,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingIndex, setLoadingIndex] = useState(0);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageBase64, setImageBase64] = useState('');
@@ -314,7 +313,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       setOutfit(oRes.data.recomendacion);
       setConsultaId(oRes.data.consultaId);
       setChat([]);
-      setLoadingIndex(0);
     } catch (error) {
       showToast(error.response?.data?.error || 'Error al obtener los datos');
     } finally {
@@ -549,12 +547,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       key={idx} 
                       prenda={prenda} 
                       darkMode={darkMode} 
-                      canLoad={idx <= loadingIndex}
-                      onLoadComplete={() => {
-                        if (idx === loadingIndex) {
-                          setLoadingIndex(prev => prev + 1);
-                        }
-                      }}
+                      canLoad={true}
                     />
                   ))}
                 </div>
