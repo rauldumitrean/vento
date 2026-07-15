@@ -92,34 +92,42 @@ const AdminView = ({ token }) => {
   };
 
   return (
-    <div className="flex h-screen bg-neutral-100 font-sans overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen bg-neutral-100 font-sans overflow-hidden">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-950 text-gray-400 flex flex-col flex-shrink-0">
-        <div className="h-16 flex items-center px-6 border-b border-gray-800">
-          <Shield className="text-purple-500 mr-2" />
-          <span className="text-white font-bold tracking-widest uppercase text-sm">Ventoo Admin</span>
+      <div className="w-full md:w-64 bg-gray-950 text-gray-400 flex flex-col flex-shrink-0 md:h-full z-10 shadow-lg">
+        <div className="h-16 flex flex-shrink-0 items-center justify-between md:justify-start px-6 border-b border-gray-800">
+          <div className="flex items-center">
+            <Shield className="text-purple-500 mr-2" />
+            <span className="text-white font-bold tracking-widest uppercase text-sm">Ventoo Admin</span>
+          </div>
+          <button 
+            onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href='/'; }}
+            className="md:hidden text-gray-400 hover:text-white"
+          >
+            <ArrowLeft size={20} />
+          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6">
-          <nav className="space-y-1 px-3">
+        <div className="flex-1 overflow-x-auto md:overflow-y-auto py-2 md:py-6">
+          <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-1 px-3 min-w-max md:min-w-0">
             <button 
               onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'overview' ? 'bg-gray-800 text-white' : 'hover:bg-gray-900 hover:text-gray-200'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 md:py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'overview' ? 'bg-gray-800 text-white' : 'hover:bg-gray-900 hover:text-gray-200'}`}
             >
-              <BarChart2 size={18} /> Resumen General
+              <BarChart2 size={18} /> <span className="whitespace-nowrap">Resumen General</span>
             </button>
             <button 
               onClick={() => setActiveTab('users')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'users' ? 'bg-gray-800 text-white' : 'hover:bg-gray-900 hover:text-gray-200'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 md:py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'users' ? 'bg-gray-800 text-white' : 'hover:bg-gray-900 hover:text-gray-200'}`}
             >
-              <Users size={18} /> Gestión de Usuarios
+              <Users size={18} /> <span className="whitespace-nowrap">Gestión de Usuarios</span>
             </button>
           </nav>
         </div>
 
-        <div className="p-4 border-t border-gray-800">
+        <div className="hidden md:block p-4 border-t border-gray-800">
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href='/'; }}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
           >
             <ArrowLeft size={16} /> Volver a la App
@@ -134,11 +142,11 @@ const AdminView = ({ token }) => {
             <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-8">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8">
             <AnimatePresence mode="wait">
               {activeTab === 'overview' && stats && (
                 <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Analíticas del Negocio</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">Analíticas del Negocio</h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
                     {/* Stat Card 1 - Online Users */}
@@ -233,11 +241,11 @@ const AdminView = ({ token }) => {
 
               {activeTab === 'users' && (
                 <motion.div key="users" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
                     <button 
                       onClick={() => setShowAdd(!showAdd)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors shadow-sm"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors shadow-sm w-full sm:w-auto justify-center"
                     >
                       <UserPlus size={16} /> Añadir Usuario
                     </button>
@@ -274,8 +282,8 @@ const AdminView = ({ token }) => {
                     </div>
                   )}
 
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table className="w-full text-left text-sm whitespace-nowrap">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px]">
                       <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
                         <tr>
                           <th className="px-6 py-4 font-medium">Usuario</th>

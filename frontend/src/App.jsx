@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import AuthView from './components/AuthView';
 import DashboardView from './components/DashboardView';
 import AdminView from './components/AdminView';
+import AdminLoginView from './components/AdminLoginView';
 
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('token'));
+  const [adminToken, setAdminToken] = useState(sessionStorage.getItem('adminToken'));
   
   useEffect(() => {
     if (token) {
@@ -15,6 +17,14 @@ function App() {
       sessionStorage.removeItem('userRole');
     }
   }, [token]);
+
+  useEffect(() => {
+    if (adminToken) {
+      sessionStorage.setItem('adminToken', adminToken);
+    } else {
+      sessionStorage.removeItem('adminToken');
+    }
+  }, [adminToken]);
 
   return (
     <BrowserRouter>
@@ -30,7 +40,7 @@ function App() {
           />
           <Route 
             path="/admin" 
-            element={token && sessionStorage.getItem('userRole') === 'ADMIN' ? <AdminView token={token} /> : <Navigate to="/" />} 
+            element={adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />} 
           />
         </Routes>
       </div>
