@@ -148,7 +148,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }).catch(() => {});
 
     ping(); // ping immediately on mount
-    const interval = setInterval(ping, 30000); // then every 30 seconds
+    const interval = setInterval(ping, 15000); // then every 15 seconds
     return () => clearInterval(interval); // cleanup on unmount (tab closed / logout)
   }, [token]);
 

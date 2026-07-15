@@ -27,8 +27,8 @@ const AdminView = ({ token }) => {
 
   useEffect(() => {
     fetchData();
-    // Auto-refresh stats (online users) every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
+    // Auto-refresh stats (online users) every 15 seconds
+    const interval = setInterval(fetchStats, 15000);
     return () => clearInterval(interval);
   }, []);
 

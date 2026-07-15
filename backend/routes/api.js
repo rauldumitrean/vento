@@ -282,8 +282,8 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
     const totalMessages = await prisma.mensajeChat.count();
     const totalClothes = await prisma.prendaArmario.count();
     
-    // Online = pinged in the last 90 seconds (heartbeat every 30s)
-    const ninetySecondsAgo = new Date(Date.now() - 90 * 1000);
+    // Online = pinged in the last 45 seconds (heartbeat every 15s)
+    const ninetySecondsAgo = new Date(Date.now() - 45 * 1000);
     const onlineUsers = await prisma.user.count({
       where: { lastActive: { gte: ninetySecondsAgo } }
     });
