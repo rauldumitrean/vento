@@ -16,10 +16,9 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
     let timeoutId;
     if (canLoad && imgStatus === 'waiting') {
       setImgStatus('loading');
-      // enhance=false salta el LLM intermedio y width=300 genera un renderizado un 40% más veloz
-      // Simplificamos el prompt para mayor velocidad
-      const simplePrompt = `${prenda.categoria} ropa ${prenda.color || ''}`.trim();
-      setImgSrc(`https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=300&height=300&nologo=true&enhance=false`);
+      // FIX: Improved prompt to ensure standalone clothing (no models/people), using flat lay or studio product shot style
+      const simplePrompt = `Professional product photography of a single ${prenda.descripcion}, isolated on a clean neutral background, studio lighting, no humans, no models, flat lay style, highly detailed fashion item.`.trim();
+      setImgSrc(`https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=400&height=400&nologo=true&enhance=false`);
       
       // 3.5 seconds timeout fallback
       timeoutId = setTimeout(() => {
