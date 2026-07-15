@@ -387,7 +387,7 @@ const AdminView = ({ token }) => {
                                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors border ${u.isPremium ? 'bg-yellow-50 text-yellow-800 border-yellow-200' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}
                                   >
                                     <Star size={12} fill={u.isPremium ? "currentColor" : "none"} className={u.isPremium ? "text-yellow-500" : ""} /> 
-                                    {u.isPremium ? 'Premium Activo' : 'Básico'}
+                                    {u.isPremium ? (u.premiumPlan === 'lifetime' ? 'Premium (De por vida)' : u.premiumPlan === 'monthly' ? 'Premium (Mensual)' : 'Premium Activo') : 'Básico'}
                                   </button>
                                 </td>
                                 {/* Outfits today column - only relevant for basic users */}
