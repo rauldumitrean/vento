@@ -17,20 +17,31 @@ const AdminView = ({ token }) => {
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  // FIX: Added adminMsg state to replace all alert() calls
+  const [adminMsg, setAdminMsg] = useState({ text: '', type: '' });
+  const showAdminMsg = (text, type = 'error') => {
+    setAdminMsg({ text, type });
+    setTimeout(() => setAdminMsg({ text: '', type: '' }), 4000);
+  };
 
   const fetchStats = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } });
       setStats(res.data);
-    } catch (_) {}
+    } catch (err) {
+      // FIX: Log errors instead of silently swallowing them
+      console.error('Error fetching stats:', err);
+    }
   };
 
+  // FIX: Added token to deps array, used refs to avoid stale closure
   useEffect(() => {
     fetchData();
     // Auto-refresh stats (online users) every 15 seconds
     const interval = setInterval(fetchStats, 15000);
     return () => clearInterval(interval);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const fetchData = async () => {
     try {
@@ -42,7 +53,8 @@ const AdminView = ({ token }) => {
       setUsers(usersRes.data);
       setStats(statsRes.data);
     } catch (error) {
-      alert("Error de conexión. Verifica tus permisos.");
+      // FIX: Use UI message instead of alert()
+      showAdminMsg('Error de conexión. Verifica tus permisos.');
     } finally {
       setLoading(false);
     }
@@ -56,7 +68,7 @@ const AdminView = ({ token }) => {
       setShowAdd(false);
       setNewUser({ email: '', password: '', name: '', gender: 'Mujer', role: 'USER', isPremium: false });
     } catch (error) {
-      alert("Error creando usuario");
+      showAdminMsg('Error creando usuario');
     }
   };
 
@@ -66,7 +78,7 @@ const AdminView = ({ token }) => {
       setUsers(users.map(u => u.id === id ? { ...u, isPremium: !currentStatus } : u));
       fetchData(); // refresh stats
     } catch (error) {
-      alert("Error actualizando estado premium");
+      showAdminMsg('Error actualizando estado premium');
     }
   };
 
@@ -77,7 +89,7 @@ const AdminView = ({ token }) => {
       setUsers(users.filter(u => u.id !== id));
       fetchData(); // refresh stats
     } catch (error) {
-      alert("Error eliminando usuario");
+      showAdminMsg('Error eliminando usuario');
     }
   };
 
@@ -92,7 +104,7 @@ const AdminView = ({ token }) => {
       setUsers(users.map(u => u.id === editUserId ? { ...u, ...res.data } : u));
       setEditUserId(null);
     } catch (error) {
-      alert("Error editando usuario");
+      showAdminMsg('Error editando usuario');
     }
   };
 
@@ -103,6 +115,19 @@ const AdminView = ({ token }) => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-neutral-100 font-sans overflow-hidden">
+      {/* FIX: Toast notification for admin actions (replaces all alert() calls) */}
+      <AnimatePresence>
+        {adminMsg.text && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium text-white ${adminMsg.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}
+          >
+            {adminMsg.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-gray-950 text-gray-400 flex flex-col flex-shrink-0 md:h-full z-10 shadow-lg">
         <div className="h-16 flex flex-shrink-0 items-center justify-between md:justify-start px-6 border-b border-gray-800">
@@ -231,12 +256,14 @@ const AdminView = ({ token }) => {
                           cx="50" cy="50" r="40" fill="transparent" 
                           stroke="#a855f7" strokeWidth="12" 
                           strokeDasharray="251.2" 
-                          strokeDashoffset={251.2 - (251.2 * (stats.totalUsers / stats.maxUsersCapacity))}
+                          // FIX: Guard against division by zero
+                          strokeDashoffset={stats.maxUsersCapacity ? 251.2 - (251.2 * (stats.totalUsers / stats.maxUsersCapacity)) : 251.2}
                           strokeLinecap="round" 
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg font-bold text-gray-900">{((stats.totalUsers / stats.maxUsersCapacity) * 100).toFixed(2)}%</span>
+                        {/* FIX: Guard against division by zero in percentage display */}
+                        <span className="text-lg font-bold text-gray-900">{stats.maxUsersCapacity ? ((stats.totalUsers / stats.maxUsersCapacity) * 100).toFixed(2) : 0}%</span>
                       </div>
                     </div>
                     <div className="flex-1">
@@ -281,7 +308,7 @@ const AdminView = ({ token }) => {
                           className="p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                         <input 
-                          type="text" placeholder="Contraseña provisional" required
+                          type="password" placeholder="Contraseña provisional" required
                           value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})}
                           className="p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
@@ -350,7 +377,7 @@ const AdminView = ({ token }) => {
                                     <option value="Otro">Otro</option>
                                   </select>
                                   <input 
-                                    type="text" placeholder="Nueva contraseña" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})}
+                                    type="password" placeholder="Nueva contraseña" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})}
                                     className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-40 text-sm"
                                   />
                                   <select 

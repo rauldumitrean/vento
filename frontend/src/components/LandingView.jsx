@@ -33,7 +33,8 @@ export default function LandingView({ token }) {
             <>
               <button 
                 onClick={() => navigate('/login')}
-                className="px-5 py-2 text-gray-300 font-medium hover:text-white transition-colors hidden sm:block"
+                // FIX: Removed 'hidden sm:block' — mobile users need to be able to log in too
+                className="px-5 py-2 text-gray-300 font-medium hover:text-white transition-colors"
               >
                 Iniciar Sesión
               </button>
@@ -278,6 +279,12 @@ export default function LandingView({ token }) {
           <p className="text-gray-500 text-sm">
             &copy; {new Date().getFullYear()} Ventoo. Diseñado por IA para el mundo real.
           </p>
+          {/* FIX: Added legal links required for payment-accepting apps */}
+          <div className="flex items-center gap-4 text-xs text-gray-600">
+            <a href="#" className="hover:text-gray-400 transition-colors">Términos de Servicio</a>
+            <span>•</span>
+            <a href="#" className="hover:text-gray-400 transition-colors">Política de Privacidad</a>
+          </div>
         </div>
       </footer>
     </div>

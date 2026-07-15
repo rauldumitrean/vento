@@ -63,6 +63,8 @@ const AdminLoginView = ({ setAdminToken }) => {
                 type="email" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
+                // FIX: Added placeholder for better UX
+                placeholder="admin@ventoo.app"
                 className="w-full p-3 bg-gray-950 border border-gray-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
                 required
               />
@@ -73,6 +75,8 @@ const AdminLoginView = ({ setAdminToken }) => {
                 type="password" 
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                // FIX: Added placeholder for better UX
+                placeholder="Contraseña de administrador"
                 className="w-full p-3 bg-gray-950 border border-gray-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
                 required
               />
@@ -88,7 +92,11 @@ const AdminLoginView = ({ setAdminToken }) => {
 
           <div className="mt-8 text-center">
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => {
+                // FIX: Clear adminToken when navigating back to avoid stale session
+                sessionStorage.removeItem('adminToken');
+                navigate('/');
+              }}
               className="text-gray-500 hover:text-white text-sm transition-colors"
             >
               ← Volver a Ventoo

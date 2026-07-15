@@ -149,6 +149,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   });
   const [view, setView] = useState(defaultView); // 'dashboard' | 'armario' | 'admin'
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+  // FIX: Added toast state to replace alert() calls
+  const [toast, setToast] = useState(null);
   
   const [location, setLocation] = useState('');
   const [weather, setWeather] = useState(null);
@@ -167,6 +169,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const userName = sessionStorage.getItem('userName');
+
+  // FIX: Helper to show non-blocking toast instead of alert()
+  const showToast = (msg, type = 'error') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
   
   // Lógica de checkout y pagos
   useEffect(() => {
@@ -184,16 +192,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
 
     if (payment === 'success') {
-      alert(`¡Gracias por tu compra! Tu plan ${plan} ha sido activado.`);
+      // FIX: Update state in-place instead of alert()+reload() to preserve app state
       sessionStorage.setItem('isPremium', 'true');
-      sessionStorage.setItem('premiumPlan', plan);
+      if (plan) sessionStorage.setItem('premiumPlan', plan);
       window.history.replaceState({}, '', '/app');
-      window.location.reload();
+      setShowAd(false);
+      showToast(`¡Gracias por tu compra! Tu plan ${plan || 'Premium'} ha sido activado. 🎉`, 'success');
     }
     if (payment === 'cancelled') {
-      alert('Has cancelado el proceso de pago. Puedes retomarlo cuando quieras.');
       window.history.replaceState({}, '', '/app');
+      showToast('Has cancelado el proceso de pago. Puedes retomarlo cuando quieras.', 'info');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCheckout = async (planType) => {
@@ -218,11 +228,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     { name: 'Tokio', admin1: 'Tokio', country: 'Japón', latitude: 35.6895, longitude: 139.69171 }
   ];
 
-  useEffect(() => {
-    if (sessionStorage.getItem('isPremium') === 'true') {
-      setShowAd(false);
-    }
-  }, []);
+  // FIX: Removed redundant useEffect - isPremium check is already handled in the useState initializer above
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -299,7 +305,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       setChat([]);
       setLoadingIndex(0);
     } catch (error) {
-      alert(error.response?.data?.error || 'Error fetching data');
+      showToast(error.response?.data?.error || 'Error al obtener los datos');
     } finally {
       setLoading(false);
     }
@@ -318,9 +324,14 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   };
 
   const handleGeolocation = () => {
+    // FIX: Check for geolocation API availability before calling it
+    if (!navigator.geolocation) {
+      showToast('Tu navegador no soporta geolocalización');
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       pos => fetchWeatherAndOutfit(pos.coords.latitude, pos.coords.longitude, null),
-      err => alert('No se pudo obtener la ubicación')
+      err => showToast('No se pudo obtener la ubicación. Asegúrate de que tienes los permisos activados.')
     );
   };
 
@@ -347,14 +358,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     e.preventDefault();
     if ((!message && !imageBase64) || !consultaId) return;
 
-    const newMessageContent = message + (selectedImage ? ' [Imagen adjunta]' : '');
-    const newChat = [...chat, { role: 'user', content: newMessageContent }];
+    // FIX: Use plain message text without leaking '[Imagen adjunta]' implementation detail into UI
+    const displayMessage = message || '📎 Imagen adjunta';
+    const newChat = [...chat, { role: 'user', content: displayMessage }];
     setChat(newChat);
     setMessage('');
     
     const currentBase64 = imageBase64;
     const currentMime = imageMimeType;
     setSelectedImage(null);
+    // FIX: Also clear imageBase64 and imageMimeType, not just selectedImage preview
     setImageBase64('');
     setImageMimeType('');
 
@@ -362,14 +375,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}/api/chat`, {
         consultaId,
-        mensaje: newMessageContent,
+        // Send the actual message text to backend (not the display string)
+        mensaje: message || 'Analiza esta imagen',
         imageBase64: currentBase64,
         imageMimeType: currentMime
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
     } catch (error) {
-      alert('Error enviando mensaje');
+      showToast('Error enviando mensaje');
     }
   };
 
@@ -380,7 +394,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       await axios.put(`${API_URL}/api/historial/${consultaId}/favorito`, { isFavorite: !isFavorite }, { headers: { Authorization: `Bearer ${token}` } });
       setIsFavorite(!isFavorite);
     } catch(e) {
-      alert("Error guardando favorito");
+      showToast('Error guardando favorito');
     }
   };
 
@@ -394,13 +408,34 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         <div className={`absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full mix-blend-multiply filter blur-[150px] opacity-30 ${darkMode ? 'bg-purple-900' : 'bg-purple-200'}`}></div>
       </div>
 
+      {/* FIX: Non-blocking toast notification replacing all alert() calls */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium max-w-sm text-center ${
+              toast.type === 'success' ? 'bg-green-600 text-white' :
+              toast.type === 'info' ? 'bg-indigo-600 text-white' :
+              'bg-red-600 text-white'
+            }`}
+          >
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="relative z-10">
         <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
 
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />
       ) : view === 'admin' ? (
-        <AdminView token={token} darkMode={darkMode} />
+        // FIX: Only render AdminView if user actually has ADMIN role
+        sessionStorage.getItem('userRole') === 'ADMIN'
+          ? <AdminView token={token} darkMode={darkMode} />
+          : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
       ) : view === 'profile' ? (
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full pt-8">
           <ProfileSettings token={token} darkMode={darkMode} />
@@ -479,7 +514,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-4">
-                  <span className="text-6xl font-light">{weather.current.temperature_2m}°</span>
+                  {/* FIX: Added °C unit so users know the temperature scale */}
+                  <span className="text-6xl font-light">{weather.current.temperature_2m}°C</span>
                   <div className="opacity-70 mb-2">
                     <p>Sensación térmica: {weather.current.apparent_temperature}°</p>
                     <p>Viento: {weather.current.wind_speed_10m} km/h • Humedad: {weather.current.relative_humidity_2m}%</p>
@@ -545,7 +581,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               {selectedImage && (
                 <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
                   <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => setSelectedImage(null)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
+                  {/* FIX: Also clear imageBase64 and imageMimeType when user removes image preview */}
+                  <button type="button" onClick={() => { setSelectedImage(null); setImageBase64(''); setImageMimeType(''); }} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
                     <X size={12} />
                   </button>
                 </div>
