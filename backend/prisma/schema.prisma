@@ -15,6 +15,8 @@ model User {
   gender    String?
   role      String   @default("USER")
   isPremium  Boolean  @default(false)
+  estiloPersonal String?
+  estiloDetalles String?
   stripeCustomerId     String?  @unique
   stripeSubscriptionId String?  @unique
   premiumPlan          String?  // "monthly" o "lifetime"

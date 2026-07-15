@@ -127,8 +127,14 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       else if (g === 'mujer') genderText = "IMPORTANTE: El cliente es una MUJER. Asegúrate de recomendar exclusivamente ropa de mujer o femenina.";
     }
 
+    let styleText = "";
+    if (dbUser.estiloPersonal || dbUser.estiloDetalles) {
+      styleText = "IMPORTANTE: El estilo personal del usuario es: " + (dbUser.estiloPersonal || "No especificado") + ". " + (dbUser.estiloDetalles ? "Detalles extra: " + dbUser.estiloDetalles : "");
+    }
+
     const prompt = `Eres un asesor de moda experto. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
 ${genderText}
+${styleText}
 ${armarioText}
 
 Genera un outfit elegante y moderno, combinando prendas adecuadamente.
@@ -205,10 +211,18 @@ router.post('/chat', authMiddleware, async (req, res) => {
       parts: [{ text: m.contenido }],
     }));
 
+    const dbUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+    
+    let styleTextChat = "";
+    if (dbUser && (dbUser.estiloPersonal || dbUser.estiloDetalles)) {
+      styleTextChat = `Toma en cuenta el estilo personal del usuario: ${dbUser.estiloPersonal || "No especificado"}. ${dbUser.estiloDetalles ? "Detalles: " + dbUser.estiloDetalles : ""}`;
+    }
+
     const model = genAI.getGenerativeModel({ 
       // FIX: Use gemini-3.1-flash-lite as it supports vision and is in the user's quota
       model: "gemini-3.1-flash-lite", // Soporta vision
       systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
+${styleTextChat}
 REGLA ESTRICTA 1: SÓLO puedes responder a preguntas de moda y clima. Niégate educadamente a otros temas.
 REGLA ESTRICTA 2: SIEMPRE RESPONDE EN FORMATO JSON VÁLIDO puro, sin etiquetas markdown de bloque de código (\`\`\`json).
 Estructura obligatoria del JSON:

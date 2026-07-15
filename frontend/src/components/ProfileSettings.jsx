@@ -7,16 +7,37 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export default function ProfileSettings({ token, darkMode }) {
   const [name, setName] = useState(sessionStorage.getItem('userName') || '');
   const [gender, setGender] = useState(sessionStorage.getItem('userGender') || 'Mujer');
+  const [estiloPersonal, setEstiloPersonal] = useState('');
+  const [estiloDetalles, setEstiloDetalles] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.user) {
+          setName(res.data.user.name || '');
+          setGender(res.data.user.gender || 'Mujer');
+          setEstiloPersonal(res.data.user.estiloPersonal || '');
+          setEstiloDetalles(res.data.user.estiloDetalles || '');
+        }
+      } catch (err) {
+        console.error("Error fetching profile", err);
+      }
+    };
+    fetchProfile();
+  }, [token]);
 
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
     try {
-      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender }, {
+      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, estiloPersonal, estiloDetalles }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       sessionStorage.setItem('userName', res.data.user.name);
@@ -83,6 +104,43 @@ export default function ProfileSettings({ token, darkMode }) {
           </select>
           {/* FIX: Simplified useless ternary - both branches were 'text-gray-500' */}
           <p className="mt-2 text-xs text-gray-500">Esta información se usa para mejorar las recomendaciones de estilo.</p>
+        </div>
+
+        <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-indigo-900/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'}`}>
+          <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>👗 Tu Tipo de Estilo</h3>
+          
+          <div className="mb-4">
+            <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estilo Principal</label>
+            <select 
+              value={estiloPersonal}
+              onChange={e => setEstiloPersonal(e.target.value)}
+              className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800/80 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'} border shadow-sm`}
+            >
+              <option value="">No especificado</option>
+              <option value="Urbano / Streetwear">Urbano / Streetwear</option>
+              <option value="Casual">Casual</option>
+              <option value="Elegante / Formal">Elegante / Formal</option>
+              <option value="Minimalista">Minimalista</option>
+              <option value="Deportivo">Deportivo</option>
+              <option value="Vintage / Retro">Vintage / Retro</option>
+              <option value="Bohemio / Boho">Bohemio / Boho</option>
+              <option value="Gótico / Dark">Gótico / Dark</option>
+              <option value="Y2K">Y2K</option>
+              <option value="Preppy">Preppy</option>
+            </select>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Detalles específicos (Opcional)</label>
+            <textarea 
+              value={estiloDetalles}
+              onChange={e => setEstiloDetalles(e.target.value)}
+              placeholder="Ej: Prefiero colores oscuros, ropa muy ancha, me encantan las chaquetas de cuero..."
+              rows={3}
+              className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800/80 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'} border shadow-sm resize-none`}
+            />
+            <p className="mt-2 text-xs text-gray-500">La IA tendrá en cuenta todo esto al recomendarte outfits.</p>
+          </div>
         </div>
 
         <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
