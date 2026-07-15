@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud } from 'lucide-react';
+import { Cloud, Check, Crown, Zap } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 export default function AuthView({ setToken }) {
@@ -13,6 +13,8 @@ export default function AuthView({ setToken }) {
   const [gender, setGender] = useState('Mujer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPlans, setShowPlans] = useState(false);
+  const [pendingAuth, setPendingAuth] = useState(null);
 
   const handleAuth = async (e, endpoint) => {
     e.preventDefault();
@@ -29,6 +31,12 @@ export default function AuthView({ setToken }) {
       
       if (location.state?.plan && location.state.plan !== 'free') {
         sessionStorage.setItem('pendingCheckout', location.state.plan);
+      }
+      
+      if (!isLogin && (!location.state?.plan || location.state?.plan === 'free')) {
+        setPendingAuth({ token: res.data.token });
+        setShowPlans(true);
+        return;
       }
       
       setToken(res.data.token);
@@ -61,6 +69,60 @@ export default function AuthView({ setToken }) {
   };
 
   const direction = isLogin ? -1 : 1;
+
+  if (showPlans && pendingAuth) {
+    return (
+      <div className="min-h-screen bg-black font-sans flex items-center justify-center p-4">
+        <div className="max-w-5xl w-full">
+          <h2 className="text-4xl md:text-5xl font-black text-white text-center mb-12">¡Cuenta creada! Elige tu plan</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Básico */}
+            <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 flex flex-col hover:border-gray-700 transition-all">
+              <h3 className="text-xl font-bold mb-2 text-white">Básico</h3>
+              <div className="text-4xl font-black mb-6 text-white">Gratis</div>
+              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8 text-sm flex-1">Perfecto para empezar a probar Ventoo.</p>
+              <button onClick={() => setToken(pendingAuth.token)} className="w-full py-3 rounded-xl border border-gray-700 hover:bg-gray-800 text-white font-bold transition-colors">
+                Empezar gratis
+              </button>
+            </div>
+
+            {/* Mensual */}
+            <div className="bg-indigo-900/40 border border-indigo-500/50 rounded-3xl p-8 flex flex-col relative shadow-[0_0_50px_rgba(99,102,241,0.15)]">
+              <h3 className="text-xl font-bold mb-2 text-indigo-100">Premium Mensual</h3>
+              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
+                1,99€ <span className="text-base text-indigo-300 font-normal">/mes</span>
+              </div>
+              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm flex-1">Outfits ilimitados, IA de visión y chat sin límites.</p>
+              <button 
+                onClick={() => { sessionStorage.setItem('pendingCheckout', 'monthly'); setToken(pendingAuth.token); }} 
+                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50"
+              >
+                Suscribirse por 1,99€
+              </button>
+            </div>
+
+            {/* Lifetime */}
+            <div className="bg-purple-900/40 border border-purple-500/50 rounded-3xl p-8 flex flex-col relative shadow-[0_0_50px_rgba(168,85,247,0.15)]">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg whitespace-nowrap">
+                <Crown size={14} /> MEJOR VALOR
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-purple-100">Premium Lifetime</h3>
+              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
+                20€ <span className="text-base text-purple-300 font-normal">pago único</span>
+              </div>
+              <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm flex-1">Todo premium para siempre. Sin cuotas recurrentes.</p>
+              <button 
+                onClick={() => { sessionStorage.setItem('pendingCheckout', 'lifetime'); setToken(pendingAuth.token); }} 
+                className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white transition-colors shadow-lg shadow-purple-900/50"
+              >
+                Comprar por 20€
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 font-sans overflow-hidden">

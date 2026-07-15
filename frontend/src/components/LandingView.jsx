@@ -38,9 +38,7 @@ export default function LandingView({ token }) {
                 Iniciar Sesión
               </button>
               <button 
-                onClick={() => {
-                  document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => navigate('/login', { state: { isRegister: true } })}
                 className="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
               >
                 Registrarse
