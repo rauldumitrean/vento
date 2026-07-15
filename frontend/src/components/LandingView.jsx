@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check } from 'lucide-react';
+import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
@@ -276,9 +276,12 @@ export default function LandingView({ token }) {
             <Cloud className="text-indigo-500 fill-indigo-500/20" size={24} strokeWidth={2.5} />
             <span className="text-xl font-black tracking-widest text-white">VENTOO</span>
           </div>
-          <p className="text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Ventoo. Desarrollado con ❤️ por Raul. Todos los derechos reservados.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-gray-500 text-sm">
+            <span>&copy; 2026 Ventoo. Desarrollado por Raul. Todos los derechos reservados.</span>
+            <a href="https://rfdportfolio.vercel.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors ml-2">
+              <Briefcase className="w-4 h-4" /> Portfolio
+            </a>
+          </div>
           {/* FIX: Added legal links required for payment-accepting apps */}
           <div className="flex items-center gap-4 text-xs text-gray-600">
             <a href="#" className="hover:text-gray-400 transition-colors">Términos de Servicio</a>
