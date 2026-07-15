@@ -15,6 +15,7 @@ export default function AuthView({ setToken }) {
   const [loading, setLoading] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
   const [pendingAuth, setPendingAuth] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const handleAuth = async (e, endpoint) => {
     e.preventDefault();
@@ -30,7 +31,19 @@ export default function AuthView({ setToken }) {
       if (res.data.user?.premiumPlan) sessionStorage.setItem('premiumPlan', res.data.user.premiumPlan);
       
       if (location.state?.plan && location.state.plan !== 'free') {
-        sessionStorage.setItem('pendingCheckout', location.state.plan);
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const checkoutRes = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan: location.state.plan }, {
+            headers: { Authorization: `Bearer ${res.data.token}` }
+          });
+          if (checkoutRes.data.url) {
+            sessionStorage.setItem('token', res.data.token);
+            window.location.href = checkoutRes.data.url;
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+        }
       }
       
       if (!isLogin && (!location.state?.plan || location.state?.plan === 'free')) {
@@ -68,6 +81,23 @@ export default function AuthView({ setToken }) {
     }
   };
 
+  const handleDirectCheckout = async (plan) => {
+    setCheckoutLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan }, {
+        headers: { Authorization: `Bearer ${pendingAuth.token}` }
+      });
+      if (res.data.url) {
+        sessionStorage.setItem('token', pendingAuth.token);
+        window.location.href = res.data.url;
+      }
+    } catch (err) {
+      alert('Error iniciando el pago.');
+      setCheckoutLoading(false);
+    }
+  };
+
   const direction = isLogin ? -1 : 1;
 
   if (showPlans && pendingAuth) {
@@ -94,10 +124,11 @@ export default function AuthView({ setToken }) {
               </div>
               <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm flex-1">Outfits ilimitados, IA de visión y chat sin límites.</p>
               <button 
-                onClick={() => { sessionStorage.setItem('pendingCheckout', 'monthly'); setToken(pendingAuth.token); }} 
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50"
+                disabled={checkoutLoading}
+                onClick={() => handleDirectCheckout('monthly')} 
+                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50 disabled:opacity-50"
               >
-                Suscribirse por 1,99€
+                {checkoutLoading ? 'Procesando...' : 'Suscribirse por 1,99€'}
               </button>
             </div>
 
@@ -112,10 +143,11 @@ export default function AuthView({ setToken }) {
               </div>
               <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm flex-1">Todo premium para siempre. Sin cuotas recurrentes.</p>
               <button 
-                onClick={() => { sessionStorage.setItem('pendingCheckout', 'lifetime'); setToken(pendingAuth.token); }} 
-                className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white transition-colors shadow-lg shadow-purple-900/50"
+                disabled={checkoutLoading}
+                onClick={() => handleDirectCheckout('lifetime')} 
+                className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white transition-colors shadow-lg shadow-purple-900/50 disabled:opacity-50"
               >
-                Comprar por 20€
+                {checkoutLoading ? 'Procesando...' : 'Comprar por 20€'}
               </button>
             </div>
           </div>
