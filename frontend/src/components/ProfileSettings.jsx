@@ -6,6 +6,7 @@ export default function ProfileSettings({ token, darkMode }) {
   const [name, setName] = useState(sessionStorage.getItem('userName') || '');
   const [gender, setGender] = useState(sessionStorage.getItem('userGender') || 'Mujer');
   const [loading, setLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   const handleSave = async (e) => {
@@ -24,6 +25,23 @@ export default function ProfileSettings({ token, darkMode }) {
       setMessage('Error al actualizar el perfil');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDirectCheckout = async (plan) => {
+    setCheckoutLoading(true);
+    setMessage('');
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (err) {
+      setMessage('Error iniciando el pago.');
+      setCheckoutLoading(false);
     }
   };
 
@@ -82,17 +100,19 @@ export default function ProfileSettings({ token, darkMode }) {
               <div className="flex gap-2 mt-1">
                 <button 
                   type="button" 
-                  onClick={() => window.location.href = '/app?checkout=monthly'}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors"
+                  disabled={checkoutLoading}
+                  onClick={() => handleDirectCheckout('monthly')}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
                 >
-                  Suscripción (1,99€/mes)
+                  {checkoutLoading ? 'Procesando...' : 'Suscripción (1,99€/mes)'}
                 </button>
                 <button 
                   type="button"
-                  onClick={() => window.location.href = '/app?checkout=lifetime'} 
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors"
+                  disabled={checkoutLoading}
+                  onClick={() => handleDirectCheckout('lifetime')} 
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
                 >
-                  Pago único (20€)
+                  {checkoutLoading ? 'Procesando...' : 'Pago único (20€)'}
                 </button>
               </div>
             </div>
