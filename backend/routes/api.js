@@ -304,10 +304,29 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
 
 router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
     const users = await prisma.user.findMany({
-      select: { id: true, email: true, role: true, isPremium: true, createdAt: true }
+      select: { 
+        id: true, email: true, role: true, isPremium: true, createdAt: true,
+        consultas: {
+          where: { createdAt: { gte: startOfDay } },
+          select: { id: true }
+        }
+      }
     });
-    res.json(users);
+
+    const result = users.map(u => ({
+      id: u.id,
+      email: u.email,
+      role: u.role,
+      isPremium: u.isPremium,
+      createdAt: u.createdAt,
+      outfitsHoy: u.consultas.length,
+    }));
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener usuarios' });
   }

@@ -156,7 +156,8 @@ const AdminView = ({ token }) => {
             <AnimatePresence mode="wait">
               {activeTab === 'overview' && stats && (
                 <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">Analíticas del Negocio</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Ventoo Admin Panel</h2>
+                  <p className="text-gray-400 text-sm mb-6">Resumen en tiempo real · Se actualiza cada 15s</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
                     {/* Stat Card 1 - Online Users */}
@@ -209,6 +210,15 @@ const AdminView = ({ token }) => {
                         <h3 className="text-gray-500 font-medium">Mensajes de IA</h3>
                       </div>
                       <span className="text-4xl font-bold text-gray-900">{stats.totalMessages}</span>
+                    </div>
+                    {/* Stat Card 6 - Basic Accounts */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-gray-100 text-gray-600 rounded-xl"><Users size={24} /></div>
+                        <h3 className="text-gray-500 font-medium">Cuentas Básicas</h3>
+                      </div>
+                      <span className="text-4xl font-bold text-gray-900">{stats.totalUsers - stats.premiumUsers}</span>
+                      <p className="text-xs text-gray-400 mt-2">Usuarios sin Premium</p>
                     </div>
                   </div>
 
@@ -299,6 +309,7 @@ const AdminView = ({ token }) => {
                           <th className="px-6 py-4 font-medium">Usuario</th>
                           <th className="px-6 py-4 font-medium">Rol</th>
                           <th className="px-6 py-4 font-medium">Suscripción</th>
+                          <th className="px-6 py-4 font-medium">Outfits Hoy</th>
                           <th className="px-6 py-4 font-medium text-right">Acciones</th>
                         </tr>
                       </thead>
@@ -352,6 +363,27 @@ const AdminView = ({ token }) => {
                                     <Star size={12} fill={u.isPremium ? "currentColor" : "none"} className={u.isPremium ? "text-yellow-500" : ""} /> 
                                     {u.isPremium ? 'Premium Activo' : 'Básico'}
                                   </button>
+                                </td>
+                                {/* Outfits today column - only relevant for basic users */}
+                                <td className="px-6 py-4">
+                                  {u.isPremium ? (
+                                    <span className="text-xs text-gray-400">Sin límite ∞</span>
+                                  ) : (
+                                    <div className="flex flex-col gap-1 min-w-[120px]">
+                                      <div className="flex justify-between text-xs font-medium">
+                                        <span className={u.outfitsHoy >= 5 ? 'text-red-600' : 'text-gray-700'}>{u.outfitsHoy}/5 usados</span>
+                                        <span className={u.outfitsHoy >= 5 ? 'text-red-500' : 'text-green-600'}>
+                                          {u.outfitsHoy >= 5 ? '⛔ Límite' : `${5 - u.outfitsHoy} restantes`}
+                                        </span>
+                                      </div>
+                                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                        <div 
+                                          className={`h-1.5 rounded-full transition-all ${u.outfitsHoy >= 5 ? 'bg-red-500' : u.outfitsHoy >= 3 ? 'bg-orange-400' : 'bg-green-500'}`}
+                                          style={{ width: `${Math.min((u.outfitsHoy / 5) * 100, 100)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
                                 </td>
                               </>
                             )}
