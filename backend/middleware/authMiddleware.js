@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
-// FIX: Removed redundant PrismaClient instantiation (lastActive update removed from middleware)
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 // lastActive is already handled by /api/ping heartbeat endpoint
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];
 
   if (!token) {
@@ -11,9 +12,17 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Check if user still exists in the database
+    const user = await prisma.user.findUnique({
+      where: { id: verified.id }
+    });
+    
+    if (!user) {
+      return res.status(401).json({ error: 'El usuario ya no existe.' });
+    }
+
     req.user = verified;
-    // FIX: Removed lastActive write on every request (was causing unnecessary DB writes)
-    // /api/ping already handles this on a 15-second heartbeat
     next();
   } catch (err) {
     // FIX: Changed 400 to 401 - invalid/expired token is an authentication error

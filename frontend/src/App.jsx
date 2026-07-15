@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import axios from 'axios';
 import LandingView from './components/LandingView';
 
 const AuthView = lazy(() => import('./components/AuthView'));
@@ -11,6 +12,20 @@ function App() {
   const [token, setToken] = useState(sessionStorage.getItem('token'));
   const [adminToken, setAdminToken] = useState(sessionStorage.getItem('adminToken'));
   
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response && error.response.status === 401) {
+          // If the token is invalid or the user was deleted, log them out
+          setToken(null);
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
+
   useEffect(() => {
     if (token) {
       sessionStorage.setItem('token', token);
