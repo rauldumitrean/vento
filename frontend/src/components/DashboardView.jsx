@@ -143,7 +143,10 @@ const ChatMessage = ({ msg, darkMode }) => {
 };
 
 export default function DashboardView({ token, defaultView = 'dashboard', onLogout }) {
-  const [showAd, setShowAd] = useState(true);
+  const [showAd, setShowAd] = useState(() => {
+    if (sessionStorage.getItem('isPremium') === 'true') return false;
+    return !sessionStorage.getItem('adShown');
+  });
   const [view, setView] = useState(defaultView); // 'dashboard' | 'armario' | 'admin'
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   
@@ -216,7 +219,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   ];
 
   useEffect(() => {
-    if (sessionStorage.getItem('adShown')) {
+    if (sessionStorage.getItem('isPremium') === 'true') {
       setShowAd(false);
     }
   }, []);

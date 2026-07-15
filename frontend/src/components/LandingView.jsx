@@ -209,6 +209,7 @@ export default function LandingView({ token }) {
               
               <ul className="space-y-4 mb-10 flex-1 text-sm">
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>5 outfits generados por IA al día</span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span className="text-gray-500 font-medium">Con anuncios (Obligatorios)</span></li>
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Clima en tiempo real</span></li>
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Imágenes generadas de ropa</span></li>
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Armario virtual (limitado)</span></li>
@@ -229,6 +230,7 @@ export default function LandingView({ token }) {
               
               <ul className="space-y-4 mb-10 flex-1 text-indigo-50 text-sm">
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <strong>Outfits ilimitados</strong></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <strong>100% Sin Anuncios</strong></li>
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span className="flex items-center gap-2">Análisis de fotos con IA (Visión) <Zap size={16} className="text-yellow-400" fill="currentColor"/></span></li>
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Chatbot de moda sin límites</span></li>
                 <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Armario virtual infinito</span></li>

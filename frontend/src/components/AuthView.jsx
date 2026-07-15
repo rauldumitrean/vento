@@ -110,7 +110,7 @@ export default function AuthView({ setToken }) {
             <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 flex flex-col hover:border-gray-700 transition-all">
               <h3 className="text-xl font-bold mb-2 text-white">Básico</h3>
               <div className="text-4xl font-black mb-6 text-white">Gratis</div>
-              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8 text-sm flex-1">Perfecto para empezar a probar Ventoo.</p>
+              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8 text-sm flex-1">Perfecto para empezar a probar Ventoo. <br/><span className="text-gray-500 mt-2 block font-medium">Contiene anuncios obligatorios.</span></p>
               <button onClick={() => setToken(pendingAuth.token)} className="w-full py-3 rounded-xl border border-gray-700 hover:bg-gray-800 text-white font-bold transition-colors">
                 Empezar gratis
               </button>
@@ -122,7 +122,7 @@ export default function AuthView({ setToken }) {
               <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
                 1,99€ <span className="text-base text-indigo-300 font-normal">/mes</span>
               </div>
-              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm flex-1">Outfits ilimitados, IA de visión y chat sin límites.</p>
+              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm flex-1">Outfits ilimitados, IA de visión y chat sin límites. <br/><strong className="text-indigo-300 mt-2 block">100% Sin anuncios.</strong></p>
               <button 
                 disabled={checkoutLoading}
                 onClick={() => handleDirectCheckout('monthly')} 
@@ -141,7 +141,7 @@ export default function AuthView({ setToken }) {
               <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
                 20€ <span className="text-base text-purple-300 font-normal">pago único</span>
               </div>
-              <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm flex-1">Todo premium para siempre. Sin cuotas recurrentes.</p>
+              <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm flex-1">Todo premium para siempre. Sin cuotas recurrentes. <br/><strong className="text-purple-300 mt-2 block">100% Sin anuncios.</strong></p>
               <button 
                 disabled={checkoutLoading}
                 onClick={() => handleDirectCheckout('lifetime')} 
