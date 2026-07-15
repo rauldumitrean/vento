@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check } from 'lucide-react';
+import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
@@ -25,9 +25,7 @@ export default function LandingView({ token }) {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-purple-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)]">
-              <Sparkles className="text-white" size={20} />
-            </div>
+            <Cloud className="text-purple-500" size={32} />
             <span className="text-2xl font-black tracking-widest text-white">VENTOO</span>
           </div>
           <div className="flex gap-4">

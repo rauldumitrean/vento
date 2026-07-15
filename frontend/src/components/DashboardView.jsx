@@ -364,7 +364,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             <div className="mb-2">
-              <h2 className="text-3xl font-extrabold tracking-tight">Hola de nuevo, {userName || 'aventurero'} 👋</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight flex items-center flex-wrap">
+                Hola de nuevo, {userName || 'aventurero'}
+                <svg className="ml-3 w-8 h-8 text-yellow-500 origin-bottom-right animate-[wave_2.5s_ease-in-out_infinite]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.25 7.5A2.25 2.25 0 0 1 22.5 9.75v10.5A2.25 2.25 0 0 1 20.25 22h-10.5A2.25 2.25 0 0 1 7.5 19.75V11.25a2.25 2.25 0 0 1 2.25-2.25h1.5a.75.75 0 0 0 .75-.75V4.5a2.25 2.25 0 0 1 4.5 0v2.25a.75.75 0 0 0 .75.75h3z" />
+                  <path d="M4.5 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-.75-.75zM1.5 11.25a.75.75 0 0 0-.75.75v3a.75.75 0 0 0 1.5 0v-3a.75.75 0 0 0-.75-.75z" />
+                </svg>
+              </h2>
               <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Qué destino nos espera hoy?</p>
             </div>
             <motion.div 
