@@ -18,7 +18,7 @@ export default function AuthView({ setToken }) {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}${endpoint}`, { email, password });
       setToken(res.data.token);
-      localStorage.setItem('userRole', res.data.user?.role || 'USER');
+      sessionStorage.setItem('userRole', res.data.user?.role || 'USER');
     } catch (err) {
       setError(err.response?.data?.error || 'Error de conexión');
     } finally {

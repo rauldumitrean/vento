@@ -5,13 +5,14 @@ import DashboardView from './components/DashboardView';
 import AdminView from './components/AdminView';
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(sessionStorage.getItem('token'));
   
   useEffect(() => {
     if (token) {
-      localStorage.setItem('token', token);
+      sessionStorage.setItem('token', token);
     } else {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('userRole');
     }
   }, [token]);
 
@@ -29,7 +30,7 @@ function App() {
           />
           <Route 
             path="/admin" 
-            element={token && localStorage.getItem('userRole') === 'ADMIN' ? <AdminView token={token} /> : <Navigate to="/" />} 
+            element={token && sessionStorage.getItem('userRole') === 'ADMIN' ? <AdminView token={token} /> : <Navigate to="/" />} 
           />
         </Routes>
       </div>
