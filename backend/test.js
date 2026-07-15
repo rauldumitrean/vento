@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function test() { const user = await prisma.user.findFirst(); try { await prisma.user.update({ where: { id: user.id }, data: { isBanned: false, bannedUntil: null, banReason: null }}); console.log('ok'); } catch(e) { console.error(e); } finally { await prisma. $disconnect(); } } test();
