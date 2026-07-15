@@ -19,7 +19,9 @@ app.use(cors({
 // El webhook de Stripe necesita el body en crudo (raw)
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
-app.use(express.json());
+// FIX: Aumentado el límite de JSON a 50mb para permitir el envío de imágenes en base64 en el chat
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentsRoutes);
