@@ -22,6 +22,23 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ error: 'El usuario ya no existe.' });
     }
 
+    if (user.isBanned) {
+      if (user.bannedUntil && new Date() > user.bannedUntil) {
+        // Unban if time expired
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isBanned: false, bannedUntil: null, banReason: null }
+        });
+      } else {
+        return res.status(403).json({ 
+          error: 'BANNED', 
+          message: 'Tu cuenta está bloqueada.', 
+          bannedUntil: user.bannedUntil, 
+          banReason: user.banReason 
+        });
+      }
+    }
+
     req.user = verified;
     next();
   } catch (err) {

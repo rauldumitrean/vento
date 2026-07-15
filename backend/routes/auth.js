@@ -39,6 +39,21 @@ router.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ error: 'Credenciales inválidas.' });
 
+    if (user.isBanned) {
+      if (user.bannedUntil && new Date() > user.bannedUntil) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isBanned: false, bannedUntil: null, banReason: null }
+        });
+      } else {
+        return res.status(403).json({ 
+          error: 'BANNED', 
+          message: 'Tu cuenta está bloqueada.', 
+          bannedUntil: user.bannedUntil 
+        });
+      }
+    }
+
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
   } catch (error) {

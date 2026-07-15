@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database, RefreshCw } from 'lucide-react';
+import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database, RefreshCw, Ban } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +15,11 @@ const AdminView = ({ token }) => {
   const [showAdd, setShowAdd] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
   const [editUserData, setEditUserData] = useState({ email: '', name: '', gender: '', role: '', password: '' });
+
+  const [banModalOpen, setBanModalOpen] = useState(false);
+  const [userToBan, setUserToBan] = useState(null);
+  const [banDurationValue, setBanDurationValue] = useState(1);
+  const [banDurationUnit, setBanDurationUnit] = useState('days'); // 'days' | 'weeks' | 'years' | 'permanent'
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -103,11 +108,54 @@ const AdminView = ({ token }) => {
 
   const handleSaveEdit = async () => {
     try {
-      const res = await axios.put(`${API_URL}/api/admin/users/${editUserId}`, editUserData, { headers: { Authorization: `Bearer ${token}` } });
-      setUsers(users.map(u => u.id === editUserId ? { ...u, ...res.data } : u));
+      await axios.put(`${API_URL}/api/admin/users/${editUserId}`, editUserData, { headers: { Authorization: `Bearer ${token}` } });
+      fetchData();
       setEditUserId(null);
     } catch (error) {
-      showAdminMsg('Error editando usuario');
+      showAdminMsg('Error actualizando usuario');
+    }
+  };
+
+  const handleBanSubmit = async () => {
+    if (!userToBan) return;
+    try {
+      let bannedUntil = null;
+      if (banDurationUnit !== 'permanent') {
+        const date = new Date();
+        const value = parseInt(banDurationValue) || 1;
+        if (banDurationUnit === 'days') date.setDate(date.getDate() + value);
+        else if (banDurationUnit === 'weeks') date.setDate(date.getDate() + (value * 7));
+        else if (banDurationUnit === 'years') date.setFullYear(date.getFullYear() + value);
+        bannedUntil = date;
+      }
+      
+      await axios.put(`${API_URL}/api/admin/users/${userToBan.id}/ban`, {
+        isBanned: true,
+        bannedUntil: bannedUntil,
+        banReason: 'Incumplimiento de normas'
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      fetchData();
+      setBanModalOpen(false);
+      setUserToBan(null);
+      showAdminMsg('Usuario baneado correctamente', 'success');
+    } catch (error) {
+      showAdminMsg('Error al banear usuario');
+    }
+  };
+
+  const handleUnban = async (userId) => {
+    if (!window.confirm("¿Seguro que quieres quitar el bloqueo a este usuario?")) return;
+    try {
+      await axios.put(`${API_URL}/api/admin/users/${userId}/ban`, {
+        isBanned: false,
+        bannedUntil: null,
+        banReason: null
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchData();
+      showAdminMsg('Usuario desbaneado', 'success');
+    } catch (error) {
+      showAdminMsg('Error al desbanear usuario');
     }
   };
 
@@ -352,13 +400,26 @@ const AdminView = ({ token }) => {
               {activeTab === 'users' && (
                 <motion.div key="users" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
-                    <button 
-                      onClick={() => setShowAdd(!showAdd)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors shadow-sm w-full sm:w-auto justify-center"
-                    >
-                      <UserPlus size={16} /> Añadir Usuario
-                    </button>
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Gestión de Usuarios</h2>
+                      <p className="text-gray-400 text-sm">Administra cuentas, permisos y accesos</p>
+                    </div>
+                    <div className="flex w-full sm:w-auto gap-3">
+                      <button 
+                        onClick={fetchData}
+                        disabled={isRefreshing}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                      >
+                        <RefreshCw size={16} className={`${isRefreshing ? 'animate-spin text-indigo-500' : ''}`} />
+                        Refrescar
+                      </button>
+                      <button 
+                        onClick={() => setShowAdd(!showAdd)}
+                        className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
+                      >
+                        <UserPlus size={16} /> Añadir Usuario
+                      </button>
+                    </div>
                   </div>
 
                   {showAdd && (
@@ -456,11 +517,14 @@ const AdminView = ({ token }) => {
                               <>
                                 <td className="px-6 py-4">
                                   <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                                      {getInitials(u.email)}
+                                    <div className={`w-8 h-8 rounded-full ${u.isBanned ? 'bg-red-500' : 'bg-gradient-to-br from-purple-500 to-indigo-500'} flex items-center justify-center text-white font-semibold text-xs flex-shrink-0`}>
+                                      {u.isBanned ? <Ban size={14} /> : getInitials(u.email)}
                                     </div>
                                     <div className="flex flex-col">
-                                      <span className="font-medium text-gray-900">{u.email}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium text-gray-900">{u.email}</span>
+                                        {u.isBanned && <span className="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">Baneado</span>}
+                                      </div>
                                       <span className="text-xs text-gray-500">{u.name ? `${u.name} (${u.gender})` : 'Sin nombre'}</span>
                                       <span className="text-xs text-gray-400">ID: #{u.id}</span>
                                     </div>
@@ -512,6 +576,11 @@ const AdminView = ({ token }) => {
                                 </div>
                               ) : (
                                 <div className="flex justify-end gap-2">
+                                  {u.isBanned ? (
+                                    <button onClick={() => handleUnban(u.id)} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-md transition-colors" title="Quitar baneo"><Shield size={16} /></button>
+                                  ) : (
+                                    <button onClick={() => { setUserToBan(u); setBanModalOpen(true); }} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-md transition-colors" title="Banear"><Ban size={16} /></button>
+                                  )}
                                   <button onClick={() => startEdit(u)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Editar"><Edit2 size={16} /></button>
                                   <button onClick={() => handleDelete(u.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Eliminar"><Trash2 size={16} /></button>
                                 </div>
@@ -528,6 +597,82 @@ const AdminView = ({ token }) => {
           </div>
         )}
       </div>
+      {/* Ban Modal */}
+      <AnimatePresence>
+        {banModalOpen && userToBan && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <Ban className="text-red-500" />
+                  Banear Usuario
+                </h3>
+                <button onClick={() => { setBanModalOpen(false); setUserToBan(null); }} className="text-gray-400 hover:bg-gray-100 p-1 rounded-md transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-gray-600 text-sm mb-4">
+                  Selecciona la duración del bloqueo para el usuario <strong className="text-gray-900">{userToBan.email}</strong>. Durante este tiempo no podrá acceder a su cuenta.
+                </p>
+
+                <div className="flex gap-3 mb-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Duración</label>
+                    <select
+                      value={banDurationUnit}
+                      onChange={(e) => setBanDurationUnit(e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="days">Días</option>
+                      <option value="weeks">Semanas</option>
+                      <option value="years">Años</option>
+                      <option value="permanent">Permanente</option>
+                    </select>
+                  </div>
+                  
+                  {banDurationUnit !== 'permanent' && (
+                    <div className="w-24">
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Cantidad</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={banDurationValue}
+                        onChange={(e) => setBanDurationValue(e.target.value)}
+                        className="w-full p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => { setBanModalOpen(false); setUserToBan(null); }}
+                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleBanSubmit}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                >
+                  Confirmar Ban
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

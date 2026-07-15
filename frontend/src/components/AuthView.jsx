@@ -19,6 +19,8 @@ export default function AuthView({ setToken }) {
   const [showPlans, setShowPlans] = useState(false);
   const [pendingAuth, setPendingAuth] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [isBannedError, setIsBannedError] = useState(false);
+  const [banDetails, setBanDetails] = useState(null);
 
   const handleAuth = async (e, endpoint) => {
     e.preventDefault();
@@ -56,7 +58,12 @@ export default function AuthView({ setToken }) {
       
       setToken(res.data.token);
     } catch (err) {
-      setError(err.response?.data?.error || 'Error de conexión');
+      if (err.response?.data?.error === 'BANNED') {
+        setIsBannedError(true);
+        setBanDetails(err.response.data);
+      } else {
+        setError(err.response?.data?.error || 'Error de conexión');
+      }
     } finally {
       setLoading(false);
     }
@@ -160,6 +167,57 @@ export default function AuthView({ setToken }) {
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (isBannedError) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 font-sans overflow-hidden">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center relative overflow-hidden border border-red-100 dark:border-red-900/30"
+        >
+          {/* Background pulse effect */}
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 bg-red-500/10 rounded-full blur-3xl -z-10"
+          />
+
+          <motion.div
+            initial={{ y: -50, rotate: -10 }}
+            animate={{ y: 0, rotate: 0 }}
+            transition={{ type: 'spring', bounce: 0.6, duration: 1 }}
+            className="w-32 h-32 mb-6 text-red-500"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full drop-shadow-lg">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+            </svg>
+          </motion.div>
+
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 uppercase tracking-tight">Cuenta Bloqueada</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            No puedes acceder a Ventoo. Tu cuenta ha sido suspendida por un administrador.
+          </p>
+
+          <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-xl w-full mb-8 font-medium">
+            {banDetails?.bannedUntil ? (
+              <p>El bloqueo expirará el: <br/><strong className="text-lg">{new Date(banDetails.bannedUntil).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
+            ) : (
+              <p className="text-lg font-bold">Bloqueo Permanente</p>
+            )}
+          </div>
+
+          <button 
+            onClick={() => { setIsBannedError(false); setBanDetails(null); }}
+            className="text-sm font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            ← Volver al inicio de sesión
+          </button>
+        </motion.div>
       </div>
     );
   }

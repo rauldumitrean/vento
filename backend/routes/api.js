@@ -383,6 +383,9 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
       role: u.role,
       isPremium: u.isPremium,
       premiumPlan: u.premiumPlan,
+      isBanned: u.isBanned,
+      bannedUntil: u.bannedUntil,
+      banReason: u.banReason,
       createdAt: u.createdAt,
       outfitsHoy: u.consultas.length,
     }));
@@ -428,6 +431,25 @@ router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (r
     res.json({ id: user.id, isPremium: user.isPremium });
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar estado premium' });
+  }
+});
+
+router.put('/admin/users/:id/ban', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    
+    const { isBanned, bannedUntil, banReason } = req.body;
+    
+    const user = await prisma.user.update({
+      where: { id },
+      data: { isBanned, bannedUntil, banReason }
+    });
+    
+    res.json({ id: user.id, isBanned: user.isBanned, bannedUntil: user.bannedUntil, banReason: user.banReason });
+  } catch (error) {
+    console.error('Error banning user:', error);
+    res.status(500).json({ error: 'Error al banear usuario' });
   }
 });
 
