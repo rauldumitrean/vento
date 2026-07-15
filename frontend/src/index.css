@@ -3,6 +3,9 @@
 
 
 @layer base {
+  html, body {
+    @apply w-full overflow-x-hidden;
+  }
   body {
     @apply bg-neutral-50 text-neutral-900 font-sans antialiased;
   }

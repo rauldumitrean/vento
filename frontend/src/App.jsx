@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import LandingView from './components/LandingView';
 
 const AuthView = lazy(() => import('./components/AuthView'));
 const DashboardView = lazy(() => import('./components/DashboardView'));
 const AdminView = lazy(() => import('./components/AdminView'));
 const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
-const LandingView = lazy(() => import('./components/LandingView'));
 
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('token'));
@@ -32,7 +32,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen">
+      <div className="min-h-screen w-full flex flex-col overflow-x-hidden">
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
             <Route 
