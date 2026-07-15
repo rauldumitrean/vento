@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database } from 'lucide-react';
+import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ const AdminView = ({ token }) => {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const [newUser, setNewUser] = useState({ email: '', password: '', name: '', gender: 'Mujer', role: 'USER', isPremium: false });
   const [showAdd, setShowAdd] = useState(false);
@@ -26,19 +27,21 @@ const AdminView = ({ token }) => {
 
   const fetchStats = async () => {
     try {
+      setIsRefreshing(true);
       const res = await axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } });
       setStats(res.data);
     } catch (err) {
-      // FIX: Log errors instead of silently swallowing them
       console.error('Error fetching stats:', err);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Pequeño delay visual para que se note la animación
     }
   };
 
   // FIX: Added token to deps array, used refs to avoid stale closure
   useEffect(() => {
     fetchData();
-    // Auto-refresh stats (online users) every 15 seconds
-    const interval = setInterval(fetchStats, 15000);
+    // Auto-refresh stats every 10 seconds
+    const interval = setInterval(fetchStats, 10000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -181,8 +184,20 @@ const AdminView = ({ token }) => {
             <AnimatePresence mode="wait">
               {activeTab === 'overview' && stats && (
                 <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Ventoo Admin Panel</h2>
-                  <p className="text-gray-400 text-sm mb-6">Resumen en tiempo real · Se actualiza cada 15s</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Ventoo Admin Panel</h2>
+                      <p className="text-gray-400 text-sm">Resumen en tiempo real · Se actualiza cada 10s</p>
+                    </div>
+                    <button 
+                      onClick={fetchStats}
+                      disabled={isRefreshing}
+                      className="mt-3 sm:mt-0 self-start flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                    >
+                      <RefreshCw size={16} className={`${isRefreshing ? 'animate-spin text-indigo-500' : ''}`} />
+                      Refrescar
+                    </button>
+                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
                     {/* Stat Card 1 - Online Users */}
@@ -197,7 +212,13 @@ const AdminView = ({ token }) => {
                         </div>
                         <h3 className="text-gray-500 font-medium">Usuarios Online</h3>
                       </div>
-                      <span className="text-4xl font-bold text-gray-900">{stats.onlineUsers}</span>
+                      <motion.span 
+                        key={stats.onlineUsers}
+                        initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.onlineUsers}
+                      </motion.span>
                       <p className="text-xs text-gray-400 mt-2">Activos últimos 5 min</p>
                     </div>
 
@@ -207,7 +228,13 @@ const AdminView = ({ token }) => {
                         <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Users size={24} /></div>
                         <h3 className="text-gray-500 font-medium">Usuarios Totales</h3>
                       </div>
-                      <span className="text-4xl font-bold text-gray-900">{stats.totalUsers}</span>
+                      <motion.span 
+                        key={stats.totalUsers}
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.totalUsers}
+                      </motion.span>
                     </div>
 
                     {/* Stat Card 3 */}
@@ -216,7 +243,13 @@ const AdminView = ({ token }) => {
                         <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl"><Star size={24} /></div>
                         <h3 className="text-gray-500 font-medium">Cuentas Premium</h3>
                       </div>
-                      <span className="text-4xl font-bold text-gray-900">{stats.premiumUsers}</span>
+                      <motion.span 
+                        key={stats.premiumUsers}
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.premiumUsers}
+                      </motion.span>
                     </div>
 
                     {/* Stat Card 4 */}
@@ -225,7 +258,13 @@ const AdminView = ({ token }) => {
                         <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Activity size={24} /></div>
                         <h3 className="text-gray-500 font-medium">Outfits Generados</h3>
                       </div>
-                      <span className="text-4xl font-bold text-gray-900">{stats.totalOutfits}</span>
+                      <motion.span 
+                        key={stats.totalOutfits}
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.totalOutfits}
+                      </motion.span>
                     </div>
 
                     {/* Stat Card 5 */}
@@ -234,7 +273,13 @@ const AdminView = ({ token }) => {
                         <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><MessageSquare size={24} /></div>
                         <h3 className="text-gray-500 font-medium">Mensajes de IA</h3>
                       </div>
-                      <span className="text-4xl font-bold text-gray-900">{stats.totalMessages}</span>
+                      <motion.span 
+                        key={stats.totalMessages}
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.totalMessages}
+                      </motion.span>
                     </div>
                     {/* Stat Card 6 - Basic Accounts */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
@@ -242,7 +287,13 @@ const AdminView = ({ token }) => {
                         <div className="p-3 bg-gray-100 text-gray-600 rounded-xl"><Users size={24} /></div>
                         <h3 className="text-gray-500 font-medium">Cuentas Básicas</h3>
                       </div>
-                      <span className="text-4xl font-bold text-gray-900">{stats.totalUsers - stats.premiumUsers}</span>
+                      <motion.span 
+                        key={stats.totalUsers - stats.premiumUsers}
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.totalUsers - stats.premiumUsers}
+                      </motion.span>
                       <p className="text-xs text-gray-400 mt-2">Usuarios sin Premium</p>
                     </div>
                   </div>
@@ -273,12 +324,24 @@ const AdminView = ({ token }) => {
                       </p>
                       <div className="flex gap-4">
                         <div className="bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
-                          <span className="text-xs text-gray-400 block uppercase font-bold tracking-wider mb-1">Usados</span>
-                          <span className="text-lg font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</span>
+                          <span className="text-sm text-gray-500 font-semibold mb-1 block">USADOS</span>
+                          <motion.span 
+                            key={stats.totalUsers}
+                            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                            className="text-lg font-bold text-gray-900"
+                          >
+                            {stats.totalUsers}
+                          </motion.span>
                         </div>
-                        <div className="bg-purple-50 px-4 py-2 rounded-lg border border-purple-100">
-                          <span className="text-xs text-purple-400 block uppercase font-bold tracking-wider mb-1">Restantes</span>
-                          <span className="text-lg font-bold text-purple-700">{(stats.maxUsersCapacity - stats.totalUsers).toLocaleString()}</span>
+                        <div className="bg-purple-50 p-4 rounded-xl">
+                          <span className="text-sm text-purple-400 font-semibold mb-1 block">RESTANTES</span>
+                          <motion.span 
+                            key={stats.totalUsers}
+                            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                            className="text-lg font-bold text-purple-600"
+                          >
+                            {(50000 - stats.totalUsers).toLocaleString('es-ES')}
+                          </motion.span>
                         </div>
                       </div>
                     </div>

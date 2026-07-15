@@ -483,7 +483,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             </div>
             <motion.div 
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className={`p-4 sm:p-6 rounded-3xl shadow-xl flex gap-3 sm:gap-4 flex-col sm:flex-row transition-colors backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}
+              className={`relative z-50 p-4 sm:p-6 rounded-3xl shadow-xl flex gap-3 sm:gap-4 flex-col sm:flex-row transition-colors backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}
             >
               <form onSubmit={handleSearch} className={`flex-1 flex items-center px-5 py-2 rounded-2xl relative transition-all duration-300 shadow-sm border ${darkMode ? 'bg-gray-800/80 border-gray-700/50 focus-within:border-indigo-500/50 focus-within:bg-gray-800' : 'bg-gray-100/50 border-gray-200/50 focus-within:border-indigo-400/30 focus-within:bg-white'}`}>
                 <Search className={`w-5 h-5 mr-3 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
