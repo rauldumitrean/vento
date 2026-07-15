@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart } from 'lucide-react';
+import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles } from 'lucide-react';
 import AdModal from './AdModal';
 import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
@@ -168,6 +168,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const userName = sessionStorage.getItem('userName');
+
+  // Seleccionar frase aleatoria solo una vez al montar el componente
+  const [randomGreeting] = useState(() => {
+    const greetings = [
+      "¿Qué destino nos espera hoy?",
+      "¿A dónde te llevamos hoy?",
+      "¿Preparando tu próximo viaje?",
+      "Descubre el clima de tu próxima aventura.",
+      "Vístete para el éxito, vayas donde vayas."
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  });
 
   // FIX: Helper to show non-blocking toast instead of alert()
   const showToast = (msg, type = 'error') => {
@@ -445,12 +457,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             <div className="mb-2">
               <h2 className="text-3xl font-extrabold tracking-tight flex items-center flex-wrap">
                 Hola de nuevo, {userName || 'aventurero'}
-                <svg className="ml-3 w-8 h-8 text-yellow-500 origin-bottom-right animate-[wave_2.5s_ease-in-out_infinite]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.25 7.5A2.25 2.25 0 0 1 22.5 9.75v10.5A2.25 2.25 0 0 1 20.25 22h-10.5A2.25 2.25 0 0 1 7.5 19.75V11.25a2.25 2.25 0 0 1 2.25-2.25h1.5a.75.75 0 0 0 .75-.75V4.5a2.25 2.25 0 0 1 4.5 0v2.25a.75.75 0 0 0 .75.75h3z" />
-                  <path d="M4.5 9.75a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 1.5 0v-6a.75.75 0 0 0-.75-.75zM1.5 11.25a.75.75 0 0 0-.75.75v3a.75.75 0 0 0 1.5 0v-3a.75.75 0 0 0-.75-.75z" />
-                </svg>
+                <Sparkles className="ml-3 w-7 h-7 text-yellow-500 animate-[pulse_3s_ease-in-out_infinite]" />
               </h2>
-              <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Qué destino nos espera hoy?</p>
+              <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{randomGreeting}</p>
             </div>
             <motion.div 
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
