@@ -41,7 +41,7 @@ function App() {
           />
           <Route 
             path="/app" 
-            element={token ? <DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /> : <Navigate to="/login" />} 
+            element={token ? <DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /> : <Navigate to="/" />} 
           />
           <Route 
             path="/admin" 
