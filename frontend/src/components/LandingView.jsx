@@ -1,103 +1,254 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, CloudRain, Sun, Sparkles } from 'lucide-react';
+import { ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export default function LandingView() {
   const navigate = useNavigate();
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-hidden relative">
-      {/* Background decorations */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-indigo-100 to-transparent -z-10" />
-      <div className="absolute top-20 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
-      <div className="absolute top-40 left-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }} />
-      
-      {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between z-10 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center transform rotate-3">
-            <Sparkles className="text-white" size={24} />
-          </div>
-          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight">Ventoo</span>
-        </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => navigate('/login')}
-            className="px-5 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition-colors hidden sm:block"
-          >
-            Iniciar Sesión
-          </button>
-          <button 
-            onClick={() => navigate('/login')}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm"
-          >
-            Entrar
-          </button>
-        </div>
-      </header>
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center z-10 max-w-5xl mx-auto w-full mt-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl"
-        >
-          <span className="inline-block py-1 px-3 rounded-full bg-indigo-100 text-indigo-800 text-sm font-semibold mb-6 tracking-wide uppercase border border-indigo-200">
-            Tu Estilista Personal Impulsado por IA
-          </span>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
-            Vístete perfecto para <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
-              cualquier clima.
-            </span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Ventoo analiza el tiempo de tu ciudad en tiempo real y utiliza inteligencia artificial para recomendarte el outfit ideal, crear imágenes de referencia y darte opciones de compra.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+  return (
+    <div className="min-h-screen bg-black text-gray-100 font-sans selection:bg-indigo-500/30 overflow-x-hidden">
+      
+      {/* Background cinematic effects */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-black to-black"></div>
+        <div className="absolute top-1/4 -left-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full mix-blend-screen filter blur-[120px] opacity-50 animate-pulse"></div>
+        <div className="absolute bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full mix-blend-screen filter blur-[150px] opacity-50 animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-purple-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+              <Sparkles className="text-white" size={20} />
+            </div>
+            <span className="text-2xl font-black tracking-widest text-white">VENTOO</span>
+          </div>
+          <div className="flex gap-4">
             <button 
               onClick={() => navigate('/login')}
-              className="w-full sm:w-auto px-8 py-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium text-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+              className="px-5 py-2 text-gray-300 font-medium hover:text-white transition-colors hidden sm:block"
             >
-              Comenzar ahora
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+              Iniciar Sesión
+            </button>
+            <button 
+              onClick={() => navigate('/login')}
+              className="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+            >
+              Entrar
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative z-10 pt-40 pb-20 px-6 min-h-screen flex flex-col justify-center items-center text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-400 text-sm font-semibold mb-8 uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+            La revolución del estilismo por IA
+          </div>
+          
+          <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[1.1] tracking-tighter">
+            Vístete para el éxito.<br/>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 animate-gradient-x">
+              Sin importar el clima.
+            </span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+            Ventoo cruza datos meteorológicos en tiempo real con inteligencia artificial avanzada para generar tu outfit ideal.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <button 
+              onClick={() => navigate('/login')}
+              className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:shadow-[0_0_50px_rgba(99,102,241,0.7)] flex items-center justify-center gap-3 group hover:-translate-y-1"
+            >
+              Comenzar tu prueba gratuita
+              <ArrowRight className="group-hover:translate-x-2 transition-transform" />
             </button>
           </div>
         </motion.div>
+      </section>
 
-        {/* Feature grid */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 w-full text-left pb-10"
-        >
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-6">
-              <CloudRain size={28} />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Clima en Tiempo Real</h3>
-            <p className="text-gray-500 leading-relaxed">Conoce exactamente la temperatura, humedad y probabilidad de lluvia en tu ciudad para no llevarte sorpresas.</p>
+      {/* Features Grid */}
+      <section className="relative z-10 py-32 px-6 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black mb-6">El Futuro de la Moda</h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">Nuestra tecnología va mucho más allá de sugerir "ponte un abrigo".</p>
           </div>
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <div className="w-14 h-14 bg-purple-50 text-purple-500 rounded-2xl flex items-center justify-center mb-6">
-              <Sparkles size={28} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-gradient-to-b from-white/[0.05] to-transparent p-1 border border-white/10 rounded-3xl hover:border-indigo-500/50 transition-colors group">
+              <div className="bg-black p-8 rounded-[23px] h-full">
+                <div className="w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <CloudRain size={28} />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Clima Milimétrico</h3>
+                <p className="text-gray-400 leading-relaxed">Cruzamos datos de temperatura, humedad, viento y probabilidad de lluvia de tu ciudad exacta para evitar sorpresas meteorológicas.</p>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Estilo Generado por IA</h3>
-            <p className="text-gray-500 leading-relaxed">Nuestra IA avanzada diseña conjuntos únicos basándose en el clima, tu estilo y las últimas tendencias.</p>
-          </div>
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <div className="w-14 h-14 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-6">
-              <Sun size={28} />
+
+            {/* Feature 2 */}
+            <div className="bg-gradient-to-b from-white/[0.05] to-transparent p-1 border border-white/10 rounded-3xl hover:border-purple-500/50 transition-colors group">
+              <div className="bg-black p-8 rounded-[23px] h-full">
+                <div className="w-14 h-14 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Camera size={28} />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Visión por IA</h3>
+                <p className="text-gray-400 leading-relaxed">Sube una foto de tu propia ropa. Nuestra IA analiza los píxeles, colores y texturas para decirte exactamente con qué combina.</p>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Asistente Interactivo</h3>
-            <p className="text-gray-500 leading-relaxed">Chatea con la IA para pedirle cambios en el outfit. ¿Prefieres falda en vez de pantalón? Solo pídelo.</p>
+
+            {/* Feature 3 */}
+            <div className="bg-gradient-to-b from-white/[0.05] to-transparent p-1 border border-white/10 rounded-3xl hover:border-pink-500/50 transition-colors group">
+              <div className="bg-black p-8 rounded-[23px] h-full">
+                <div className="w-14 h-14 bg-pink-500/10 text-pink-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <MessageSquare size={28} />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Chatbot de Estilo</h3>
+                <p className="text-gray-400 leading-relaxed">¿No te gusta el pantalón sugerido? Díselo al chat. Te generará instantáneamente una alternativa con imagen y enlace de compra real.</p>
+              </div>
+            </div>
           </div>
-        </motion.div>
-      </main>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="relative z-10 py-32 px-6 border-t border-white/5 bg-gradient-to-b from-black to-indigo-950/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="w-full lg:w-1/2">
+              <h2 className="text-4xl md:text-5xl font-black mb-8">Pruébalo ahora.<br/>Sal a la calle perfecto.</h2>
+              <div className="space-y-8">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">1</div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-2">Busca tu ciudad</h4>
+                    <p className="text-gray-400">Introduce dónde estás o dónde vas a ir. Nosotros nos encargamos de los radares meteorológicos.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">2</div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-2">Recibe el Outfit</h4>
+                    <p className="text-gray-400">En milisegundos, obtienes una sugerencia completa (Parte Superior, Inferior, Calzado) con imágenes generadas por IA.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">3</div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-2">Modifica a tu gusto</h4>
+                    <p className="text-gray-400">Guarda las prendas en tu armario virtual o chatea para pedir cambios específicos si prefieres otro estilo hoy.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-full lg:w-1/2">
+              {/* Mockup UI */}
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                  <div className="text-xs text-gray-500">Ventoo AI Engine</div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-24 bg-gray-800 rounded-xl animate-pulse"></div>
+                  <div className="flex gap-4">
+                    <div className="w-1/2 h-40 bg-gray-800 rounded-xl animate-pulse delay-75"></div>
+                    <div className="w-1/2 h-40 bg-gray-800 rounded-xl animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing / Premium */}
+      <section className="relative z-10 py-32 px-6 border-t border-white/5 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black mb-6">Elige tu plan</h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">Comienza gratis, sube de nivel cuando estés listo para dominar la moda.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-gray-900/50 border border-gray-800 rounded-3xl p-10 flex flex-col">
+              <h3 className="text-2xl font-bold mb-2">Básico</h3>
+              <div className="text-4xl font-black mb-6">Gratis</div>
+              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8">Perfecto para probar la magia de Ventoo en tu día a día.</p>
+              
+              <ul className="space-y-4 mb-10 flex-1">
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>5 outfits generados por IA al día</span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Clima en tiempo real</span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Imágenes generadas de ropa</span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Armario virtual (limitado)</span></li>
+              </ul>
+              
+              <button onClick={() => navigate('/login')} className="w-full py-4 rounded-xl border border-gray-700 hover:bg-gray-800 font-bold transition-colors">
+                Crear cuenta gratis
+              </button>
+            </div>
+
+            {/* Premium Plan */}
+            <div className="bg-gradient-to-b from-indigo-900/40 to-gray-900 border border-indigo-500/50 rounded-3xl p-10 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_50px_rgba(99,102,241,0.15)]">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
+                <Crown size={16} /> MÁS POPULAR
+              </div>
+              <h3 className="text-2xl font-bold mb-2 text-indigo-100">Premium</h3>
+              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
+                $4.99 <span className="text-lg text-indigo-300 font-normal">/mes</span>
+              </div>
+              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8">Desbloquea el potencial completo de tu estilista personal 24/7.</p>
+              
+              <ul className="space-y-4 mb-10 flex-1 text-indigo-50">
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <strong>Outfits ilimitados</strong></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span className="flex items-center gap-2">Análisis de fotos con IA (Visión) <Zap size={16} className="text-yellow-400" fill="currentColor"/></span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Chatbot de moda sin límites</span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Armario virtual infinito</span></li>
+                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={20} /> <span>Soporte prioritario</span></li>
+              </ul>
+              
+              <button onClick={() => navigate('/login')} className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50">
+                Mejorar a Premium
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/10 bg-black py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <Sparkles className="text-indigo-500" size={20} />
+            <span className="text-xl font-black tracking-widest text-white">VENTOO</span>
+          </div>
+          <p className="text-gray-500 text-sm">
+            &copy; {new Date().getFullYear()} Ventoo. Diseñado por IA para el mundo real.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

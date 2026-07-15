@@ -73,19 +73,24 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
     const { lat, lon, ubicacion, clima } = req.body;
 
     // --- SISTEMA FREEMIUM: Límite de 5 outfits al día ---
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const consultasHoy = await prisma.consulta.count({
-        where: {
-            userId: req.user.id,
-            createdAt: {
-                gte: today
-            }
-        }
-    });
-
-    if (consultasHoy >= 5) {
-        return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
+    const dbUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+    
+    // Si es Premium o Admin, salta el límite
+    if (!dbUser.isPremium && dbUser.role !== 'ADMIN') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const consultasHoy = await prisma.consulta.count({
+          where: {
+              userId: req.user.id,
+              createdAt: {
+                  gte: today
+              }
+          }
+      });
+  
+      if (consultasHoy >= 5) {
+          return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
+      }
     }
     // ----------------------------------------------------
     
