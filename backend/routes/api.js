@@ -401,6 +401,9 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
         consultas: {
           where: { createdAt: { gte: startOfDay } },
           select: { id: true }
+        },
+        _count: {
+          select: { consultas: true }
         }
       }
     });
@@ -418,6 +421,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
       banReason: u.banReason,
       createdAt: u.createdAt,
       outfitsHoy: u.consultas.length,
+      totalHistory: u._count.consultas,
     }));
 
     res.json(result);

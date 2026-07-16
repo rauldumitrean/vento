@@ -474,6 +474,7 @@ const AdminView = ({ token }) => {
                           <th className="px-6 py-4 font-medium">Rol</th>
                           <th className="px-6 py-4 font-medium">Suscripción</th>
                           <th className="px-6 py-4 font-medium">Outfits Hoy</th>
+                          <th className="px-6 py-4 font-medium">Historial</th>
                           <th className="px-6 py-4 font-medium text-right">Acciones</th>
                         </tr>
                       </thead>
@@ -482,7 +483,7 @@ const AdminView = ({ token }) => {
                           <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
                             
                             {editUserId === u.id ? (
-                              <td className="px-6 py-4" colSpan="3">
+                              <td className="px-6 py-4" colSpan="4">
                                 <div className="flex flex-wrap items-center gap-4">
                                   <input 
                                     type="email" value={editUserData.email} onChange={e => setEditUserData({...editUserData, email: e.target.value})}
@@ -564,6 +565,23 @@ const AdminView = ({ token }) => {
                                       </div>
                                     </div>
                                   )}
+                                </td>
+                                {/* Historial column */}
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-col gap-1 min-w-[120px]">
+                                    <div className="flex justify-between text-xs font-medium">
+                                      <span className={((u.totalHistory || 0) >= (u.isPremium ? 50 : 15)) ? 'text-red-600' : 'text-gray-700'}>
+                                        {u.totalHistory || 0}/{u.isPremium ? 50 : 15}
+                                      </span>
+                                      <span className="text-gray-500 text-[10px] uppercase tracking-wider">Total</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                      <div 
+                                        className={`h-1.5 rounded-full transition-all ${((u.totalHistory || 0) >= (u.isPremium ? 50 : 15)) ? 'bg-red-500' : 'bg-blue-400'}`}
+                                        style={{ width: `${Math.min(((u.totalHistory || 0) / (u.isPremium ? 50 : 15)) * 100, 100)}%` }}
+                                      />
+                                    </div>
+                                  </div>
                                 </td>
                               </>
                             )}
