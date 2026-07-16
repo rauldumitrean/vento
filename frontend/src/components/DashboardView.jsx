@@ -7,7 +7,6 @@ import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import Navbar from './Navbar';
-import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
@@ -239,20 +238,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [limitWarning, setLimitWarning] = useState(null); // { type: 'close' | 'reached', params: { lat, lon, city } }
   
   const [showStyleOnboarding, setShowStyleOnboarding] = useState(false);
-
-  useEffect(() => {
-    // Set theme color for mobile browsers to prevent native bar from picking up blob colors
-    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (!metaThemeColor) {
-      metaThemeColor = document.createElement('meta');
-      metaThemeColor.name = 'theme-color';
-      document.head.appendChild(metaThemeColor);
-    }
-    metaThemeColor.setAttribute('content', darkMode ? '#030712' : '#fafafa');
-    
-    // Save dark mode preference
-    localStorage.setItem('darkMode', darkMode);
-  }, [darkMode]);
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -578,15 +563,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 pb-20 md:pb-0">
-        {view !== 'admin' && (
-          <>
-            <div className="hidden md:block">
-              <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
-            </div>
-            <MobileNavBar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} />
-          </>
-        )}
+      <div className="relative z-10">
+        <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
 
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />
