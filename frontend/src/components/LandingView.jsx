@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search } from 'lucide-react';
+import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity, Ban, MessageSquareText, Layers, Headset, Wand2, Gem, CreditCard, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -262,66 +262,118 @@ export default function LandingView({ token }) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-3xl p-8 flex flex-col">
-              <h3 className="text-xl font-bold mb-2">Básico</h3>
-              <div className="text-4xl font-black mb-6">Gratis</div>
-              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8 text-sm">Perfecto para probar la magia de Ventoo en tu día a día.</p>
+            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800 hover:border-gray-700 rounded-3xl p-8 flex flex-col transition-all duration-300">
+              <h3 className="text-xl font-bold mb-2 text-gray-300">Básico</h3>
+              <div className="text-4xl font-black mb-4 text-white">Gratis</div>
+              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8 text-sm leading-relaxed">Perfecto para probar la magia de Ventoo en tu día a día y conocer el motor de IA.</p>
               
-              <ul className="space-y-4 mb-10 flex-1 text-sm">
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>5 outfits generados por IA al día</span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span className="text-gray-500 font-medium">Con anuncios (Obligatorios)</span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Clima en tiempo real</span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Imágenes generadas de ropa</span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Armario virtual (limitado)</span></li>
+              <ul className="space-y-5 mb-10 flex-1 text-sm text-gray-300">
+                <li className="flex items-start gap-3">
+                  <CalendarDays className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>5 outfits diarios</strong> generados por nuestra IA basados en el clima actual.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MonitorPlay className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
+                  <span className="text-gray-500 font-medium">Financiado con anuncios durante el uso de la plataforma.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ThermometerSun className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Análisis climático básico</strong> en tiempo real para tu ubicación.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ImageIcon className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
+                  <span>Imágenes estándar generadas para ilustrar cada prenda sugerida.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Archive className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Armario virtual limitado</strong> (hasta 20 prendas guardadas).</span>
+                </li>
               </ul>
               
-              <button onClick={() => navigate(token ? '/app' : '/login', { state: { isRegister: true, plan: 'free' } })} className="w-full py-3 rounded-xl border border-gray-700 hover:bg-gray-800 font-bold transition-colors">
-                {token ? 'Ver mi panel' : 'Crear cuenta gratis'}
+              <button onClick={() => navigate(token ? '/app' : '/login', { state: { isRegister: true, plan: 'free' } })} className="w-full py-4 rounded-xl border border-gray-700 hover:bg-gray-800 font-bold transition-colors">
+                {token ? 'Ir a mi panel' : 'Comenzar gratis'}
               </button>
             </div>
 
             {/* Monthly Premium Plan */}
-            <div className="bg-gradient-to-b from-indigo-900/40 to-gray-900 border border-indigo-500/50 rounded-3xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_50px_rgba(99,102,241,0.15)]">
-              <h3 className="text-xl font-bold mb-2 text-indigo-100">Premium Mensual</h3>
-              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
-                1,99€ <span className="text-base text-indigo-300 font-normal">/mes</span>
+            <div className="bg-gradient-to-b from-indigo-900/60 to-gray-900 border border-indigo-500/50 rounded-3xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(99,102,241,0.2)] hover:shadow-[0_0_60px_rgba(99,102,241,0.3)] transition-all duration-300">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg whitespace-nowrap">
+                <Zap size={14} fill="currentColor" /> POPULAR
               </div>
-              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm">Desbloquea el potencial completo sin compromiso a largo plazo.</p>
+              <h3 className="text-xl font-bold mb-2 text-indigo-200">Premium Mensual</h3>
+              <div className="text-4xl font-black mb-4 text-white flex items-baseline gap-2">
+                1,99€ <span className="text-base text-indigo-400 font-normal">/mes</span>
+              </div>
+              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm leading-relaxed">Desbloquea el potencial completo de tu armario personal sin compromiso a largo plazo.</p>
               
-              <ul className="space-y-4 mb-10 flex-1 text-indigo-50 text-sm">
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <strong>Outfits ilimitados</strong></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <strong>100% Sin Anuncios</strong></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span className="flex items-center gap-2">Análisis de fotos con IA (Visión) <Zap size={16} className="text-yellow-400" fill="currentColor"/></span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Chatbot de moda sin límites</span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Armario virtual infinito</span></li>
-                <li className="flex items-center gap-3"><Check className="text-indigo-400" size={18} /> <span>Soporte prioritario</span></li>
+              <ul className="space-y-5 mb-10 flex-1 text-sm text-indigo-50">
+                <li className="flex items-start gap-3">
+                  <Infinity className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Generación ilimitada</strong> de outfits sin restricciones diarias.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Ban className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span>Experiencia <strong>100% libre de anuncios</strong> para mayor fluidez.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Camera className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Visión por IA:</strong> Sube fotos de tu propia ropa y la IA te dirá con qué combinarla.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MessageSquareText className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Chatbot de estilo avanzado</strong> para interactuar y modificar prendas sin límites.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Layers className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Armario virtual infinito</strong> para digitalizar toda tu colección real.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Wand2 className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span>Acceso anticipado a nuevas funciones experimentales de IA.</span>
+                </li>
               </ul>
               
-              <button onClick={() => navigate(token ? '/app?checkout=monthly' : '/login', { state: { isRegister: true, plan: 'monthly' } })} className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50">
-                {token ? 'Mejorar ahora' : 'Suscribirse por 1,99€'}
+              <button onClick={() => navigate(token ? '/app?checkout=monthly' : '/login', { state: { isRegister: true, plan: 'monthly' } })} className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50">
+                {token ? 'Mejorar a Mensual' : 'Suscribirse por 1,99€'}
               </button>
             </div>
 
             {/* Lifetime Plan */}
-            <div className="bg-gradient-to-b from-purple-900/40 to-gray-900 border border-purple-500/50 rounded-3xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_50px_rgba(168,85,247,0.15)]">
+            <div className="bg-gradient-to-b from-purple-900/60 to-gray-900 border border-purple-500/50 rounded-3xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(168,85,247,0.2)] hover:shadow-[0_0_60px_rgba(168,85,247,0.3)] transition-all duration-300">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg whitespace-nowrap">
-                <Crown size={14} /> MEJOR VALOR
+                <Crown size={14} fill="currentColor" /> MEJOR VALOR
               </div>
-              <h3 className="text-xl font-bold mb-2 text-purple-100">Premium Lifetime</h3>
-              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
-                20€ <span className="text-base text-purple-300 font-normal">pago único</span>
+              <h3 className="text-xl font-bold mb-2 text-purple-200">Premium Lifetime</h3>
+              <div className="text-4xl font-black mb-4 text-white flex items-baseline gap-2">
+                20€ <span className="text-base text-purple-400 font-normal">pago único</span>
               </div>
-              <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm">Paga una vez y disfruta de Ventoo Premium para siempre.</p>
+              <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm leading-relaxed">Paga una sola vez y disfruta de todos los beneficios de Ventoo Premium para siempre.</p>
               
-              <ul className="space-y-4 mb-10 flex-1 text-purple-50 text-sm">
-                <li className="flex items-center gap-3"><Check className="text-purple-400" size={18} /> <strong>Todo lo del plan mensual</strong></li>
-                <li className="flex items-center gap-3"><Check className="text-purple-400" size={18} /> <strong>Para toda la vida</strong></li>
-                <li className="flex items-center gap-3"><Check className="text-purple-400" size={18} /> <span>Sin cuotas recurrentes</span></li>
-                <li className="flex items-center gap-3"><Check className="text-purple-400" size={18} /> <span>Acceso a futuras mejoras pro</span></li>
+              <ul className="space-y-5 mb-10 flex-1 text-sm text-purple-50">
+                <li className="flex items-start gap-3">
+                  <Gem className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Absolutamente todo</strong> lo incluido en el plan Premium Mensual.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CreditCard className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Pago único definitivo:</strong> Olvídate para siempre de las suscripciones y cuotas recurrentes.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Infinity className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
+                  <span><strong>Acceso vitalicio</strong> a la plataforma sin fecha de caducidad.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
+                  <span>Actualizaciones y futuras <strong>mejoras Pro garantizadas</strong> sin coste adicional.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Gift className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
+                  <span>Estatus exclusivo de <strong>Usuario Fundador</strong> en tu perfil.</span>
+                </li>
               </ul>
               
-              <button onClick={() => navigate(token ? '/app?checkout=lifetime' : '/login', { state: { isRegister: true, plan: 'lifetime' } })} className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white transition-colors shadow-lg shadow-purple-900/50">
-                {token ? 'Comprar de por vida' : 'Comprar por 20€'}
+              <button onClick={() => navigate(token ? '/app?checkout=lifetime' : '/login', { state: { isRegister: true, plan: 'lifetime' } })} className="w-full py-4 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white transition-colors shadow-lg shadow-purple-900/50">
+                {token ? 'Comprar pase vitalicio' : 'Adquirir por 20€'}
               </button>
             </div>
           </div>
