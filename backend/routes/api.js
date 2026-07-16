@@ -6,7 +6,7 @@ const { PrismaClient } = require('@prisma/client');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 // FIX: Moved bcrypt require to top level instead of inside route handlers
 const bcrypt = require('bcryptjs');
-const { sendBanNotificationEmail } = require('../services/emailService');
+const { sendBanNotificationEmail, sendNewTicketEmail } = require('../services/emailService');
 
 const prisma = new PrismaClient();
 // Fallback if no key is provided during prototype to prevent hard crashes on boot, though it will fail on use
@@ -640,7 +640,7 @@ router.post('/tickets', authMiddleware, async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (user) {
-      await emailService.sendNewTicketEmail(user, ticket).catch(console.error);
+      await sendNewTicketEmail(user, ticket).catch(console.error);
     }
 
     res.json({ success: true, ticket });
