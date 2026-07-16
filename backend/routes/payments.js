@@ -4,6 +4,7 @@ const Stripe = require('stripe');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const authMiddleware = require('../middleware/authMiddleware');
+const emailService = require('../services/emailService');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 router.post('/create-checkout-session', authMiddleware, async (req, res) => {
@@ -91,7 +92,7 @@ router.post('/webhook', async (req, res) => {
       const plan = session.metadata?.plan;
 
       if (userId && !isNaN(userId)) {
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: { id: userId },
           data: {
             isPremium: true,
@@ -101,6 +102,10 @@ router.post('/webhook', async (req, res) => {
           }
         });
         console.log(`Usuario ${userId} actualizado a plan ${plan} correctamente.`);
+        
+        // Send async payment success email
+        emailService.sendPaymentSuccessEmail(updatedUser, plan).catch(console.error);
+        
       } else {
         console.error(`Webhook: userId inválido recibido: ${session.client_reference_id}`);
       }

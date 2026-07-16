@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const emailService = require('../services/emailService');
 
 router.post('/register', async (req, res) => {
   try {
@@ -19,6 +20,9 @@ router.post('/register', async (req, res) => {
     const user = await prisma.user.create({
       data: { email, password: hashedPassword, name, gender },
     });
+
+    // Send async welcome email
+    emailService.sendWelcomeEmail(user).catch(console.error);
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
@@ -55,6 +59,12 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    
+    // Send async login alert
+    const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
+    emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
+
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
   } catch (error) {
     console.error(error);
