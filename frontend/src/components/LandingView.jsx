@@ -348,7 +348,16 @@ export default function LandingView({ token }) {
 
             {/* Lifetime Plan */}
             <div className="bg-gradient-to-b from-purple-900/60 to-gray-900 border border-purple-500/50 rounded-3xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(168,85,247,0.2)] hover:shadow-[0_0_60px_rgba(168,85,247,0.3)] transition-all duration-300">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg whitespace-nowrap">
+              
+              {/* Divider "O" (Only visible on desktop) */}
+              <div className="hidden md:flex absolute top-1/2 left-[-12px] -translate-x-1/2 -translate-y-1/2 h-[75%] flex-col items-center justify-center z-20">
+                <div className="w-px h-full bg-gradient-to-b from-transparent via-purple-500/40 to-transparent absolute top-0 left-1/2 -translate-x-1/2"></div>
+                <div className="bg-gray-950 text-purple-300/70 text-xs font-black w-8 h-8 rounded-full border border-purple-500/30 flex items-center justify-center relative z-10 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                  O
+                </div>
+              </div>
+
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg whitespace-nowrap z-10">
                 <Crown size={14} fill="currentColor" /> MEJOR VALOR
               </div>
               <h3 className="text-xl font-bold mb-2 text-purple-200">Premium Lifetime</h3>
