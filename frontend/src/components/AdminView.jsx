@@ -8,6 +8,7 @@ const AdminView = ({ token }) => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits'
   const [users, setUsers] = useState([]);
   const [outfits, setOutfits] = useState([]);
+  const [selectedUserFilter, setSelectedUserFilter] = useState(''); // '' means all
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -52,6 +53,16 @@ const AdminView = ({ token }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  const fetchOutfits = async (userId = '') => {
+    try {
+      const url = userId ? `${API_URL}/api/admin/outfits?userId=${userId}` : `${API_URL}/api/admin/outfits`;
+      const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
+      setOutfits(res.data);
+    } catch (err) {
+      showAdminMsg('Error obteniendo outfits filtrados');
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -63,6 +74,7 @@ const AdminView = ({ token }) => {
       setUsers(usersRes.data);
       setStats(statsRes.data);
       setOutfits(outfitsRes.data);
+      setSelectedUserFilter(''); // Reset filter on full refresh
     } catch (error) {
       // FIX: Use UI message instead of alert()
       showAdminMsg('Error de conexión. Verifica tus permisos.');
@@ -632,6 +644,17 @@ const AdminView = ({ token }) => {
                                 </div>
                               ) : (
                                 <div className="flex justify-end gap-2">
+                                  <button 
+                                    onClick={() => {
+                                      setSelectedUserFilter(u.id);
+                                      fetchOutfits(u.id);
+                                      setActiveTab('outfits');
+                                    }} 
+                                    className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-md transition-colors" 
+                                    title="Ver Outfits"
+                                  >
+                                    <Database size={16} />
+                                  </button>
                                   {u.isBanned ? (
                                     <button onClick={() => handleUnban(u.id)} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-md transition-colors" title="Quitar baneo"><Shield size={16} /></button>
                                   ) : (
@@ -657,9 +680,22 @@ const AdminView = ({ token }) => {
                       <h2 className="text-xl md:text-2xl font-normal text-gray-900 mb-1 tracking-tight">Gestión de Outfits</h2>
                       <p className="text-gray-500 text-sm">Listado global de todos los outfits generados</p>
                     </div>
-                    <div className="flex w-full sm:w-auto gap-3">
+                    <div className="flex w-full sm:w-auto gap-3 items-center">
+                      <select 
+                        value={selectedUserFilter}
+                        onChange={(e) => {
+                          setSelectedUserFilter(e.target.value);
+                          fetchOutfits(e.target.value);
+                        }}
+                        className="flex-1 sm:flex-none p-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:outline-none focus:border-gray-400"
+                      >
+                        <option value="">Todos los usuarios</option>
+                        {users.map(u => (
+                          <option key={u.id} value={u.id}>{u.email}</option>
+                        ))}
+                      </select>
                       <button 
-                        onClick={fetchData}
+                        onClick={() => fetchOutfits(selectedUserFilter)}
                         disabled={isRefreshing}
                         className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 rounded-md text-sm transition-all disabled:opacity-50"
                       >

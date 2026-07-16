@@ -371,9 +371,17 @@ router.delete('/historial/:id', authMiddleware, async (req, res) => {
 // --- GESTIÓN DE OUTFITS ---
 router.get('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    const { userId } = req.query;
+    
+    let whereClause = {};
+    if (userId) {
+      whereClause.userId = parseInt(userId);
+    }
+
     const outfits = await prisma.consulta.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
-      take: 100, // Limitar a los últimos 100 para no sobrecargar
+      take: userId ? 500 : 100, // Limitar a los últimos 100 si es global, 500 si es de un usuario
       include: {
         user: { select: { email: true, name: true, role: true, isPremium: true } }
       }
