@@ -7,6 +7,7 @@ const AuthView = lazy(() => import('./components/AuthView'));
 const DashboardView = lazy(() => import('./components/DashboardView'));
 const AdminView = lazy(() => import('./components/AdminView'));
 const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
+const IosInstallPrompt = lazy(() => import('./components/IosInstallPrompt'));
 const TermsView = lazy(() => import('./components/TermsView'));
 const PrivacyView = lazy(() => import('./components/PrivacyView'));
 const SupportView = lazy(() => import('./components/SupportView'));
@@ -86,6 +87,9 @@ function App() {
             <Route path="/terms" element={<TermsView />} />
             <Route path="/privacy" element={<PrivacyView />} />
           </Routes>
+        </Suspense>
+        <Suspense fallback={null}>
+          <IosInstallPrompt />
         </Suspense>
       </div>
     </BrowserRouter>
