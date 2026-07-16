@@ -186,6 +186,35 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
       }
     });
 
+    // --- LÓGICA DE LIMPIEZA DE HISTORIAL (Máx 15 consultas no favoritas) ---
+    try {
+      const limit = 15;
+      const allNonFavs = await prisma.consulta.findMany({
+        where: { userId: req.user.id, isFavorite: false },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true }
+      });
+
+      if (allNonFavs.length > limit) {
+        const toDeleteCount = allNonFavs.length - limit;
+        const idsToDelete = allNonFavs.slice(0, toDeleteCount).map(c => c.id);
+        
+        // Primero borramos los mensajes asociados a esas consultas para no romper la llave foránea
+        await prisma.mensajeChat.deleteMany({
+          where: { consultaId: { in: idsToDelete } }
+        });
+        
+        // Y luego borramos las consultas
+        await prisma.consulta.deleteMany({
+          where: { id: { in: idsToDelete } }
+        });
+        console.log(`Borradas ${idsToDelete.length} consultas antiguas del usuario ${req.user.id}`);
+      }
+    } catch (cleanupError) {
+      console.error("Error limpiando historial antiguo:", cleanupError);
+      // No bloqueamos la respuesta al usuario si falla la limpieza
+    }
+
     res.json({ consultaId: consulta.id, recomendacion: recomendacionJSON });
   } catch (error) {
     console.error(error);
