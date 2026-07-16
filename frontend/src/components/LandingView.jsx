@@ -70,47 +70,46 @@ const AppPreviewAnimation = () => {
 
 // --- ANIMATED ICONS ---
 const AnimatedWeatherIcon = () => (
-  <motion.svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
-    <motion.path 
-      d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.1325 20.177 10.2104 17.8596 10.0195C17.4332 6.62311 14.5126 4 11 4C7.13401 4 4 7.13401 4 11C4 11.2339 4.01146 11.4651 4.03362 11.6923C1.75836 12.1883 0 14.237 0 16.6667C0 19.4281 2.23858 21.6667 5 21.6667H17.5Z" 
+  <div className="relative w-10 h-10 flex items-center justify-center">
+    <motion.div 
+      className="absolute top-1"
       animate={{ y: [0, -3, 0] }} 
       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-    />
-    <motion.line x1="8" y1="18" x2="8" y2="22" animate={{ y: [0, 4], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
-    <motion.line x1="12" y1="19" x2="12" y2="23" animate={{ y: [0, 4], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
-    <motion.line x1="16" y1="18" x2="16" y2="22" animate={{ y: [0, 4], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }} />
-  </motion.svg>
+    >
+      <Cloud size={28} className="text-indigo-400 relative z-10 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" fill="currentColor" fillOpacity={0.1} />
+    </motion.div>
+    <div className="absolute top-6 flex gap-1.5 z-0">
+      <motion.div className="w-[3px] h-[8px] bg-indigo-400 rounded-full shadow-[0_0_5px_rgba(99,102,241,0.8)]" animate={{ y: [0, 12], opacity: [0, 1, 0] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0 }} />
+      <motion.div className="w-[3px] h-[8px] bg-indigo-400 rounded-full shadow-[0_0_5px_rgba(99,102,241,0.8)]" animate={{ y: [0, 12], opacity: [0, 1, 0] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }} />
+      <motion.div className="w-[3px] h-[8px] bg-indigo-400 rounded-full shadow-[0_0_5px_rgba(99,102,241,0.8)]" animate={{ y: [0, 12], opacity: [0, 1, 0] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.8 }} />
+    </div>
+  </div>
 );
 
 const AnimatedScannerIcon = () => (
-  <motion.div className="relative w-8 h-8 text-purple-400">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
+  <div className="relative w-10 h-10 flex items-center justify-center">
+    <Camera size={28} className="text-purple-400" />
     <motion.div 
-      className="absolute left-0 right-0 h-[2px] bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,1)]"
-      animate={{ top: ["10%", "90%", "10%"] }}
-      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-    />
-  </motion.div>
+      className="absolute top-0 right-0 origin-center"
+      animate={{ scale: [1, 1.4, 1], rotate: [0, 180, 360], opacity: [0.6, 1, 0.6] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <Star size={12} className="text-purple-300 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]" fill="currentColor" />
+    </motion.div>
+  </div>
 );
 
 const AnimatedChatIcon = () => (
-  <motion.div 
-    className="relative w-8 h-8 text-pink-400"
-    animate={{ scale: [1, 1.05, 1] }}
-    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-  >
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-    </svg>
-    <div className="absolute inset-0 flex items-center justify-center gap-[3px] pb-1">
-      <motion.div className="w-1 h-1 bg-pink-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
-      <motion.div className="w-1 h-1 bg-pink-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }} />
-      <motion.div className="w-1 h-1 bg-pink-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }} />
+  <div className="relative w-10 h-10 flex items-center justify-center">
+    <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+      <MessageSquare size={28} className="text-pink-400" />
+    </motion.div>
+    <div className="absolute inset-0 flex items-center justify-center gap-[3px] pb-1.5">
+      <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
+      <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
+      <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} />
     </div>
-  </motion.div>
+  </div>
 );
 
 const AnimatedStepIndicator = ({ number }) => (
