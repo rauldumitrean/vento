@@ -57,7 +57,7 @@ const baseTemplate = (title, content, preheader = '') => `
     </div>
     <div class="footer">
       <p>Este correo electrónico fue enviado por Ventoo AI.</p>
-      <p>¿Tienes alguna duda? <a href="#">Contacta con soporte</a></p>
+      <p>¿Tienes alguna duda? <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/support">Contacta con soporte</a></p>
     </div>
   </div>
 </body>
@@ -219,5 +219,52 @@ exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason
     console.log(`Ban notification email sent to ${user.email}`);
   } catch (err) {
     console.error('Error sending ban notification email:', err);
+  }
+};
+
+/**
+ * Send an email to the support team when a new ticket is opened.
+ */
+exports.sendNewTicketEmail = async (user, ticket) => {
+  if (!process.env.SMTP_HOST) return;
+
+  const subject = `Nuevo ticket de soporte de ${user.name || 'Usuario'}`;
+  const preheader = `Problema reportado: ${ticket.asunto}`;
+  const content = `
+    <h2>Nuevo Ticket de Soporte</h2>
+    <div class="data-box">
+      <div class="data-row">
+        <span class="data-label">Usuario:</span>
+        <span class="data-value">${user.name} (${user.email})</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">ID Usuario:</span>
+        <span class="data-value">${user.id}</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Asunto:</span>
+        <span class="data-value">${ticket.asunto}</span>
+      </div>
+    </div>
+    <h2>Mensaje:</h2>
+    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+      <p style="margin: 0; white-space: pre-wrap;">${ticket.mensaje}</p>
+    </div>
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/admin" class="btn">Abrir Panel de Admin</a>
+    </div>
+  `;
+
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: getFromEmail(),
+      to: 'equipo.ventoo@gmail.com',
+      subject,
+      html: baseTemplate('Nuevo Ticket de Soporte', content, preheader)
+    });
+    console.log(`New ticket email sent for ticket ${ticket.id}`);
+  } catch (err) {
+    console.error('Error sending new ticket email:', err);
   }
 };

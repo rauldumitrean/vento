@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 const AdminView = ({ token }) => {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits' | 'tickets'
   const [users, setUsers] = useState([]);
   const [outfits, setOutfits] = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [selectedUserFilter, setSelectedUserFilter] = useState(''); // '' means all
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,20 +67,32 @@ const AdminView = ({ token }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersRes, statsRes, outfitsRes] = await Promise.all([
+      const [usersRes, statsRes, outfitsRes, ticketsRes] = await Promise.all([
         axios.get(`${API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setUsers(usersRes.data);
       setStats(statsRes.data);
       setOutfits(outfitsRes.data);
+      setTickets(ticketsRes.data);
       setSelectedUserFilter(''); // Reset filter on full refresh
     } catch (error) {
-      // FIX: Use UI message instead of alert()
       showAdminMsg('Error de conexión. Verifica tus permisos.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCloseTicket = async (id) => {
+    if (!window.confirm('¿Estás seguro de cerrar este ticket?')) return;
+    try {
+      await axios.put(`${API_URL}/api/admin/tickets/${id}/close`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      fetchData();
+      showAdminMsg('Ticket cerrado exitosamente');
+    } catch (err) {
+      showAdminMsg('Error al cerrar el ticket');
     }
   };
 
@@ -257,6 +270,12 @@ const AdminView = ({ token }) => {
               className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'outfits' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
             >
               <Database size={18} /> <span className="whitespace-nowrap">Outfits</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('tickets')}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'tickets' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+            >
+              <MessageSquare size={18} /> <span className="whitespace-nowrap">Tickets</span>
             </button>
           </nav>
         </div>
@@ -823,6 +842,52 @@ const AdminView = ({ token }) => {
                         )}
                       </tbody>
                     </table>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'tickets' && (
+                <motion.div key="tickets" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-normal text-gray-900 mb-1 tracking-tight">Soporte y Tickets</h2>
+                      <p className="text-gray-500 text-sm">Gestiona los reportes de los usuarios</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-gray-100 rounded-lg shadow-sm divide-y divide-gray-100">
+                    {tickets.length === 0 ? (
+                      <div className="p-8 text-center text-gray-400">No hay tickets reportados</div>
+                    ) : (
+                      tickets.map(ticket => (
+                        <div key={ticket.id} className={`p-6 ${ticket.estado === 'CERRADO' ? 'opacity-60 bg-gray-50' : ''}`}>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-3">
+                                {ticket.asunto}
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${ticket.estado === 'ABIERTO' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
+                                  {ticket.estado}
+                                </span>
+                              </h3>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Por {ticket.user?.name || 'Usuario'} ({ticket.user?.email}) - {new Date(ticket.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+                            {ticket.estado === 'ABIERTO' && (
+                              <button 
+                                onClick={() => handleCloseTicket(ticket.id)}
+                                className="px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 text-xs font-bold rounded-md transition-colors flex items-center gap-1"
+                              >
+                                Marcar Resuelto
+                              </button>
+                            )}
+                          </div>
+                          <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap border border-gray-200/60">
+                            {ticket.mensaje}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </motion.div>
               )}

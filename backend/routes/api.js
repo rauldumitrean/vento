@@ -624,4 +624,64 @@ router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, r
   }
 });
 
+// TICKETS
+router.post('/tickets', authMiddleware, async (req, res) => {
+  try {
+    const { asunto, mensaje } = req.body;
+    if (!asunto || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
+
+    const ticket = await prisma.ticket.create({
+      data: {
+        userId: req.user.id,
+        asunto,
+        mensaje
+      }
+    });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user) {
+      await emailService.sendNewTicketEmail(user, ticket).catch(console.error);
+    }
+
+    res.json({ success: true, ticket });
+  } catch (error) {
+    console.error('Error creating ticket:', error);
+    res.status(500).json({ error: 'Error al enviar ticket' });
+  }
+});
+
+router.get('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const tickets = await prisma.ticket.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { name: true, email: true } }
+      }
+    });
+    res.json(tickets);
+  } catch (error) {
+    console.error('Error fetching tickets:', error);
+    res.status(500).json({ error: 'Error obteniendo tickets' });
+  }
+});
+
+router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    const ticket = await prisma.ticket.update({
+      where: { id },
+      data: { estado: 'CERRADO' },
+      include: {
+        user: { select: { name: true, email: true } }
+      }
+    });
+    res.json(ticket);
+  } catch (error) {
+    console.error('Error closing ticket:', error);
+    res.status(500).json({ error: 'Error al cerrar ticket' });
+  }
+});
+
 module.exports = router;

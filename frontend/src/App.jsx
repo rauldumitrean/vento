@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import axios from 'axios';
 import LandingView from './components/LandingView';
@@ -9,6 +9,13 @@ const AdminView = lazy(() => import('./components/AdminView'));
 const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
 const TermsView = lazy(() => import('./components/TermsView'));
 const PrivacyView = lazy(() => import('./components/PrivacyView'));
+const SupportView = lazy(() => import('./components/SupportView'));
+
+const LoginRedirect = () => {
+  const location = useLocation();
+  const returnTo = location.state?.from?.pathname || "/app";
+  return <Navigate to={returnTo} replace />;
+};
 
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('token'));
@@ -62,11 +69,15 @@ function App() {
             />
             <Route 
               path="/login" 
-              element={!token ? <AuthView setToken={setToken} /> : <Navigate to="/app" />} 
+              element={!token ? <AuthView setToken={setToken} /> : <LoginRedirect />} 
             />
             <Route 
               path="/app" 
               element={token ? <DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /> : <Navigate to="/" />} 
+            />
+            <Route 
+              path="/support" 
+              element={token ? <SupportView token={token} /> : <Navigate to="/login" state={{ from: { pathname: '/support' } }} replace />} 
             />
             <Route 
               path="/admin" 

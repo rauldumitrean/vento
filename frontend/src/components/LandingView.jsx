@@ -466,6 +466,8 @@ export default function LandingView({ token }) {
           </div>
           <span className="text-gray-600 text-sm">© 2026 Ventoo. Desarrollado por Raul. Todos los derechos reservados.</span>
           <div className="flex items-center gap-5 text-xs text-gray-600">
+            <button onClick={() => navigate('/support')} className="hover:text-gray-300 transition-colors">Soporte</button>
+            <span className="text-gray-800">•</span>
             <button onClick={() => navigate('/terms')} className="hover:text-gray-300 transition-colors">Términos de Servicio</button>
             <span className="text-gray-800">•</span>
             <button onClick={() => navigate('/privacy')} className="hover:text-gray-300 transition-colors">Política de Privacidad</button>

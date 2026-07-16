@@ -28,6 +28,7 @@ model User {
   lastActive DateTime @default(now())
   consultas  Consulta[]
   prendas    PrendaArmario[]
+  tickets    Ticket[]
 }
 
 model Consulta {
@@ -59,4 +60,14 @@ model PrendaArmario {
   color       String?  // ej. "Blanca"
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model Ticket {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  asunto    String
+  mensaje   String
+  estado    String   @default("ABIERTO") // ABIERTO | CERRADO
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
