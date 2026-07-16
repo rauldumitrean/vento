@@ -68,6 +68,71 @@ const AppPreviewAnimation = () => {
   );
 }
 
+// --- ANIMATED ICONS ---
+const AnimatedWeatherIcon = () => (
+  <motion.svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
+    <motion.path 
+      d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.1325 20.177 10.2104 17.8596 10.0195C17.4332 6.62311 14.5126 4 11 4C7.13401 4 4 7.13401 4 11C4 11.2339 4.01146 11.4651 4.03362 11.6923C1.75836 12.1883 0 14.237 0 16.6667C0 19.4281 2.23858 21.6667 5 21.6667H17.5Z" 
+      animate={{ y: [0, -3, 0] }} 
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    />
+    <motion.line x1="8" y1="18" x2="8" y2="22" animate={{ y: [0, 4], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
+    <motion.line x1="12" y1="19" x2="12" y2="23" animate={{ y: [0, 4], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
+    <motion.line x1="16" y1="18" x2="16" y2="22" animate={{ y: [0, 4], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }} />
+  </motion.svg>
+);
+
+const AnimatedScannerIcon = () => (
+  <motion.div className="relative w-8 h-8 text-purple-400">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+    <motion.div 
+      className="absolute left-0 right-0 h-[2px] bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,1)]"
+      animate={{ top: ["10%", "90%", "10%"] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+    />
+  </motion.div>
+);
+
+const AnimatedChatIcon = () => (
+  <motion.div 
+    className="relative w-8 h-8 text-pink-400"
+    animate={{ scale: [1, 1.05, 1] }}
+    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+  >
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+    <div className="absolute inset-0 flex items-center justify-center gap-[3px] pb-1">
+      <motion.div className="w-1 h-1 bg-pink-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
+      <motion.div className="w-1 h-1 bg-pink-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }} />
+      <motion.div className="w-1 h-1 bg-pink-400 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }} />
+    </div>
+  </motion.div>
+);
+
+const AnimatedStepIndicator = ({ number }) => (
+  <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
+    {/* Ripple effects */}
+    <motion.div 
+      className="absolute inset-0 border-2 border-indigo-500 rounded-full"
+      animate={{ scale: [1, 1.5], opacity: [1, 0] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0 }}
+    />
+    <motion.div 
+      className="absolute inset-0 border-2 border-indigo-500 rounded-full"
+      animate={{ scale: [1, 1.5], opacity: [1, 0] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
+    />
+    {/* Solid center */}
+    <div className="absolute inset-0 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)] z-10">
+      {number}
+    </div>
+  </div>
+);
+
 export default function LandingView({ token }) {
   const navigate = useNavigate();
 
@@ -170,8 +235,8 @@ export default function LandingView({ token }) {
             {/* Feature 1 */}
             <div className="bg-gradient-to-b from-white/[0.05] to-transparent p-1 border border-white/10 rounded-3xl hover:border-indigo-500/50 transition-colors group">
               <div className="bg-black p-8 rounded-[23px] h-full">
-                <div className="w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <CloudRain size={28} />
+                <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-500/20 transition-colors">
+                  <AnimatedWeatherIcon />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Clima Milimétrico</h3>
                 <p className="text-gray-400 leading-relaxed">Cruzamos datos de temperatura, humedad, viento y probabilidad de lluvia de tu ciudad exacta para evitar sorpresas meteorológicas.</p>
@@ -181,8 +246,8 @@ export default function LandingView({ token }) {
             {/* Feature 2 */}
             <div className="bg-gradient-to-b from-white/[0.05] to-transparent p-1 border border-white/10 rounded-3xl hover:border-purple-500/50 transition-colors group">
               <div className="bg-black p-8 rounded-[23px] h-full">
-                <div className="w-14 h-14 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Camera size={28} />
+                <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition-colors">
+                  <AnimatedScannerIcon />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Visión por IA</h3>
                 <p className="text-gray-400 leading-relaxed">Sube una foto de tu propia ropa. Nuestra IA analiza los píxeles, colores y texturas para decirte exactamente con qué combina.</p>
@@ -192,8 +257,8 @@ export default function LandingView({ token }) {
             {/* Feature 3 */}
             <div className="bg-gradient-to-b from-white/[0.05] to-transparent p-1 border border-white/10 rounded-3xl hover:border-pink-500/50 transition-colors group">
               <div className="bg-black p-8 rounded-[23px] h-full">
-                <div className="w-14 h-14 bg-pink-500/10 text-pink-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <MessageSquare size={28} />
+                <div className="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-pink-500/20 transition-colors">
+                  <AnimatedChatIcon />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Chatbot de Estilo</h3>
                 <p className="text-gray-400 leading-relaxed">¿No te gusta el pantalón sugerido? Díselo al chat. Te generará instantáneamente una alternativa con imagen y enlace de compra real.</p>
@@ -210,22 +275,22 @@ export default function LandingView({ token }) {
             <div className="w-full lg:w-1/2">
               <h2 className="text-4xl md:text-5xl font-black mb-8">Pruébalo ahora.<br/>Sal a la calle perfecto.</h2>
               <div className="space-y-8">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">1</div>
+                <div className="flex gap-6 items-start">
+                  <AnimatedStepIndicator number="1" />
                   <div>
                     <h4 className="text-xl font-bold mb-2">Busca tu ciudad</h4>
                     <p className="text-gray-400">Introduce dónde estás o dónde vas a ir. Nosotros nos encargamos de los radares meteorológicos.</p>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">2</div>
+                <div className="flex gap-6 items-start">
+                  <AnimatedStepIndicator number="2" />
                   <div>
                     <h4 className="text-xl font-bold mb-2">Recibe el Outfit</h4>
                     <p className="text-gray-400">En milisegundos, obtienes una sugerencia completa (Parte Superior, Inferior, Calzado) con imágenes generadas por IA.</p>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">3</div>
+                <div className="flex gap-6 items-start">
+                  <AnimatedStepIndicator number="3" />
                   <div>
                     <h4 className="text-xl font-bold mb-2">Modifica a tu gusto</h4>
                     <p className="text-gray-400">Guarda las prendas en tu armario virtual o chatea para pedir cambios específicos si prefieres otro estilo hoy.</p>
