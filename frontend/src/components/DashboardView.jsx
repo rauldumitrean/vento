@@ -769,11 +769,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 
                 <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {limitWarning.type === 'close' 
-                    ? `Tienes ${historyCount} outfits guardados. Si llegas a ${historyLimit}, los outfits más antiguos (que no estén en Favoritos) se borrarán automáticamente.`
-                    : `Tienes el máximo de ${historyLimit} outfits guardados. Si generas uno nuevo, el más antiguo (no marcado como Favorito) se borrará automáticamente para hacerle sitio.`
+                    ? `Tienes ${historyCount} outfits guardados. Si llegas a ${historyLimit}, no podrás generar nuevos outfits hasta que elimines alguno de tu historial (los guardados como Favoritos no se borran, pero cuentan para el límite si no liberas espacio).`
+                    : `Tienes el máximo de ${historyLimit} outfits guardados. Para poder generar uno nuevo, primero debes ir a tu Armario y eliminar outfits antiguos.`
                   }
                   <br/><br/>
-                  ¿Deseas continuar y generar este outfit?
+                  {limitWarning.type === 'close' ? '¿Deseas generar este outfit de todos modos?' : 'Dirígete a "Armario & Historial" para liberar espacio.'}
                 </p>
                 
                 <div className="flex gap-3 w-full">
@@ -781,14 +781,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     onClick={() => setLimitWarning(null)}
                     className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
                   >
-                    Cancelar
+                    {limitWarning.type === 'close' ? 'Cancelar' : 'Entendido'}
                   </button>
-                  <button 
-                    onClick={confirmGeneration}
-                    className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-orange-500/30"
-                  >
-                    Sí, Continuar
-                  </button>
+                  {limitWarning.type === 'close' && (
+                    <button 
+                      onClick={confirmGeneration}
+                      className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-orange-500/30"
+                    >
+                      Sí, Generar
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

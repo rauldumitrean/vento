@@ -204,8 +204,8 @@ export default function ProfileSettings({ token, darkMode }) {
             </div>
             <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
               {historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) 
-                ? 'Has alcanzado tu límite. Los outfits más antiguos se irán borrando.' 
-                : 'Al alcanzar tu límite, se empezarán a borrar los outfits más antiguos no guardados en favoritos.'}
+                ? 'Has alcanzado tu límite. Para generar nuevos outfits, elimina algunos de tu historial.' 
+                : 'Al alcanzar tu límite, no podrás generar nuevos outfits hasta que liberes espacio en tu historial.'}
             </p>
           </div>
         </div>

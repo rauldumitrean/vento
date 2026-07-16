@@ -106,6 +106,17 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
     }
     // ----------------------------------------------------
     
+    // --- LÍMITE DE HISTORIAL ---
+    const historyLimit = dbUser.isPremium || dbUser.role === 'ADMIN' ? 50 : 15;
+    const allNonFavsCount = await prisma.consulta.count({
+      where: { userId: req.user.id, isFavorite: false }
+    });
+
+    if (allNonFavsCount >= historyLimit) {
+      return res.status(403).json({ error: `Has alcanzado el límite máximo de tu historial (${historyLimit}/${historyLimit}). Borra algunos outfits desde tu Armario para generar nuevos.` });
+    }
+    // ----------------------------------------------------
+    
     if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
 
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'INSERT_YOUR_GEMINI_KEY_HERE') {
@@ -186,34 +197,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
       }
     });
 
-    // --- LÓGICA DE LIMPIEZA DE HISTORIAL (Máx 15 consultas no favoritas) ---
-    try {
-      const limit = req.user.isPremium ? 50 : 15;
-      const allNonFavs = await prisma.consulta.findMany({
-        where: { userId: req.user.id, isFavorite: false },
-        orderBy: { createdAt: 'asc' },
-        select: { id: true }
-      });
-
-      if (allNonFavs.length > limit) {
-        const toDeleteCount = allNonFavs.length - limit;
-        const idsToDelete = allNonFavs.slice(0, toDeleteCount).map(c => c.id);
-        
-        // Primero borramos los mensajes asociados a esas consultas para no romper la llave foránea
-        await prisma.mensajeChat.deleteMany({
-          where: { consultaId: { in: idsToDelete } }
-        });
-        
-        // Y luego borramos las consultas
-        await prisma.consulta.deleteMany({
-          where: { id: { in: idsToDelete } }
-        });
-        console.log(`Borradas ${idsToDelete.length} consultas antiguas del usuario ${req.user.id}`);
-      }
-    } catch (cleanupError) {
-      console.error("Error limpiando historial antiguo:", cleanupError);
-      // No bloqueamos la respuesta al usuario si falla la limpieza
-    }
+    // (La lógica de limpieza automática se ha eliminado porque ahora bloqueamos la generación si superan el límite)
 
     res.json({ consultaId: consulta.id, recomendacion: recomendacionJSON });
   } catch (error) {
