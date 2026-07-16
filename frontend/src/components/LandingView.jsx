@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity, Ban, MessageSquareText, Layers, Headset, Wand2, Gem, CreditCard, Gift, History } from 'lucide-react';
+import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Headset, Wand2, Gem, CreditCard, Gift, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -376,7 +376,7 @@ export default function LandingView({ token }) {
               
               <ul className="space-y-5 mb-10 flex-1 text-sm text-indigo-50">
                 <li className="flex items-start gap-3">
-                  <Infinity className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <InfinityIcon className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
                   <span><strong>Generación ilimitada</strong> de outfits sin restricciones diarias.</span>
                 </li>
                 <li className="flex items-start gap-3">
