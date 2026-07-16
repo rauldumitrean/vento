@@ -188,7 +188,13 @@ exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason
   const reasonText = banReason ? `<p><strong>Motivo de la suspensión:</strong> ${banReason}</p>` : '';
 
   const content = `
-    <h2>Aviso de Suspensión de Cuenta</h2>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="background: rgba(239, 68, 68, 0.1); padding: 16px; border-radius: 50%;">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
+    <h2 style="text-align: center;">Aviso de Suspensión de Cuenta</h2>
     <p>Hola <strong>${user.name || 'Usuario'}</strong>,</p>
     <p>Te escribimos para informarte de que tu cuenta de Ventoo ha sido suspendida <strong>${durationText}</strong> por infringir nuestros términos de servicio.</p>
     ${reasonText}
