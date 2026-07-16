@@ -17,6 +17,8 @@ export default function AuthView({ setToken }) {
   const [gender, setGender] = useState('Mujer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registerStep, setRegisterStep] = useState(1);
+  const [age, setAge] = useState('');
   const [showPlans, setShowPlans] = useState(false);
   const [pendingAuth, setPendingAuth] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -28,10 +30,11 @@ export default function AuthView({ setToken }) {
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender });
+      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
       sessionStorage.setItem('userRole', res.data.user?.role || 'USER');
       if (res.data.user?.name) sessionStorage.setItem('userName', res.data.user.name);
       if (res.data.user?.gender) sessionStorage.setItem('userGender', res.data.user.gender);
+      if (res.data.user?.age) sessionStorage.setItem('userAge', res.data.user.age);
       if (res.data.user?.isPremium !== undefined) sessionStorage.setItem('isPremium', res.data.user.isPremium);
       if (res.data.user?.premiumPlan) sessionStorage.setItem('premiumPlan', res.data.user.premiumPlan);
       
@@ -89,6 +92,7 @@ export default function AuthView({ setToken }) {
   const switchMode = (toLogin) => {
     setError('');
     setPassword('');
+    setRegisterStep(1);
     setIsLogin(toLogin);
   };
 
@@ -376,204 +380,107 @@ export default function AuthView({ setToken }) {
                 <h1 className="text-3xl font-black text-gray-900 mb-1">Crea tu cuenta</h1>
                 <p className="text-gray-400 text-sm mb-8">Únete a la IA meteorológica de moda</p>
 
-                <form onSubmit={(e) => handleAuth(e, '/api/auth/register')} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>Nombre</label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        className={inputClass}
-                        placeholder="Tu nombre"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Género</label>
-                      <select
-                        value={gender}
-                        onChange={e => setGender(e.target.value)}
-                        className={inputClass}
-                      >
-                        <option value="Mujer">Mujer</option>
-                        <option value="Hombre">Hombre</option>
-                        <option value="Otro">Otro</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Correo electrónico</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className={inputClass}
-                      placeholder="tu@email.com"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Contraseña</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        className={inputClass + ' pr-11'}
-                        placeholder="Mínimo 6 caracteres"
-                        minLength={6}
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (registerStep === 1) setRegisterStep(2);
+                  else handleAuth(e, '/api/auth/register');
+                }} className="space-y-4">
+                  {registerStep === 1 ? (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className={labelClass}>Nombre</label>
+                          <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} placeholder="Tu nombre" required />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Género</label>
+                          <select value={gender} onChange={e => setGender(e.target.value)} className={inputClass}>
+                            <option value="Mujer">Mujer</option>
+                            <option value="Hombre">Hombre</option>
+                            <option value="Otro">Otro</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Correo electrónico</label>
+                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputClass} placeholder="tu@email.com" required />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Contraseña</label>
+                        <div className="relative">
+                          <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} className={inputClass + ' pr-11'} placeholder="Mínimo 6 caracteres" minLength={6} required />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
 
-                    {/* Password strength checklist — only shown when user starts typing */}
-                    <AnimatePresence>
-                      {password.length > 0 && (() => {
-                        const checks = [
-                          { key: 'len',     label: 'Mínimo 6 caracteres',          ok: password.length >= 6 },
-                          { key: 'upper',   label: 'Al menos una letra mayúscula', ok: /[A-Z]/.test(password) },
-                          { key: 'number',  label: 'Al menos un número',           ok: /[0-9]/.test(password) },
-                          { key: 'symbol',  label: 'Al menos un símbolo (!@#…)',   ok: /[^A-Za-z0-9]/.test(password) },
-                        ];
-                        const passed = checks.filter(c => c.ok).length;
-                        const strengthColor =
-                          passed <= 1 ? '#ef4444' :
-                          passed === 2 ? '#f97316' :
-                          passed === 3 ? '#eab308' :
-                          '#22c55e';
-                        const strengthLabel =
-                          passed <= 1 ? 'Muy débil' :
-                          passed === 2 ? 'Débil' :
-                          passed === 3 ? 'Buena' :
-                          '¡Fuerte!';
+                        {/* Password strength checklist */}
+                        <AnimatePresence>
+                          {password.length > 0 && (() => {
+                            const checks = [
+                              { key: 'len',     label: 'Mínimo 6 caracteres',          ok: password.length >= 6 },
+                              { key: 'upper',   label: 'Al menos una letra mayúscula', ok: /[A-Z]/.test(password) },
+                              { key: 'number',  label: 'Al menos un número',           ok: /[0-9]/.test(password) },
+                              { key: 'symbol',  label: 'Al menos un símbolo (!@#…)',   ok: /[^A-Za-z0-9]/.test(password) },
+                            ];
+                            const passed = checks.filter(c => c.ok).length;
+                            const strengthColor = passed <= 1 ? '#ef4444' : passed === 2 ? '#f97316' : passed === 3 ? '#eab308' : '#22c55e';
+                            const strengthLabel = passed <= 1 ? 'Muy débil' : passed === 2 ? 'Débil' : passed === 3 ? 'Buena' : '¡Fuerte!';
 
-                        return (
-                          <motion.div
-                            key="pw-checklist"
-                            initial={{ opacity: 0, y: -6, height: 0 }}
-                            animate={{ opacity: 1, y: 0, height: 'auto' }}
-                            exit={{ opacity: 0, y: -6, height: 0 }}
-                            transition={{ duration: 0.25, ease: 'easeOut' }}
-                            className="overflow-hidden"
-                          >
-                            <div className="mt-3 p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
-
-                              {/* Strength bar */}
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                  <motion.div
-                                    className="h-full rounded-full"
-                                    style={{ backgroundColor: strengthColor }}
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${(passed / 4) * 100}%` }}
-                                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                                  />
+                            return (
+                              <motion.div key="pw-checklist" initial={{ opacity: 0, y: -6, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, y: -6, height: 0 }} transition={{ duration: 0.25, ease: 'easeOut' }} className="overflow-hidden">
+                                <div className="mt-3 p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                      <motion.div className="h-full rounded-full" style={{ backgroundColor: strengthColor }} initial={{ width: 0 }} animate={{ width: `${(passed / 4) * 100}%` }} transition={{ duration: 0.4, ease: 'easeOut' }} />
+                                    </div>
+                                    <motion.span key={strengthLabel} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[10px] font-bold w-16 text-right" style={{ color: strengthColor }}>{strengthLabel}</motion.span>
+                                  </div>
+                                  {checks.map(({ key, label, ok }) => (
+                                    <motion.div key={key} className="flex items-center gap-2" initial={false}>
+                                      <motion.svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" animate={{ scale: ok ? [1, 1.3, 1] : 1 }} transition={{ duration: 0.3 }}>
+                                        <motion.circle cx="8" cy="8" r="7" animate={{ stroke: ok ? '#22c55e' : '#d1d5db', fill: ok ? '#f0fdf4' : '#f9fafb' }} transition={{ duration: 0.25 }} strokeWidth="1.5" />
+                                        <AnimatePresence mode="wait">
+                                          {ok ? <motion.path key="check" d="M5 8l2 2 4-4" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} exit={{ pathLength: 0, opacity: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }} /> : <motion.path key="dash" d="M5.5 8h5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />}
+                                        </AnimatePresence>
+                                      </motion.svg>
+                                      <motion.span className="text-xs" animate={{ color: ok ? '#16a34a' : '#9ca3af' }} transition={{ duration: 0.25 }}>{label}</motion.span>
+                                    </motion.div>
+                                  ))}
                                 </div>
-                                <motion.span
-                                  key={strengthLabel}
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  className="text-[10px] font-bold w-16 text-right"
-                                  style={{ color: strengthColor }}
-                                >
-                                  {strengthLabel}
-                                </motion.span>
-                              </div>
+                              </motion.div>
+                            );
+                          })()}
+                        </AnimatePresence>
+                      </div>
 
-                              {/* Check items */}
-                              {checks.map(({ key, label, ok }) => (
-                                <motion.div
-                                  key={key}
-                                  className="flex items-center gap-2"
-                                  initial={false}
-                                >
-                                  {/* SVG icon — circle with checkmark or dash */}
-                                  <motion.svg
-                                    width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    animate={{ scale: ok ? [1, 1.3, 1] : 1 }}
-                                    transition={{ duration: 0.3 }}
-                                  >
-                                    <motion.circle
-                                      cx="8" cy="8" r="7"
-                                      animate={{
-                                        stroke: ok ? '#22c55e' : '#d1d5db',
-                                        fill: ok ? '#f0fdf4' : '#f9fafb',
-                                      }}
-                                      transition={{ duration: 0.25 }}
-                                      strokeWidth="1.5"
-                                    />
-                                    <AnimatePresence mode="wait">
-                                      {ok ? (
-                                        <motion.path
-                                          key="check"
-                                          d="M5 8l2 2 4-4"
-                                          stroke="#22c55e"
-                                          strokeWidth="1.8"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          initial={{ pathLength: 0, opacity: 0 }}
-                                          animate={{ pathLength: 1, opacity: 1 }}
-                                          exit={{ pathLength: 0, opacity: 0 }}
-                                          transition={{ duration: 0.3, ease: 'easeOut' }}
-                                        />
-                                      ) : (
-                                        <motion.path
-                                          key="dash"
-                                          d="M5.5 8h5"
-                                          stroke="#9ca3af"
-                                          strokeWidth="1.5"
-                                          strokeLinecap="round"
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.2 }}
-                                        />
-                                      )}
-                                    </AnimatePresence>
-                                  </motion.svg>
-
-                                  <motion.span
-                                    className="text-xs"
-                                    animate={{ color: ok ? '#16a34a' : '#9ca3af' }}
-                                    transition={{ duration: 0.25 }}
-                                  >
-                                    {label}
-                                  </motion.span>
-                                </motion.div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        );
-                      })()}
-                    </AnimatePresence>
-                  </div>
+                      <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2 mt-2">
+                        Siguiente <ArrowRight size={16} />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-4">
+                      <div>
+                        <label className={labelClass}>¿Qué edad tienes?</label>
+                        <p className="text-xs text-gray-500 mb-2">Usaremos este dato para que la IA genere outfits apropiados para tu edad.</p>
+                        <input type="number" value={age} onChange={e => setAge(e.target.value)} className={inputClass} placeholder="Ej: 25" min="13" max="100" required />
+                      </div>
+                      <div className="flex gap-3 mt-4">
+                        <button type="button" onClick={() => setRegisterStep(1)} className="px-6 py-3.5 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-colors">
+                          Atrás
+                        </button>
+                        <button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-purple-500/20 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+                          {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Crear cuenta <ArrowRight size={16} /></>}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
 
                   {error && (
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-sm text-center bg-red-50 py-2 px-4 rounded-lg">
                       {error}
                     </motion.p>
                   )}
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-purple-500/20 transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>Crear cuenta <ArrowRight size={16} /></>
-                    )}
-                  </button>
                 </form>
 
                 <p className="text-gray-400 text-sm text-center mt-6">

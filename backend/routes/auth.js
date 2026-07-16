@@ -8,7 +8,7 @@ const emailService = require('../services/emailService');
 
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, gender } = req.body;
+    const { email, password, name, gender, age } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Faltan datos.' });
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -18,14 +18,14 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name, gender },
+      data: { email, password: hashedPassword, name, gender, age: age ? parseInt(age) : null },
     });
 
     // Send async welcome email (must await in Vercel serverless)
     await emailService.sendWelcomeEmail(user).catch(console.error);
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al registrar usuario.' });
@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
 
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al iniciar sesión.' });
@@ -85,7 +85,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       }
     });
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener perfil' });
@@ -94,17 +94,20 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
-    const { name, gender, estiloPersonal, estiloDetalles } = req.body;
+    const { name, gender, age, estiloPersonal, estiloDetalles } = req.body;
+    const updateData = { name, gender, estiloPersonal, estiloDetalles };
+    if (age !== undefined) updateData.age = age === '' || age === null ? null : parseInt(age);
+
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: { name, gender, estiloPersonal, estiloDetalles },
+      data: updateData,
       include: {
         _count: {
           select: { consultas: { where: { isFavorite: false } } }
         }
       }
     });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar perfil.' });

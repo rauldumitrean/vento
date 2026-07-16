@@ -240,6 +240,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [limitWarning, setLimitWarning] = useState(null); // { type: 'close' | 'reached', params: { lat, lon, city } }
   
   const [showStyleOnboarding, setShowStyleOnboarding] = useState(false);
+  const [showAgePrompt, setShowAgePrompt] = useState(false);
+  const [ageInput, setAgeInput] = useState('');
+  const [savingAge, setSavingAge] = useState(false);
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -250,7 +253,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         });
         if (res.data.user) {
           setHistoryCount(res.data.user.historyCount || 0);
-          if (!res.data.user.estiloPersonal) {
+          if (res.data.user.age === null) {
+            setShowAgePrompt(true);
+            if (!res.data.user.estiloPersonal) {
+              sessionStorage.setItem('needsStyleOnboarding', 'true');
+            }
+          } else if (!res.data.user.estiloPersonal) {
             setShowStyleOnboarding(true);
           }
         }
@@ -262,6 +270,29 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       checkOnboarding();
     }
   }, [token]);
+
+  const handleSaveAge = async (e) => {
+    e.preventDefault();
+    if (!ageInput || ageInput < 13 || ageInput > 100) return;
+    setSavingAge(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      await axios.put(`${API_URL}/api/auth/profile`, { age: parseInt(ageInput) }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      sessionStorage.setItem('userAge', ageInput);
+      setShowAgePrompt(false);
+      
+      if (sessionStorage.getItem('needsStyleOnboarding') === 'true') {
+        sessionStorage.removeItem('needsStyleOnboarding');
+        setShowStyleOnboarding(true);
+      }
+    } catch (err) {
+      showToast('Error guardando la edad');
+    } finally {
+      setSavingAge(false);
+    }
+  };
 
   // Seleccionar frase aleatoria solo una vez al montar el componente
   const [randomGreeting] = useState(() => {
@@ -894,6 +925,52 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           onClose={() => setShowStyleOnboarding(false)} 
         />
       )}
+
+      <AnimatePresence>
+        {showAgePrompt && (
+          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.9, y: 20, opacity: 0 }} 
+              animate={{ scale: 1, y: 0, opacity: 1 }} 
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              className={`max-w-md w-full p-8 rounded-3xl border ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'} shadow-2xl relative overflow-hidden`}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-indigo-50">
+                  <Sparkles size={28} className="text-indigo-600" />
+                </div>
+                <h3 className="text-2xl font-black mb-2 tracking-tight">Mejora tus resultados</h3>
+                <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Para que la Inteligencia Artificial te recomiende outfits que se adapten mejor a ti, necesitamos saber tu edad.
+                </p>
+                
+                <form onSubmit={handleSaveAge} className="w-full">
+                  <div className="mb-6">
+                    <label className={`block text-left text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Tu Edad</label>
+                    <input
+                      type="number"
+                      min="13"
+                      max="100"
+                      required
+                      value={ageInput}
+                      onChange={e => setAgeInput(e.target.value)}
+                      placeholder="Ej: 25"
+                      className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={savingAge}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50"
+                  >
+                    {savingAge ? 'Guardando...' : 'Guardar y Continuar'}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

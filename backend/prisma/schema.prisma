@@ -17,6 +17,7 @@ model User {
   isPremium  Boolean  @default(false)
   estiloPersonal String?
   estiloDetalles String?
+  age        Int?
   stripeCustomerId     String?  @unique
   stripeSubscriptionId String?  @unique
   premiumPlan          String?  // "monthly" o "lifetime"
