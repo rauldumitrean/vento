@@ -21,8 +21,8 @@ router.post('/register', async (req, res) => {
       data: { email, password: hashedPassword, name, gender },
     });
 
-    // Send async welcome email
-    emailService.sendWelcomeEmail(user).catch(console.error);
+    // Send async welcome email (must await in Vercel serverless)
+    await emailService.sendWelcomeEmail(user).catch(console.error);
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
@@ -60,10 +60,10 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     
-    // Send async login alert
+    // Send async login alert (must await in Vercel serverless)
     const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
-    emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
+    await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
 
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
   } catch (error) {

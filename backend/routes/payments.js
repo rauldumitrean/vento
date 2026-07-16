@@ -103,8 +103,8 @@ router.post('/webhook', async (req, res) => {
         });
         console.log(`Usuario ${userId} actualizado a plan ${plan} correctamente.`);
         
-        // Send async payment success email
-        emailService.sendPaymentSuccessEmail(updatedUser, plan).catch(console.error);
+        // Send async payment success email (must await in Vercel serverless)
+        await emailService.sendPaymentSuccessEmail(updatedUser, plan).catch(console.error);
         
       } else {
         console.error(`Webhook: userId inválido recibido: ${session.client_reference_id}`);
