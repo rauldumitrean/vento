@@ -172,3 +172,42 @@ exports.sendPaymentSuccessEmail = async (user, plan) => {
     console.error('Error sending payment success email:', err);
   }
 };
+
+exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason) => {
+  if (!process.env.SMTP_HOST || !isBanned) return;
+
+  const subject = `Aviso importante sobre tu cuenta de Ventoo`;
+  const preheader = 'Tu cuenta ha sido suspendida.';
+  
+  let durationText = 'de forma permanente';
+  if (bannedUntil) {
+    const date = new Date(bannedUntil);
+    durationText = `hasta el ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })} a las ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  const reasonText = banReason ? `<p><strong>Motivo de la suspensión:</strong> ${banReason}</p>` : '';
+
+  const content = `
+    <h2>Aviso de Suspensión de Cuenta</h2>
+    <p>Hola <strong>${user.name || 'Usuario'}</strong>,</p>
+    <p>Te escribimos para informarte de que tu cuenta de Ventoo ha sido suspendida <strong>${durationText}</strong> por infringir nuestros términos de servicio.</p>
+    ${reasonText}
+    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <p style="color: #fca5a5; margin: 0; font-size: 14px;">Durante este tiempo, no podrás acceder a la plataforma ni utilizar los servicios de inteligencia artificial.</p>
+    </div>
+    <p>Si crees que esto ha sido un error, por favor, contacta con nuestro equipo de soporte.</p>
+  `;
+
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: getFromEmail(),
+      to: user.email,
+      subject,
+      html: baseTemplate('Cuenta Suspendida', content, preheader)
+    });
+    console.log(`Ban notification email sent to ${user.email}`);
+  } catch (err) {
+    console.error('Error sending ban notification email:', err);
+  }
+};

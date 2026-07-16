@@ -6,6 +6,7 @@ const { PrismaClient } = require('@prisma/client');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 // FIX: Moved bcrypt require to top level instead of inside route handlers
 const bcrypt = require('bcryptjs');
+const { sendBanNotificationEmail } = require('../services/emailService');
 
 const prisma = new PrismaClient();
 // Fallback if no key is provided during prototype to prevent hard crashes on boot, though it will fail on use
@@ -544,6 +545,14 @@ router.put('/admin/users/:id/ban', authMiddleware, adminMiddleware, async (req, 
       where: { id },
       data: { isBanned, bannedUntil, banReason }
     });
+    
+    // Enviar correo de notificación si el usuario ha sido baneado
+    if (isBanned) {
+      // Usar setTimeout para no bloquear la respuesta HTTP, el correo se enviará en background
+      setTimeout(() => {
+        sendBanNotificationEmail(user, isBanned, bannedUntil, banReason).catch(console.error);
+      }, 0);
+    }
     
     res.json({ id: user.id, isBanned: user.isBanned, bannedUntil: user.bannedUntil, banReason: user.banReason });
   } catch (error) {
