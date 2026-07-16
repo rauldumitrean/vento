@@ -225,6 +225,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageBase64, setImageBase64] = useState('');
@@ -510,6 +511,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     setImageMimeType('');
 
     try {
+      setIsChatLoading(true);
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const res = await axios.post(`${API_URL}/api/chat`, {
         consultaId,
@@ -522,6 +524,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
     } catch (error) {
       showToast('Error enviando mensaje');
+    } finally {
+      setIsChatLoading(false);
     }
   };
 
@@ -753,9 +757,20 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               ) : chat.length === 0 ? (
                 <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
               ) : (
-                chat.map((msg, idx) => (
-                  <ChatMessage key={idx} msg={msg} darkMode={darkMode} />
-                ))
+                <>
+                  {chat.map((msg, idx) => (
+                    <ChatMessage key={idx} msg={msg} darkMode={darkMode} />
+                  ))}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-2 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                        <div className={`h-3 w-48 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                        <div className={`h-3 w-64 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                        <div className={`h-3 w-32 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
