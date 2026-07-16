@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity, Ban, MessageSquareText, Layers, Headset, Wand2, Gem, CreditCard, Gift } from 'lucide-react';
+import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity, Ban, MessageSquareText, Layers, Headset, Wand2, Gem, CreditCard, Gift, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -288,6 +288,10 @@ export default function LandingView({ token }) {
                   <Archive className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
                   <span><strong>Armario virtual limitado</strong> (hasta 20 prendas guardadas).</span>
                 </li>
+                <li className="flex items-start gap-3">
+                  <History className="text-gray-500 mt-0.5 shrink-0" size={18} /> 
+                  <span>Historial de los últimos <strong>15 outfits</strong>.</span>
+                </li>
               </ul>
               
               <button onClick={() => navigate(token ? '/app' : '/login', { state: { isRegister: true, plan: 'free' } })} className="w-full py-4 rounded-xl border border-gray-700 hover:bg-gray-800 font-bold transition-colors">
@@ -326,6 +330,10 @@ export default function LandingView({ token }) {
                 <li className="flex items-start gap-3">
                   <Layers className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
                   <span><strong>Armario virtual infinito</strong> para digitalizar toda tu colección real.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <History className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 
+                  <span>Historial ampliado a los últimos <strong>50 outfits</strong>.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Wand2 className="text-indigo-400 mt-0.5 shrink-0" size={18} /> 

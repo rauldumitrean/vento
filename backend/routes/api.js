@@ -188,7 +188,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
 
     // --- LÓGICA DE LIMPIEZA DE HISTORIAL (Máx 15 consultas no favoritas) ---
     try {
-      const limit = 15;
+      const limit = req.user.isPremium ? 50 : 15;
       const allNonFavs = await prisma.consulta.findMany({
         where: { userId: req.user.id, isFavorite: false },
         orderBy: { createdAt: 'asc' },

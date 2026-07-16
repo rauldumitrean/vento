@@ -39,7 +39,7 @@ const authMiddleware = async (req, res, next) => {
       }
     }
 
-    req.user = verified;
+    req.user = user;
     next();
   } catch (err) {
     // FIX: Changed 400 to 401 - invalid/expired token is an authentication error
