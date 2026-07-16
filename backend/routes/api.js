@@ -367,6 +367,57 @@ router.delete('/historial/:id', authMiddleware, async (req, res) => {
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
+
+// --- GESTIÓN DE OUTFITS ---
+router.get('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const outfits = await prisma.consulta.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100, // Limitar a los últimos 100 para no sobrecargar
+      include: {
+        user: { select: { email: true, name: true, role: true, isPremium: true } }
+      }
+    });
+    res.json(outfits);
+  } catch (error) {
+    console.error('Error fetching admin outfits:', error);
+    res.status(500).json({ error: 'Error obteniendo los outfits' });
+  }
+});
+
+router.delete('/admin/outfits/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    // Delete chat messages first
+    await prisma.mensajeChat.deleteMany({ where: { consultaId: id } });
+    
+    // Delete consulta
+    await prisma.consulta.delete({ where: { id } });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar el outfit:', error);
+    res.status(500).json({ error: 'Error al eliminar el outfit' });
+  }
+});
+
+router.delete('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    // Delete all chat messages first
+    await prisma.mensajeChat.deleteMany();
+    
+    // Delete all consultas
+    await prisma.consulta.deleteMany();
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar TODOS los outfits:', error);
+    res.status(500).json({ error: 'Error al eliminar todos los outfits' });
+  }
+});
+
 router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const totalUsers = await prisma.user.count();

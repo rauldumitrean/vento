@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 const AdminView = ({ token }) => {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits'
   const [users, setUsers] = useState([]);
+  const [outfits, setOutfits] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -54,12 +55,14 @@ const AdminView = ({ token }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersRes, statsRes] = await Promise.all([
+      const [usersRes, statsRes, outfitsRes] = await Promise.all([
         axios.get(`${API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setUsers(usersRes.data);
       setStats(statsRes.data);
+      setOutfits(outfitsRes.data);
     } catch (error) {
       // FIX: Use UI message instead of alert()
       showAdminMsg('Error de conexión. Verifica tus permisos.');
@@ -159,6 +162,36 @@ const AdminView = ({ token }) => {
     }
   };
 
+  const handleDeleteOutfit = async (id) => {
+    if (!window.confirm("¿Seguro que quieres borrar este outfit definitivamente?")) return;
+    try {
+      await axios.delete(`${API_URL}/api/admin/outfits/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setOutfits(outfits.filter(o => o.id !== id));
+      fetchStats();
+      showAdminMsg('Outfit eliminado', 'success');
+    } catch (error) {
+      showAdminMsg('Error eliminando outfit');
+    }
+  };
+
+  const handleDeleteAllOutfits = async () => {
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const prompt = window.prompt(`¡PELIGRO! Vas a borrar TODOS los outfits y chats de TODOS los usuarios.\n\nEscribe el código ${code} para confirmar:`);
+    if (prompt !== code) {
+      if (prompt !== null) showAdminMsg('Código incorrecto. Cancelado.', 'error');
+      return;
+    }
+    
+    try {
+      await axios.delete(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } });
+      setOutfits([]);
+      fetchStats();
+      showAdminMsg('Todos los outfits han sido eliminados', 'success');
+    } catch (error) {
+      showAdminMsg('Error al vaciar la base de datos de outfits');
+    }
+  };
+
   // Avatar helper
   const getInitials = (email) => {
     return email.substring(0, 2).toUpperCase();
@@ -180,41 +213,46 @@ const AdminView = ({ token }) => {
         )}
       </AnimatePresence>
       {/* Sidebar */}
-      <div className="w-full md:w-64 bg-gray-950 text-gray-400 flex flex-col flex-shrink-0 md:h-full z-10 shadow-lg">
-        <div className="h-16 flex flex-shrink-0 items-center justify-between md:justify-start px-6 border-b border-gray-800">
+      <div className="w-full md:w-64 bg-white border-r border-gray-100 text-gray-500 flex flex-col flex-shrink-0 md:h-full z-10">
+        <div className="h-16 flex flex-shrink-0 items-center justify-between md:justify-start px-6 border-b border-gray-100">
           <div className="flex items-center">
-            <Shield className="text-purple-500 mr-2" />
-            <span className="text-white font-bold tracking-widest uppercase text-sm">Ventoo Admin</span>
+            <span className="text-gray-900 font-bold tracking-widest uppercase text-sm">Ventoo Admin</span>
           </div>
           <button 
             onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href='/'; }}
-            className="md:hidden text-gray-400 hover:text-white"
+            className="md:hidden text-gray-400 hover:text-gray-900"
           >
             <ArrowLeft size={20} />
           </button>
         </div>
 
         <div className="flex-1 overflow-x-auto md:overflow-y-auto py-2 md:py-6">
-          <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-1 px-3 min-w-max md:min-w-0">
+          <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 px-4 min-w-max md:min-w-0">
             <button 
               onClick={() => setActiveTab('overview')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 md:py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'overview' ? 'bg-gray-800 text-white' : 'hover:bg-gray-900 hover:text-gray-200'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'overview' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
             >
-              <BarChart2 size={18} /> <span className="whitespace-nowrap">Resumen General</span>
+              <BarChart2 size={18} /> <span className="whitespace-nowrap">Resumen</span>
             </button>
             <button 
               onClick={() => setActiveTab('users')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 md:py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'users' ? 'bg-gray-800 text-white' : 'hover:bg-gray-900 hover:text-gray-200'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'users' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
             >
-              <Users size={18} /> <span className="whitespace-nowrap">Gestión de Usuarios</span>
+              <Users size={18} /> <span className="whitespace-nowrap">Usuarios</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('outfits')}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'outfits' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+            >
+              <Database size={18} /> <span className="whitespace-nowrap">Outfits</span>
             </button>
           </nav>
         </div>
 
-        <div className="hidden md:block p-4 border-t border-gray-800">
+        <div className="hidden md:block p-4 border-t border-gray-100">
           <button 
             onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href='/'; }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 hover:bg-gray-50 text-gray-600 hover:text-gray-900 rounded-md text-sm transition-colors"
           >
             <ArrowLeft size={16} /> Volver a la App
           </button>
@@ -222,7 +260,7 @@ const AdminView = ({ token }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white">
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
@@ -232,18 +270,18 @@ const AdminView = ({ token }) => {
             <AnimatePresence mode="wait">
               {activeTab === 'overview' && stats && (
                 <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
                     <div>
-                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Ventoo Admin Panel</h2>
-                      <p className="text-gray-400 text-sm">Resumen en tiempo real · Se actualiza cada 10s</p>
+                      <h2 className="text-2xl font-normal text-gray-900 mb-1 tracking-tight">Admin Panel</h2>
+                      <p className="text-gray-500 text-sm">Resumen en tiempo real</p>
                     </div>
                     <button 
                       onClick={fetchStats}
                       disabled={isRefreshing}
-                      className="mt-3 sm:mt-0 self-start flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                      className="mt-3 sm:mt-0 self-start flex items-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 rounded-md text-sm transition-all disabled:opacity-50"
                     >
-                      <RefreshCw size={16} className={`${isRefreshing ? 'animate-spin text-indigo-500' : ''}`} />
-                      Refrescar
+                      <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin' : ''}`} />
+                      Actualizar
                     </button>
                   </div>
                   
@@ -606,6 +644,85 @@ const AdminView = ({ token }) => {
                             </td>
                           </tr>
                         ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'outfits' && (
+                <motion.div key="outfits" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-normal text-gray-900 mb-1 tracking-tight">Gestión de Outfits</h2>
+                      <p className="text-gray-500 text-sm">Listado global de todos los outfits generados</p>
+                    </div>
+                    <div className="flex w-full sm:w-auto gap-3">
+                      <button 
+                        onClick={fetchData}
+                        disabled={isRefreshing}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 rounded-md text-sm transition-all disabled:opacity-50"
+                      >
+                        <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin' : ''}`} />
+                        Actualizar
+                      </button>
+                      <button 
+                        onClick={handleDeleteAllOutfits}
+                        className="flex-1 sm:flex-none bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <Trash2 size={16} /> Borrar Todos
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-gray-100 rounded-lg overflow-x-auto shadow-sm">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                        <tr>
+                          <th className="px-6 py-4 font-medium">Fecha</th>
+                          <th className="px-6 py-4 font-medium">Usuario</th>
+                          <th className="px-6 py-4 font-medium">Ubicación</th>
+                          <th className="px-6 py-4 font-medium">Outfit</th>
+                          <th className="px-6 py-4 font-medium text-right">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {outfits.length === 0 ? (
+                          <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-400">No hay outfits registrados</td></tr>
+                        ) : (
+                          outfits.map(outfit => {
+                            let rec = {};
+                            try { rec = JSON.parse(outfit.recomendacion_json); } catch(e){}
+                            return (
+                              <tr key={outfit.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 text-gray-500">
+                                  {new Date(outfit.createdAt).toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium">
+                                      {getInitials(outfit.user.email)}
+                                    </div>
+                                    <span className="text-gray-700">{outfit.user.email}</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-gray-600">{outfit.ubicacion}</td>
+                                <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={rec.resumen}>
+                                  {rec.resumen || "Sin resumen"}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <button 
+                                    onClick={() => handleDeleteOutfit(outfit.id)}
+                                    className="text-red-400 hover:text-red-600 p-1"
+                                    title="Eliminar Outfit"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
