@@ -59,6 +59,16 @@ const ArmarioHistorial = ({ token, darkMode }) => {
     }
   };
 
+  const handleDeleteHistorial = async (id) => {
+    if (!window.confirm('¿Seguro que quieres eliminar este outfit de tu historial?')) return;
+    try {
+      await axios.delete(`${API_URL}/api/historial/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setHistorial(historial.filter(h => h.id !== id));
+    } catch (error) {
+      alert("Error al borrar el historial");
+    }
+  };
+
   const toggleFavorite = async (id, isFav) => {
     try {
       // FIX: Using API_URL env variable
@@ -162,12 +172,22 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Clock size={16} /> {new Date(h.createdAt).toLocaleDateString()} - <MapPin size={16} className="ml-2"/> {h.ubicacion} {clima.temperature_2m != null ? `(${clima.temperature_2m}ºC)` : ''}
                     </div>
-                    <button 
-                      onClick={() => toggleFavorite(h.id, h.isFavorite)}
-                      className={`p-2 rounded-full transition-colors ${h.isFavorite ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                    >
-                      <Heart size={20} fill={h.isFavorite ? "currentColor" : "none"} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleDeleteHistorial(h.id)}
+                        className={`p-2 rounded-full transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20`}
+                        title="Eliminar del historial"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                      <button 
+                        onClick={() => toggleFavorite(h.id, h.isFavorite)}
+                        className={`p-2 rounded-full transition-colors ${h.isFavorite ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                        title="Marcar como favorito"
+                      >
+                        <Heart size={20} fill={h.isFavorite ? "currentColor" : "none"} />
+                      </button>
+                    </div>
                   </div>
                   {outfit.resumen && <p className={`font-medium mb-4 italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>"{outfit.resumen}"</p>}
                   <div className="flex flex-wrap gap-2">

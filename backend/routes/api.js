@@ -342,6 +342,28 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
   }
 });
 
+router.delete('/historial/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    // Verificar propiedad
+    const consulta = await prisma.consulta.findUnique({ where: { id, userId: req.user.id } });
+    if (!consulta) return res.status(404).json({ error: 'Consulta no encontrada' });
+
+    // Borrar mensajes asociados primero (Foreign Key constraint)
+    await prisma.mensajeChat.deleteMany({ where: { consultaId: id } });
+    
+    // Borrar la consulta
+    await prisma.consulta.delete({ where: { id } });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al borrar historial:', error);
+    res.status(500).json({ error: 'Error al borrar la consulta' });
+  }
+});
+
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
