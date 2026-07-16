@@ -13,6 +13,8 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [reportMessage, setReportMessage] = useState('');
+  const [reportStatus, setReportStatus] = useState('idle'); // idle | loading | success | error
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -69,6 +71,27 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
       setMessage('Error iniciando el pago.');
       setCheckoutLoading(false);
       setTimeout(() => setMessage(''), 4000);
+    }
+  };
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    if (!reportMessage.trim()) return;
+    
+    setReportStatus('loading');
+    try {
+      await axios.post(`${API_URL}/api/tickets`, { 
+        asunto: 'Reporte desde la App (Ajustes)', 
+        mensaje: reportMessage 
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setReportStatus('success');
+      setReportMessage('');
+      setTimeout(() => setReportStatus('idle'), 3000);
+    } catch (err) {
+      setReportStatus('error');
+      setTimeout(() => setReportStatus('idle'), 3000);
     }
   };
 
@@ -219,11 +242,36 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         <button 
           type="submit" 
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-all mb-4"
         >
           {loading ? 'Guardando...' : <><Save size={18} /> Guardar Cambios</>}
         </button>
+      </form>
 
+      {/* Reportar un problema */}
+      <div className={`mt-6 p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+        <h3 className={`text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reportar un Problema</h3>
+        <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Has encontrado un error o tienes alguna sugerencia? Cuéntanoslo.</p>
+        <form onSubmit={handleReportSubmit} className="flex flex-col gap-2">
+          <textarea 
+            value={reportMessage}
+            onChange={(e) => setReportMessage(e.target.value)}
+            placeholder="Describe el problema aquí..."
+            className={`w-full p-3 rounded-lg text-sm border focus:ring-2 focus:ring-indigo-500 transition-colors ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+            rows="3"
+            required
+          ></textarea>
+          <button 
+            type="submit"
+            disabled={reportStatus === 'loading'}
+            className={`w-full py-2 rounded-lg text-sm font-bold transition-all ${reportStatus === 'success' ? 'bg-green-500 text-white' : reportStatus === 'error' ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+          >
+            {reportStatus === 'loading' ? 'Enviando...' : reportStatus === 'success' ? '¡Enviado!' : reportStatus === 'error' ? 'Error al enviar' : 'Enviar Reporte'}
+          </button>
+        </form>
+      </div>
+
+      <div className="mt-6">
         {onLogout && (
           <button 
             type="button" 
@@ -233,7 +281,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
             Cerrar Sesión
           </button>
         )}
-      </form>
+      </div>
     </div>
   );
 }
