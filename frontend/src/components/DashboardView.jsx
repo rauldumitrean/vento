@@ -15,8 +15,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [loadAttempt, setLoadAttempt] = useState(0);
 
   const buildPromptUrl = () => {
-    const simplePrompt = `Professional product photography of a single ${prenda.descripcion}, isolated on a clean neutral background, studio lighting, no humans, no models, flat lay style, highly detailed fashion item.`.trim();
-    return `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=400&height=400&nologo=true&enhance=false&seed=${loadAttempt}`;
+    const simplePrompt = `${prenda.descripcion}, product photography, flat lay, white background, no humans`.trim();
+    return `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=300&height=300&model=flux-schnell&nologo=true&enhance=false&seed=${loadAttempt}`;
   };
 
   useEffect(() => {
