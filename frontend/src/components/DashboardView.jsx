@@ -660,7 +660,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   );
 
   return (
-    <div className={`flex flex-col min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-950 text-white' : 'bg-[#f8f9fa] text-gray-900'} font-sans overflow-x-hidden`}>
+    <div className={`flex flex-col min-h-[100dvh] transition-colors duration-500 ${darkMode ? 'bg-gray-950 text-white' : 'bg-[#f8f9fa] text-gray-900'} font-sans overflow-x-hidden`}>
       {/* Background blobs for glassmorphism effect */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full mix-blend-multiply filter blur-[120px] opacity-30 ${darkMode ? 'bg-indigo-900' : 'bg-indigo-200'}`}></div>
@@ -674,7 +674,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium max-w-sm text-center ${
+            className={`fixed top-[calc(1.5rem+env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium max-w-sm text-center ${
               toast.type === 'success' ? 'bg-green-600 text-white' :
               toast.type === 'info' ? 'bg-indigo-600 text-white' :
               'bg-red-600 text-white'

@@ -61,8 +61,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen w-full flex flex-col overflow-x-hidden">
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden">
+        <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center bg-black"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
             <Route 
               path="/" 

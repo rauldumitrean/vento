@@ -35,7 +35,7 @@ const AdminLoginView = ({ setAdminToken }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col justify-center items-center p-4">
+    <div className="min-h-[100dvh] bg-gray-950 flex flex-col justify-center items-center p-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

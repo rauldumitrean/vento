@@ -35,7 +35,7 @@ export default function SupportView({ token }) {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-6 text-white font-sans">
+      <div className="min-h-[100dvh] bg-gray-950 flex flex-col items-center justify-center p-6 text-white font-sans">
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -58,7 +58,7 @@ export default function SupportView({ token }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans">
+    <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center p-4 font-sans">
       <div className="w-full max-w-lg">
         <button 
           onClick={() => navigate(-1)}

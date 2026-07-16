@@ -199,7 +199,7 @@ export default function LandingView({ token }) {
   const goAuth = (opts = {}) => navigate(token ? '/app' : '/login', { state: opts });
 
   return (
-    <div className="min-h-screen bg-[#060608] text-gray-100 font-sans overflow-x-hidden selection:bg-indigo-500/30">
+    <div className="min-h-[100dvh] bg-[#060608] text-gray-100 font-sans overflow-x-hidden selection:bg-indigo-500/30">
 
       {/* ── Background ── */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -240,7 +240,7 @@ export default function LandingView({ token }) {
       </nav>
 
       {/* ── Hero ── */}
-      <section ref={heroRef} className="relative z-10 pt-32 pb-24 px-6 min-h-screen flex flex-col justify-center items-center text-center">
+      <section ref={heroRef} className="relative z-10 pt-32 pb-24 px-6 min-h-[100dvh] flex flex-col justify-center items-center text-center">
         <motion.div style={{ opacity: heroOpacity, y: heroY }} className="max-w-5xl mx-auto">
 
           {/* Badge */}

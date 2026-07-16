@@ -99,7 +99,7 @@ export default function AuthView({ setToken }) {
   // ─── Plans screen ──────────────────────────────────────────────────────────
   if (showPlans && pendingAuth) {
     return (
-      <div className="min-h-screen bg-black font-sans flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-black font-sans flex items-center justify-center p-4">
         <div className="max-w-5xl w-full">
           <button
             onClick={() => { setShowPlans(false); setPendingAuth(null); }}
@@ -160,7 +160,7 @@ export default function AuthView({ setToken }) {
   // ─── Banned screen ─────────────────────────────────────────────────────────
   if (isBannedError) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4 font-sans">
+      <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans">
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -251,7 +251,7 @@ export default function AuthView({ setToken }) {
 
   return (
     <div
-      className="min-h-screen font-sans flex items-center justify-center bg-gray-100 p-4"
+      className="min-h-[100dvh] font-sans flex items-center justify-center bg-gray-100 p-4"
       style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
     >
       <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex">
