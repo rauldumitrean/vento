@@ -62,9 +62,18 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
       <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
-          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 ${darkMode ? 'bg-gray-700/50' : 'bg-gray-200/50'}`}>
-            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-gray-400">Generando imagen...</span>
+          <div className={`absolute inset-0 z-10 ${darkMode ? 'bg-gray-700/60' : 'bg-gray-200/70'}`}>
+            {/* Shimmer sweep */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div
+                className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite]"
+                style={{
+                  background: darkMode
+                    ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%)'
+                    : 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)'
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -126,6 +135,26 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
         </div>
       </div>
     </motion.div>
+  );
+};
+
+// Manages sequential image loading: card 0 first, then card 1, then card 2...
+const OutfitGrid = ({ prendas, darkMode }) => {
+  const [loadIndex, setLoadIndex] = useState(0);
+  const handleLoadComplete = () => setLoadIndex(prev => prev + 1);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {prendas.map((prenda, idx) => (
+        <PrendaCard
+          key={idx}
+          prenda={prenda}
+          darkMode={darkMode}
+          canLoad={idx <= loadIndex}
+          onLoadComplete={idx === loadIndex ? handleLoadComplete : undefined}
+        />
+      ))}
+    </div>
   );
 };
 
@@ -598,16 +627,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 
                 <p className="mb-6 italic opacity-80">"{outfit.resumen}"</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {outfit.prendas.map((prenda, idx) => (
-                    <PrendaCard 
-                      key={idx} 
-                      prenda={prenda} 
-                      darkMode={darkMode} 
-                      canLoad={true}
-                    />
-                  ))}
-                </div>
+                <OutfitGrid prendas={outfit.prendas} darkMode={darkMode} />
                 
                 {outfit.consejo_extra && (
                   <div className={`mt-6 p-4 rounded-lg text-sm border ${darkMode ? 'bg-indigo-900/20 border-indigo-500/20 text-indigo-200' : 'bg-neutral-50 border-neutral-200 text-neutral-700'}`}>
