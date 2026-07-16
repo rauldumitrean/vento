@@ -223,6 +223,17 @@ export default function ProfileSettings({ token, darkMode }) {
         >
           {loading ? 'Guardando...' : <><Save size={18} /> Guardar Cambios</>}
         </button>
+
+        <button 
+          type="button" 
+          onClick={() => {
+            sessionStorage.clear();
+            window.location.href = '/';
+          }}
+          className="w-full md:hidden flex items-center justify-center gap-2 mt-4 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-xl transition-all"
+        >
+          Cerrar Sesión
+        </button>
       </form>
     </div>
   );

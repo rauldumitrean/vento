@@ -7,6 +7,7 @@ import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import Navbar from './Navbar';
+import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
@@ -563,8 +564,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
-      <div className="relative z-10">
-        <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
+      <div className="relative z-10 pb-20 md:pb-0">
+        {view !== 'admin' && (
+          <>
+            <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
+            <MobileNavBar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} />
+          </>
+        )}
 
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />

@@ -16,13 +16,13 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
           <h1 className="text-xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent hidden sm:block">Ventoo</h1>
         </div>
         
-        <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-8">
+        <div className="hidden md:flex items-center gap-4 ml-8">
           <button 
             // FIX: Use replace:true to avoid polluting browser history with same-page navigation
             onClick={() => { setView('dashboard'); navigate('/app', { replace: true }); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'dashboard' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
-            <Search size={16} /> <span className="hidden sm:inline">Buscar</span>
+            <Search size={16} /> <span>Buscar</span>
           </button>
           
           <button 
@@ -30,12 +30,12 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
             onClick={() => { setView('armario'); navigate('/app', { replace: true }); }}
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'armario' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
-            <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
+            <Shirt size={16} /> <span>Armario & Historial</span>
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="hidden md:flex items-center gap-4">
         <button 
           onClick={() => setView('profile')}
           // FIX: Added active state for profile button to match other nav buttons
@@ -57,7 +57,7 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
           onClick={handleLogout}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors"
         >
-          <LogOut size={16} /> <span className="hidden sm:inline">Salir</span>
+          <LogOut size={16} /> <span>Salir</span>
         </button>
       </div>
     </nav>
