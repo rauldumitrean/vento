@@ -232,6 +232,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const userName = sessionStorage.getItem('userName');
+  const isPremium = sessionStorage.getItem('isPremium') === 'true';
+  const historyLimit = isPremium ? 50 : 15;
+  const [historyCount, setHistoryCount] = useState(0);
+  const [limitWarning, setLimitWarning] = useState(null); // { type: 'close' | 'reached', params: { lat, lon, city } }
   
   const [showStyleOnboarding, setShowStyleOnboarding] = useState(false);
 
@@ -242,8 +246,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         const res = await axios.get(`${API_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (res.data.user && !res.data.user.estiloPersonal) {
-          setShowStyleOnboarding(true);
+        if (res.data.user) {
+          setHistoryCount(res.data.user.historyCount || 0);
+          if (!res.data.user.estiloPersonal) {
+            setShowStyleOnboarding(true);
+          }
         }
       } catch (err) {
         console.error("Error checking profile:", err);
@@ -377,6 +384,59 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     sessionStorage.setItem('adShown', 'true');
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setShowSuggestions(false);
+    if (location) {
+      if (historyCount === historyLimit - 1) {
+        setLimitWarning({ type: 'close', params: { lat: null, lon: null, city: location } });
+      } else if (historyCount >= historyLimit) {
+        setLimitWarning({ type: 'reached', params: { lat: null, lon: null, city: location } });
+      } else {
+        fetchWeatherAndOutfit(null, null, location);
+      }
+    }
+  };
+
+  const handleSelectSuggestion = (city) => {
+    setLocation(city.name);
+    setShowSuggestions(false);
+    if (historyCount === historyLimit - 1) {
+      setLimitWarning({ type: 'close', params: { lat: city.latitude, lon: city.longitude, city: city.name } });
+    } else if (historyCount >= historyLimit) {
+      setLimitWarning({ type: 'reached', params: { lat: city.latitude, lon: city.longitude, city: city.name } });
+    } else {
+      fetchWeatherAndOutfit(city.latitude, city.longitude, city.name);
+    }
+  };
+
+  const handleGeolocation = () => {
+    if (!navigator.geolocation) {
+      showToast('Tu navegador no soporta geolocalización');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        if (historyCount === historyLimit - 1) {
+          setLimitWarning({ type: 'close', params: { lat: pos.coords.latitude, lon: pos.coords.longitude, city: null } });
+        } else if (historyCount >= historyLimit) {
+          setLimitWarning({ type: 'reached', params: { lat: pos.coords.latitude, lon: pos.coords.longitude, city: null } });
+        } else {
+          fetchWeatherAndOutfit(pos.coords.latitude, pos.coords.longitude, null);
+        }
+      },
+      err => showToast('No se pudo obtener la ubicación. Asegúrate de que tienes los permisos activados.')
+    );
+  };
+
+  const confirmGeneration = () => {
+    if (limitWarning) {
+      const { lat, lon, city } = limitWarning.params;
+      fetchWeatherAndOutfit(lat, lon, city);
+      setLimitWarning(null);
+    }
+  };
+
   const fetchWeatherAndOutfit = async (lat, lon, city) => {
     setLoading(true);
     setIsFavorite(false);
@@ -399,6 +459,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       setOutfit(oRes.data.recomendacion);
       setConsultaId(oRes.data.consultaId);
       setChat([]);
+      
+      // Update local history count if we generated successfully and aren't at the limit yet
+      setHistoryCount(prev => Math.min(prev + 1, historyLimit));
     } catch (error) {
       showToast(error.response?.data?.error || 'Error al obtener los datos');
     } finally {
@@ -406,29 +469,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setShowSuggestions(false);
-    if (location) fetchWeatherAndOutfit(null, null, location);
-  };
-
-  const handleSelectSuggestion = (city) => {
-    setLocation(city.name);
-    setShowSuggestions(false);
-    fetchWeatherAndOutfit(city.latitude, city.longitude, city.name);
-  };
-
-  const handleGeolocation = () => {
-    // FIX: Check for geolocation API availability before calling it
-    if (!navigator.geolocation) {
-      showToast('Tu navegador no soporta geolocalización');
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => fetchWeatherAndOutfit(pos.coords.latitude, pos.coords.longitude, null),
-      err => showToast('No se pudo obtener la ubicación. Asegúrate de que tienes los permisos activados.')
-    );
-  };
+  // Se eliminaron las funciones originales de handleSearch, handleSelectSuggestion y handleGeolocation porque se movieron arriba
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -699,10 +740,60 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </form>
             </div>
           </div>
-
         </main>
       )}
       </div>
+
+      {/* Limit Warning Modal */}
+      <AnimatePresence>
+        {limitWarning && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+              className={`max-w-md w-full p-6 rounded-2xl border ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'} shadow-2xl relative overflow-hidden`}
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-orange-500"></div>
+              
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4 border-4 border-orange-50">
+                  <Archive size={28} className="text-orange-500" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-2">
+                  {limitWarning.type === 'close' ? 'Estás a punto de alcanzar tu límite' : 'Has alcanzado tu límite de historial'}
+                </h3>
+                
+                <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {limitWarning.type === 'close' 
+                    ? `Tienes ${historyCount} outfits guardados. Si llegas a ${historyLimit}, los outfits más antiguos (que no estén en Favoritos) se borrarán automáticamente.`
+                    : `Tienes el máximo de ${historyLimit} outfits guardados. Si generas uno nuevo, el más antiguo (no marcado como Favorito) se borrará automáticamente para hacerle sitio.`
+                  }
+                  <br/><br/>
+                  ¿Deseas continuar y generar este outfit?
+                </p>
+                
+                <div className="flex gap-3 w-full">
+                  <button 
+                    onClick={() => setLimitWarning(null)}
+                    className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={confirmGeneration}
+                    className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-orange-500/30"
+                  >
+                    Sí, Continuar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showStyleOnboarding && (
         <StyleOnboardingModal 

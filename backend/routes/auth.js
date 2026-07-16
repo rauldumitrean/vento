@@ -66,9 +66,16 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.get('/me', authMiddleware, async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: req.user.id },
+      include: {
+        _count: {
+          select: { consultas: { where: { isFavorite: false } } }
+        }
+      }
+    });
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener perfil' });
@@ -80,9 +87,14 @@ router.put('/profile', authMiddleware, async (req, res) => {
     const { name, gender, estiloPersonal, estiloDetalles } = req.body;
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: { name, gender, estiloPersonal, estiloDetalles }
+      data: { name, gender, estiloPersonal, estiloDetalles },
+      include: {
+        _count: {
+          select: { consultas: { where: { isFavorite: false } } }
+        }
+      }
     });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar perfil.' });

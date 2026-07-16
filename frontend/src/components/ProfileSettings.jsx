@@ -9,6 +9,7 @@ export default function ProfileSettings({ token, darkMode }) {
   const [gender, setGender] = useState(sessionStorage.getItem('userGender') || 'Mujer');
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
+  const [historyCount, setHistoryCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -24,6 +25,7 @@ export default function ProfileSettings({ token, darkMode }) {
           setGender(res.data.user.gender || 'Mujer');
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
+          setHistoryCount(res.data.user.historyCount || 0);
         }
       } catch (err) {
         console.error("Error fetching profile", err);
@@ -182,6 +184,30 @@ export default function ProfileSettings({ token, darkMode }) {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Límite de Historial */}
+        <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}`}>
+          <h3 className={`text-sm font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Tu Historial de Outfits</h3>
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between text-sm">
+              <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Outfits Guardados</span>
+              <span className={`font-bold ${historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
+                {historyCount} / {sessionStorage.getItem('isPremium') === 'true' ? 50 : 15}
+              </span>
+            </div>
+            <div className={`w-full h-2 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+              <div 
+                className={`h-2 rounded-full transition-all duration-500 ${historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) ? 'bg-red-500' : historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 40 : 10) ? 'bg-orange-500' : 'bg-indigo-500'}`}
+                style={{ width: `${Math.min((historyCount / (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15)) * 100, 100)}%` }}
+              ></div>
+            </div>
+            <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              {historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) 
+                ? 'Has alcanzado tu límite. Los outfits más antiguos se irán borrando.' 
+                : 'Al alcanzar tu límite, se empezarán a borrar los outfits más antiguos no guardados en favoritos.'}
+            </p>
+          </div>
         </div>
 
         {message && (
