@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database, RefreshCw, Ban } from 'lucide-react';
+import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database, RefreshCw, Ban, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -497,6 +497,36 @@ const AdminView = ({ token }) => {
                         {stats.totalUsers - stats.premiumUsers}
                       </motion.span>
                       <p className="text-xs text-gray-400 mt-2">Usuarios sin Premium</p>
+                    </div>
+
+                    {/* Stat Card 7 - Tickets */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-red-50 text-red-600 rounded-xl"><AlertCircle size={24} /></div>
+                        <h3 className="text-gray-500 font-medium">Tickets Soporte</h3>
+                      </div>
+                      <motion.span 
+                        key={stats.totalTickets || 0}
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                      >
+                        {stats.totalTickets || 0}
+                      </motion.span>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {(() => {
+                          if (!stats.lastTicketDate) return 'Sin tickets recientes';
+                          const date = new Date(stats.lastTicketDate);
+                          const now = new Date();
+                          const diffMs = now - date;
+                          const diffMins = Math.floor(diffMs / 60000);
+                          const diffHours = Math.floor(diffMins / 60);
+
+                          if (diffMins < 1) return 'Último hace segundos';
+                          if (diffMins < 60) return `Último hace ${diffMins} min`;
+                          if (diffHours < 24) return `Último hace ${diffHours} h`;
+                          return `Último: ${date.toLocaleDateString()}`;
+                        })()}
+                      </p>
                     </div>
                   </div>
 

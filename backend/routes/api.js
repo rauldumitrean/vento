@@ -446,6 +446,13 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
     const totalOutfits = await prisma.consulta.count();
     const totalMessages = await prisma.mensajeChat.count();
     const totalClothes = await prisma.prendaArmario.count();
+    const totalTickets = await prisma.ticket.count();
+    
+    // Obtenemos el último ticket para la fecha
+    const lastTicket = await prisma.ticket.findFirst({
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true }
+    });
     
     // Online = pinged in the last 45 seconds (heartbeat every 15s)
     const ninetySecondsAgo = new Date(Date.now() - 45 * 1000);
@@ -460,6 +467,8 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
       totalMessages,
       totalClothes,
       onlineUsers,
+      totalTickets,
+      lastTicketDate: lastTicket ? lastTicket.createdAt : null,
       maxUsersCapacity: 50000 // Free tier calculation estimate
     });
   } catch (error) {
