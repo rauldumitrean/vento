@@ -684,4 +684,14 @@ router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (r
   }
 });
 
+router.delete('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    await prisma.ticket.deleteMany({});
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting tickets:', error);
+    res.status(500).json({ error: 'Error al borrar tickets' });
+  }
+});
+
 module.exports = router;

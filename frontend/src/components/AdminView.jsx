@@ -85,11 +85,34 @@ const AdminView = ({ token }) => {
     }
   };
 
+  const fetchTickets = async () => {
+    try {
+      setIsRefreshing(true);
+      const res = await axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } });
+      setTickets(res.data);
+    } catch (err) {
+      showAdminMsg('Error obteniendo tickets');
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
+  const handleDeleteAllTickets = async () => {
+    if (!window.confirm('¿Estás SEGURO de que quieres borrar todos los tickets? Esto no se puede deshacer.')) return;
+    try {
+      await axios.delete(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } });
+      setTickets([]);
+      showAdminMsg('Todos los tickets borrados', 'success');
+    } catch (error) {
+      showAdminMsg('Error al borrar tickets');
+    }
+  };
+
   const handleCloseTicket = async (id) => {
     if (!window.confirm('¿Estás seguro de cerrar este ticket?')) return;
     try {
       await axios.put(`${API_URL}/api/admin/tickets/${id}/close`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      fetchData();
+      fetchTickets();
       showAdminMsg('Ticket cerrado exitosamente');
     } catch (err) {
       showAdminMsg('Error al cerrar el ticket');
@@ -853,8 +876,40 @@ const AdminView = ({ token }) => {
                       <h2 className="text-xl md:text-2xl font-normal text-gray-900 mb-1 tracking-tight">Soporte y Tickets</h2>
                       <p className="text-gray-500 text-sm">Gestiona los reportes de los usuarios</p>
                     </div>
+                    <div className="flex w-full sm:w-auto gap-3 items-center">
+                      <button 
+                        onClick={fetchTickets}
+                        disabled={isRefreshing}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 rounded-md text-sm transition-all disabled:opacity-50"
+                      >
+                        <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin' : ''}`} />
+                        Actualizar
+                      </button>
+                      <button 
+                        onClick={handleDeleteAllTickets}
+                        className="flex-1 sm:flex-none bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <Trash2 size={16} /> Borrar Todos
+                      </button>
+                    </div>
                   </div>
 
+                  {isRefreshing ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-lg p-6 relative overflow-hidden">
+                          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-gray-200/50 to-transparent"></div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="w-48 h-5 bg-gray-100 rounded-md mb-2"></div>
+                              <div className="w-32 h-3 bg-gray-100 rounded-md"></div>
+                            </div>
+                          </div>
+                          <div className="w-full h-16 bg-gray-50 rounded-lg border border-gray-100 mt-2"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                   <div className="bg-white border border-gray-100 rounded-lg shadow-sm divide-y divide-gray-100">
                     {tickets.length === 0 ? (
                       <div className="p-8 text-center text-gray-400">No hay tickets reportados</div>
@@ -889,6 +944,7 @@ const AdminView = ({ token }) => {
                       ))
                     )}
                   </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
