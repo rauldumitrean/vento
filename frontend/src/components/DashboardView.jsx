@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles } from 'lucide-react';
+import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw } from 'lucide-react';
 import AdModal from './AdModal';
 import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
@@ -12,26 +12,29 @@ import StyleOnboardingModal from './StyleOnboardingModal';
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+
+  const buildPromptUrl = () => {
+    const simplePrompt = `Professional product photography of a single ${prenda.descripcion}, isolated on a clean neutral background, studio lighting, no humans, no models, flat lay style, highly detailed fashion item.`.trim();
+    return `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=400&height=400&nologo=true&enhance=false&seed=${loadAttempt}`;
+  };
 
   useEffect(() => {
     let timeoutId;
     if (canLoad && imgStatus === 'waiting') {
       setImgStatus('loading');
-      // FIX: Improved prompt to ensure standalone clothing (no models/people), using flat lay or studio product shot style
-      const simplePrompt = `Professional product photography of a single ${prenda.descripcion}, isolated on a clean neutral background, studio lighting, no humans, no models, flat lay style, highly detailed fashion item.`.trim();
-      setImgSrc(`https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=400&height=400&nologo=true&enhance=false`);
+      setImgSrc(buildPromptUrl());
       
-      // 3.5 seconds timeout fallback
+      // 20 second timeout - Pollinations can be slow
       timeoutId = setTimeout(() => {
-        if (imgStatus !== 'loaded') {
-          handleError(true); // force error to show placeholder
-        }
-      }, 3500);
+        setImgStatus('error');
+        if (onLoadComplete) onLoadComplete();
+      }, 20000);
     }
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [canLoad, imgStatus, prenda]);
+  }, [canLoad, imgStatus, loadAttempt]);
 
   const handleSuccess = () => {
     if (imgStatus !== 'loaded') {
@@ -40,30 +43,41 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
     }
   };
 
-  const handleError = (isTimeout = false) => {
-    if (imgSrc && imgSrc.includes('pollinations')) {
-      // Si falla la IA o hay timeout, usamos el placeholder
-      const categoryName = prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria;
-      const fallbackUrl = `https://placehold.co/400x400/${darkMode ? '1f2937/9ca3af' : 'f3f4f6/9ca3af'}?text=${encodeURIComponent(categoryName)}`;
-      setImgSrc(fallbackUrl);
-      if (isTimeout) {
-        setImgStatus('error');
-        if (onLoadComplete) onLoadComplete();
-      }
-    } else {
-      if (imgStatus !== 'error') {
-        setImgStatus('error');
-        if (onLoadComplete) onLoadComplete();
-      }
+  const handleError = () => {
+    if (imgStatus !== 'error') {
+      setImgStatus('error');
+      if (onLoadComplete) onLoadComplete();
     }
   };
 
+  const handleRefresh = (e) => {
+    e.stopPropagation();
+    setImgStatus('waiting');
+    setImgSrc(null);
+    setLoadAttempt(prev => prev + 1);
+  };
+
   return (
-    <motion.div whileHover={{ scale: 1.03, y: -5 }} className={`overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}>
+    <motion.div whileHover={{ scale: 1.03, y: -5 }} className={`group overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}>
       <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
-          <div className={`absolute inset-0 z-10 animate-pulse ${darkMode ? 'bg-gray-700/50' : 'bg-gray-200/50'}`}></div>
+          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 ${darkMode ? 'bg-gray-700/50' : 'bg-gray-200/50'}`}>
+            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-gray-400">Generando imagen...</span>
+          </div>
+        )}
+
+        {imgStatus === 'error' && (
+          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 ${darkMode ? 'bg-gray-700/30' : 'bg-gray-100/50'}`}>
+            <span className="text-xs text-gray-400">No se pudo cargar</span>
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-full transition-colors"
+            >
+              <RefreshCw size={12} /> Reintentar
+            </button>
+          </div>
         )}
 
         {imgSrc && (
@@ -73,8 +87,18 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
             className={`w-full h-full object-cover hover:scale-110 transition-transform duration-700 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
             loading="lazy"
             onLoad={handleSuccess}
-            onError={() => handleError(false)}
+            onError={handleError}
           />
+        )}
+
+        {imgStatus === 'loaded' && (
+          <button
+            onClick={handleRefresh}
+            title="Recargar imagen"
+            className="absolute top-2 right-2 z-20 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all"
+          >
+            <RefreshCw size={12} />
+          </button>
         )}
       </div>
       <div className="p-5 flex flex-col flex-1 relative z-20">
@@ -108,8 +132,19 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
 const ChatMessage = ({ msg, darkMode }) => {
   if (msg.role === 'user') {
     return (
-      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-3 rounded-lg text-sm max-w-[85%] bg-indigo-600 text-white self-end">
-        {msg.content}
+      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col items-end gap-2 max-w-[85%] self-end">
+        {msg.image && (
+          <img
+            src={msg.image}
+            alt="Imagen adjunta"
+            className="w-full max-w-[220px] rounded-xl object-cover border-2 border-indigo-400 shadow-lg"
+          />
+        )}
+        {msg.content && (
+          <div className="p-3 rounded-lg text-sm bg-indigo-600 text-white">
+            {msg.content}
+          </div>
+        )}
       </motion.div>
     );
   }
@@ -389,16 +424,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     e.preventDefault();
     if ((!message && !imageBase64) || !consultaId) return;
 
-    // FIX: Use plain message text without leaking '[Imagen adjunta]' implementation detail into UI
-    const displayMessage = message || '📎 Imagen adjunta';
-    const newChat = [...chat, { role: 'user', content: displayMessage }];
-    setChat(newChat);
-    setMessage('');
-    
     const currentBase64 = imageBase64;
     const currentMime = imageMimeType;
+    const currentPreview = selectedImage; // Save preview BEFORE clearing
+
+    // Build user message with optional image preview
+    const userMsg = { role: 'user', content: message || '', image: currentPreview || null };
+    const newChat = [...chat, userMsg];
+    setChat(newChat);
+    setMessage('');
     setSelectedImage(null);
-    // FIX: Also clear imageBase64 and imageMimeType, not just selectedImage preview
     setImageBase64('');
     setImageMimeType('');
 
