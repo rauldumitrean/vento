@@ -640,6 +640,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 />
+                {location && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setLocation('');
+                      setSuggestions([]);
+                    }}
+                    className={`ml-2 p-1.5 rounded-full transition-colors ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-200'}`}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
 
                 {/* Dropdown de Autocompletado */}
                 <AnimatePresence>
