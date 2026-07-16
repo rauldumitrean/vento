@@ -19,8 +19,8 @@ const LoginRedirect = () => {
 };
 
 function App() {
-  const [token, setToken] = useState(sessionStorage.getItem('token'));
-  const [adminToken, setAdminToken] = useState(sessionStorage.getItem('adminToken'));
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken'));
   
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
@@ -38,24 +38,24 @@ function App() {
 
   useEffect(() => {
     if (token) {
-      sessionStorage.setItem('token', token);
+      localStorage.setItem('token', token);
     } else {
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('userRole');
-      sessionStorage.removeItem('userName');
-      sessionStorage.removeItem('userGender');
-      sessionStorage.removeItem('isPremium');
-      sessionStorage.removeItem('premiumPlan');
-      sessionStorage.removeItem('pendingCheckout');
-      sessionStorage.removeItem('adShown');
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userGender');
+      localStorage.removeItem('isPremium');
+      localStorage.removeItem('premiumPlan');
+      localStorage.removeItem('pendingCheckout');
+      localStorage.removeItem('adShown');
     }
   }, [token]);
 
   useEffect(() => {
     if (adminToken) {
-      sessionStorage.setItem('adminToken', adminToken);
+      localStorage.setItem('adminToken', adminToken);
     } else {
-      sessionStorage.removeItem('adminToken');
+      localStorage.removeItem('adminToken');
     }
   }, [adminToken]);
 

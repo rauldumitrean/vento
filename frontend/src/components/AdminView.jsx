@@ -267,7 +267,7 @@ const AdminView = ({ token }) => {
             <span className="text-gray-900 font-bold tracking-widest uppercase text-sm">Ventoo Admin</span>
           </div>
           <button 
-            onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href='/'; }}
+            onClick={() => { localStorage.removeItem('adminToken'); window.location.href='/'; }}
             className="md:hidden text-gray-400 hover:text-gray-900"
           >
             <ArrowLeft size={20} />
@@ -305,7 +305,7 @@ const AdminView = ({ token }) => {
 
         <div className="hidden md:block p-4 border-t border-gray-100">
           <button 
-            onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href='/'; }}
+            onClick={() => { localStorage.removeItem('adminToken'); window.location.href='/'; }}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 hover:bg-gray-50 text-gray-600 hover:text-gray-900 rounded-md text-sm transition-colors"
           >
             <ArrowLeft size={16} /> Volver a la App

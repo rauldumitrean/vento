@@ -31,12 +31,12 @@ export default function AuthView({ setToken }) {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
-      sessionStorage.setItem('userRole', res.data.user?.role || 'USER');
-      if (res.data.user?.name) sessionStorage.setItem('userName', res.data.user.name);
-      if (res.data.user?.gender) sessionStorage.setItem('userGender', res.data.user.gender);
-      if (res.data.user?.age) sessionStorage.setItem('userAge', res.data.user.age);
-      if (res.data.user?.isPremium !== undefined) sessionStorage.setItem('isPremium', res.data.user.isPremium);
-      if (res.data.user?.premiumPlan) sessionStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+      localStorage.setItem('userRole', res.data.user?.role || 'USER');
+      if (res.data.user?.name) localStorage.setItem('userName', res.data.user.name);
+      if (res.data.user?.gender) localStorage.setItem('userGender', res.data.user.gender);
+      if (res.data.user?.age) localStorage.setItem('userAge', res.data.user.age);
+      if (res.data.user?.isPremium !== undefined) localStorage.setItem('isPremium', res.data.user.isPremium);
+      if (res.data.user?.premiumPlan) localStorage.setItem('premiumPlan', res.data.user.premiumPlan);
       
       if (location.state?.plan && location.state.plan !== 'free') {
         try {
@@ -44,7 +44,7 @@ export default function AuthView({ setToken }) {
             headers: { Authorization: `Bearer ${res.data.token}` }
           });
           if (checkoutRes.data.url) {
-            sessionStorage.setItem('token', res.data.token);
+            localStorage.setItem('token', res.data.token);
             window.location.href = checkoutRes.data.url;
             return;
           }
@@ -80,7 +80,7 @@ export default function AuthView({ setToken }) {
         headers: { Authorization: `Bearer ${pendingAuth.token}` }
       });
       if (res.data.url) {
-        sessionStorage.setItem('token', pendingAuth.token);
+        localStorage.setItem('token', pendingAuth.token);
         window.location.href = res.data.url;
       }
     } catch (err) {

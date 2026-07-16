@@ -4,9 +4,9 @@ import { User, Save, Shirt } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-export default function ProfileSettings({ token, darkMode }) {
-  const [name, setName] = useState(sessionStorage.getItem('userName') || '');
-  const [gender, setGender] = useState(sessionStorage.getItem('userGender') || 'Mujer');
+export default function ProfileSettings({ token, darkMode, onLogout }) {
+  const [name, setName] = useState(localStorage.getItem('userName') || '');
+  const [gender, setGender] = useState(localStorage.getItem('userGender') || 'Mujer');
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
   const [historyCount, setHistoryCount] = useState(0);
@@ -42,8 +42,8 @@ export default function ProfileSettings({ token, darkMode }) {
       const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, estiloPersonal, estiloDetalles }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      sessionStorage.setItem('userName', res.data.user.name);
-      sessionStorage.setItem('userGender', res.data.user.gender);
+      localStorage.setItem('userName', res.data.user.name);
+      localStorage.setItem('userGender', res.data.user.gender);
       setMessage('Perfil actualizado con éxito');
       // FIX: Auto-dismiss success message after 4 seconds
       setTimeout(() => setMessage(''), 4000);
@@ -149,10 +149,10 @@ export default function ProfileSettings({ token, darkMode }) {
 
         <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
           <h3 className={`text-sm font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Tu Plan Actual</h3>
-          {sessionStorage.getItem('isPremium') === 'true' ? (
+          {localStorage.getItem('isPremium') === 'true' ? (
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-indigo-500/20 text-indigo-500 text-xs font-bold rounded-full uppercase tracking-wider">
-                {sessionStorage.getItem('premiumPlan') === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
+                {localStorage.getItem('premiumPlan') === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
               </span>
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
             </div>
@@ -192,18 +192,18 @@ export default function ProfileSettings({ token, darkMode }) {
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-sm">
               <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Outfits Guardados</span>
-              <span className={`font-bold ${historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
-                {historyCount} / {sessionStorage.getItem('isPremium') === 'true' ? 50 : 15}
+              <span className={`font-bold ${historyCount >= (localStorage.getItem('isPremium') === 'true' ? 50 : 15) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
+                {historyCount} / {localStorage.getItem('isPremium') === 'true' ? 50 : 15}
               </span>
             </div>
             <div className={`w-full h-2 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
               <div 
-                className={`h-2 rounded-full transition-all duration-500 ${historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) ? 'bg-red-500' : historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 40 : 10) ? 'bg-orange-500' : 'bg-indigo-500'}`}
-                style={{ width: `${Math.min((historyCount / (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15)) * 100, 100)}%` }}
+                className={`h-2 rounded-full transition-all duration-500 ${historyCount >= (localStorage.getItem('isPremium') === 'true' ? 50 : 15) ? 'bg-red-500' : historyCount >= (localStorage.getItem('isPremium') === 'true' ? 40 : 10) ? 'bg-orange-500' : 'bg-indigo-500'}`}
+                style={{ width: `${Math.min((historyCount / (localStorage.getItem('isPremium') === 'true' ? 50 : 15)) * 100, 100)}%` }}
               ></div>
             </div>
             <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-              {historyCount >= (sessionStorage.getItem('isPremium') === 'true' ? 50 : 15) 
+              {historyCount >= (localStorage.getItem('isPremium') === 'true' ? 50 : 15) 
                 ? 'Has alcanzado tu límite. Para generar nuevos outfits, elimina algunos de tu historial.' 
                 : 'Al alcanzar tu límite, no podrás generar nuevos outfits hasta que liberes espacio en tu historial.'}
             </p>
@@ -223,6 +223,16 @@ export default function ProfileSettings({ token, darkMode }) {
         >
           {loading ? 'Guardando...' : <><Save size={18} /> Guardar Cambios</>}
         </button>
+
+        {onLogout && (
+          <button 
+            type="button" 
+            onClick={onLogout}
+            className={`w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl border transition-all ${darkMode ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}
+          >
+            Cerrar Sesión
+          </button>
+        )}
       </form>
     </div>
   );

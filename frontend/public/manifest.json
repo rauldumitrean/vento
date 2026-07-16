@@ -2,7 +2,7 @@
   "name": "Ventoo - Tu IA Asistente de Moda",
   "short_name": "Ventoo",
   "description": "Tu IA Asistente de Moda que genera outfits.",
-  "start_url": "/",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",

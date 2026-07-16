@@ -209,8 +209,8 @@ const ChatMessage = ({ msg, darkMode }) => {
 
 export default function DashboardView({ token, defaultView = 'dashboard', onLogout }) {
   const [showAd, setShowAd] = useState(() => {
-    if (sessionStorage.getItem('isPremium') === 'true') return false;
-    return !sessionStorage.getItem('adShown');
+    if (localStorage.getItem('isPremium') === 'true') return false;
+    return !localStorage.getItem('adShown');
   });
   const [view, setView] = useState(defaultView); // 'dashboard' | 'armario' | 'admin'
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
@@ -233,8 +233,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const userName = sessionStorage.getItem('userName');
-  const isPremium = sessionStorage.getItem('isPremium') === 'true';
+  const userName = localStorage.getItem('userName');
+  const isPremium = localStorage.getItem('isPremium') === 'true';
   const historyLimit = isPremium ? 50 : 15;
   const [historyCount, setHistoryCount] = useState(0);
   const [limitWarning, setLimitWarning] = useState(null); // { type: 'close' | 'reached', params: { lat, lon, city } }
@@ -256,7 +256,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           if (res.data.user.age === null) {
             setShowAgePrompt(true);
             if (!res.data.user.estiloPersonal) {
-              sessionStorage.setItem('needsStyleOnboarding', 'true');
+              localStorage.setItem('needsStyleOnboarding', 'true');
             }
           } else if (!res.data.user.estiloPersonal) {
             setShowStyleOnboarding(true);
@@ -280,11 +280,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       await axios.put(`${API_URL}/api/auth/profile`, { age: parseInt(ageInput) }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      sessionStorage.setItem('userAge', ageInput);
+      localStorage.setItem('userAge', ageInput);
       setShowAgePrompt(false);
       
-      if (sessionStorage.getItem('needsStyleOnboarding') === 'true') {
-        sessionStorage.removeItem('needsStyleOnboarding');
+      if (localStorage.getItem('needsStyleOnboarding') === 'true') {
+        localStorage.removeItem('needsStyleOnboarding');
         setShowStyleOnboarding(true);
       }
     } catch (err) {
@@ -318,10 +318,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     const checkout = params.get('checkout');
     const payment = params.get('payment');
     const plan = params.get('plan');
-    const pendingCheckout = sessionStorage.getItem('pendingCheckout');
+    const pendingCheckout = localStorage.getItem('pendingCheckout');
 
     if (pendingCheckout) {
-      sessionStorage.removeItem('pendingCheckout');
+      localStorage.removeItem('pendingCheckout');
       handleCheckout(pendingCheckout);
     } else if (checkout) {
       handleCheckout(checkout);
@@ -329,8 +329,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     if (payment === 'success') {
       // FIX: Update state in-place instead of alert()+reload() to preserve app state
-      sessionStorage.setItem('isPremium', 'true');
-      if (plan) sessionStorage.setItem('premiumPlan', plan);
+      localStorage.setItem('isPremium', 'true');
+      if (plan) localStorage.setItem('premiumPlan', plan);
       window.history.replaceState({}, '', '/app');
       setShowAd(false);
       showToast(`¡Gracias por tu compra! Tu plan ${plan || 'Premium'} ha sido activado. 🎉`, 'success');
@@ -414,7 +414,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   const handleCloseAd = () => {
     setShowAd(false);
-    sessionStorage.setItem('adShown', 'true');
+    localStorage.setItem('adShown', 'true');
   };
 
   const handleSearch = (e) => {
@@ -625,8 +625,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             </div>
             <span className="text-base font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Ventoo</span>
           </div>
-          <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${sessionStorage.getItem('isPremium') === 'true' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}`}>
-            {sessionStorage.getItem('isPremium') === 'true' ? '✦ Premium' : 'Básico'}
+          <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${localStorage.getItem('isPremium') === 'true' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}`}>
+            {localStorage.getItem('isPremium') === 'true' ? '✦ Premium' : 'Básico'}
           </div>
         </div>
         {/* Mobile bottom pill nav */}
@@ -636,12 +636,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         <ArmarioHistorial token={token} darkMode={darkMode} />
       ) : view === 'admin' ? (
         // FIX: Only render AdminView if user actually has ADMIN role
-        sessionStorage.getItem('userRole') === 'ADMIN'
+        localStorage.getItem('userRole') === 'ADMIN'
           ? <AdminView token={token} darkMode={darkMode} />
           : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
       ) : view === 'profile' ? (
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full pt-8">
-          <ProfileSettings token={token} darkMode={darkMode} />
+          <ProfileSettings token={token} darkMode={darkMode} onLogout={onLogout} />
         </main>
       ) : (
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">

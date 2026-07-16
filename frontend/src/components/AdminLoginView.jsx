@@ -94,7 +94,7 @@ const AdminLoginView = ({ setAdminToken }) => {
             <button 
               onClick={() => {
                 // FIX: Clear adminToken when navigating back to avoid stale session
-                sessionStorage.removeItem('adminToken');
+                localStorage.removeItem('adminToken');
                 navigate('/');
               }}
               className="text-gray-500 hover:text-white text-sm transition-colors"

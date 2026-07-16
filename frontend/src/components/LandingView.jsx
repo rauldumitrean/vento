@@ -211,7 +211,7 @@ export default function LandingView({ token }) {
       </div>
 
       {/* ── Navbar ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06]" style={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(6,6,8,0.7)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] pt-[env(safe-area-inset-top)]" style={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(6,6,8,0.7)' }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Cloud className="text-indigo-400" size={26} />
