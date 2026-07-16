@@ -39,6 +39,7 @@ function App() {
       sessionStorage.removeItem('isPremium');
       sessionStorage.removeItem('premiumPlan');
       sessionStorage.removeItem('pendingCheckout');
+      sessionStorage.removeItem('adShown');
     }
   }, [token]);
 
