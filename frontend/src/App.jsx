@@ -7,6 +7,8 @@ const AuthView = lazy(() => import('./components/AuthView'));
 const DashboardView = lazy(() => import('./components/DashboardView'));
 const AdminView = lazy(() => import('./components/AdminView'));
 const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
+const TermsView = lazy(() => import('./components/TermsView'));
+const PrivacyView = lazy(() => import('./components/PrivacyView'));
 
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('token'));
@@ -69,6 +71,8 @@ function App() {
               path="/admin" 
               element={adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />} 
             />
+            <Route path="/terms" element={<TermsView />} />
+            <Route path="/privacy" element={<PrivacyView />} />
           </Routes>
         </Suspense>
       </div>

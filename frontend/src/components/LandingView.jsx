@@ -1,7 +1,72 @@
 import { motion } from 'framer-motion';
-import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase } from 'lucide-react';
+import { Cloud, ArrowRight, CloudRain, Sun, Sparkles, Camera, MessageSquare, Zap, Star, Shield, Crown, Check, Briefcase, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+const AppPreviewAnimation = () => {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    let timers = [];
+    if (step === 0) timers.push(setTimeout(() => setStep(1), 1500));
+    if (step === 1) timers.push(setTimeout(() => setStep(2), 3000));
+    if (step === 2) timers.push(setTimeout(() => setStep(3), 5000));
+    if (step === 3) timers.push(setTimeout(() => setStep(0), 8000));
+    
+    return () => timers.forEach(clearTimeout);
+  }, [step]);
+
+  return (
+    <div className="h-[240px] flex flex-col gap-4">
+       {/* Search bar */}
+       <div className="h-12 bg-gray-800 rounded-xl flex items-center px-4 border border-gray-700 shadow-inner">
+         <Search size={18} className="text-gray-400 mr-3" />
+         <span className="text-sm text-gray-300 font-medium">
+           {step === 0 && <span className="animate-pulse">Escribe tu ciudad...|</span>}
+           {step > 0 && "Madrid, España (25°C Soleado)"}
+         </span>
+       </div>
+       
+       {/* Content */}
+       <div className="flex-1 flex gap-3">
+         {step < 2 ? (
+            <>
+              <div className="flex-1 bg-gray-800 rounded-xl animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+              </div>
+              <div className="flex-1 bg-gray-800 rounded-xl animate-pulse relative overflow-hidden delay-75">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+              </div>
+              <div className="flex-1 bg-gray-800 rounded-xl animate-pulse relative overflow-hidden delay-150">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+              </div>
+            </>
+         ) : (
+            <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="w-full flex gap-3 h-full">
+               <div className="flex-1 bg-gradient-to-b from-indigo-900/40 to-gray-800 border border-indigo-500/30 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden group">
+                 <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                 <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mb-3"><Cloud size={24} className="text-indigo-400"/></div>
+                 <div className="h-2.5 w-20 bg-indigo-400/50 rounded-full mb-2"></div>
+                 <div className="h-2 w-12 bg-indigo-400/30 rounded-full"></div>
+               </div>
+               <div className="flex-1 bg-gradient-to-b from-purple-900/40 to-gray-800 border border-purple-500/30 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden group">
+                 <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                 <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mb-3"><Star size={24} className="text-purple-400"/></div>
+                 <div className="h-2.5 w-20 bg-purple-400/50 rounded-full mb-2"></div>
+                 <div className="h-2 w-12 bg-purple-400/30 rounded-full"></div>
+               </div>
+               <div className="flex-1 bg-gradient-to-b from-pink-900/40 to-gray-800 border border-pink-500/30 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden group">
+                 <div className="absolute inset-0 bg-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                 <div className="w-12 h-12 bg-pink-500/20 rounded-full flex items-center justify-center mb-3"><Zap size={24} className="text-pink-400"/></div>
+                 <div className="h-2.5 w-20 bg-pink-400/50 rounded-full mb-2"></div>
+                 <div className="h-2 w-12 bg-pink-400/30 rounded-full"></div>
+               </div>
+            </motion.div>
+         )}
+       </div>
+    </div>
+  );
+}
 
 export default function LandingView({ token }) {
   const navigate = useNavigate();
@@ -86,7 +151,7 @@ export default function LandingView({ token }) {
               onClick={() => navigate(token ? '/app' : '/login')}
               className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:shadow-[0_0_50px_rgba(99,102,241,0.7)] flex items-center justify-center gap-3 group hover:-translate-y-1"
             >
-              {token ? 'Entrar al Panel de Control' : 'Comenzar tu prueba gratuita'}
+              {token ? 'Entrar al Panel de Control' : 'Comenzar ahora mismo'}
               <ArrowRight className="group-hover:translate-x-2 transition-transform" />
             </button>
           </div>
@@ -180,13 +245,7 @@ export default function LandingView({ token }) {
                   </div>
                   <div className="text-xs text-gray-500">Ventoo AI Engine</div>
                 </div>
-                <div className="space-y-4">
-                  <div className="h-24 bg-gray-800 rounded-xl animate-pulse"></div>
-                  <div className="flex gap-4">
-                    <div className="w-1/2 h-40 bg-gray-800 rounded-xl animate-pulse delay-75"></div>
-                    <div className="w-1/2 h-40 bg-gray-800 rounded-xl animate-pulse delay-150"></div>
-                  </div>
-                </div>
+                <AppPreviewAnimation />
               </div>
             </div>
           </div>
@@ -278,15 +337,12 @@ export default function LandingView({ token }) {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-2 text-gray-500 text-sm">
             <span>&copy; 2026 Ventoo. Desarrollado por Raul. Todos los derechos reservados.</span>
-            <a href="https://rfdportfolio.vercel.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors ml-2">
-              <Briefcase className="w-4 h-4" /> Portfolio
-            </a>
           </div>
           {/* FIX: Added legal links required for payment-accepting apps */}
           <div className="flex items-center gap-4 text-xs text-gray-600">
-            <a href="#" className="hover:text-gray-400 transition-colors">Términos de Servicio</a>
+            <button onClick={() => navigate('/terms')} className="hover:text-gray-400 transition-colors">Términos de Servicio</button>
             <span>•</span>
-            <a href="#" className="hover:text-gray-400 transition-colors">Política de Privacidad</a>
+            <button onClick={() => navigate('/privacy')} className="hover:text-gray-400 transition-colors">Política de Privacidad</button>
           </div>
         </div>
       </footer>
