@@ -440,8 +440,8 @@ export default function LandingView({ token }) {
                   <span><strong>Pago único definitivo:</strong> Olvídate para siempre de las suscripciones y cuotas recurrentes.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Infinity className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
-                  <span><strong>Acceso vitalicio</strong> a la plataforma sin fecha de caducidad.</span>
+                  <InfinityIcon className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
+                  <span>Acceso vitalicio a la plataforma sin fecha de caducidad.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Sparkles className="text-purple-400 mt-0.5 shrink-0" size={18} /> 
