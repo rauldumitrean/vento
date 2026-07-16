@@ -7,6 +7,7 @@ import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import Navbar from './Navbar';
+import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
@@ -535,6 +536,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   };
 
+  // Sync browser/Safari theme-color with dark mode
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', darkMode ? '#030712' : '#f9fafb');
+    localStorage.setItem('darkMode', String(darkMode));
+  }, [darkMode]);
+
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   return (
@@ -563,8 +576,26 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
-      <div className="relative z-10">
+      <div className="relative z-10 pb-24 md:pb-0">
+        {/* Desktop nav */}
         <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
+        {/* Mobile sticky top bar */}
+        <div
+          className={`md:hidden flex items-center justify-between px-5 py-3 sticky top-0 z-50 border-b backdrop-blur-md ${darkMode ? 'bg-gray-950/80 border-white/10' : 'bg-white/80 border-gray-100'}`}
+          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        >
+          <div className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center border ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
+              <img src="/favicon.svg" alt="Ventoo" className="w-full h-full object-cover p-0.5" />
+            </div>
+            <span className="text-base font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Ventoo</span>
+          </div>
+          <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${sessionStorage.getItem('isPremium') === 'true' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}`}>
+            {sessionStorage.getItem('isPremium') === 'true' ? '✦ Premium' : 'Básico'}
+          </div>
+        </div>
+        {/* Mobile bottom pill nav */}
+        <MobileNavBar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
 
       {view === 'armario' ? (
         <ArmarioHistorial token={token} darkMode={darkMode} />

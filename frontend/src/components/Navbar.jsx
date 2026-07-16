@@ -7,7 +7,7 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
   const navigate = useNavigate();
 
   return (
-    <nav className={`w-full flex flex-wrap items-center justify-between gap-4 p-4 mb-4 sm:mb-8 backdrop-blur-md sticky top-0 z-50 transition-colors border-b ${darkMode ? 'bg-gray-950/60 border-white/10' : 'bg-white/70 border-white shadow-sm'}`}>
+    <nav className={`w-full hidden md:flex flex-wrap items-center justify-between gap-4 p-4 mb-4 sm:mb-8 backdrop-blur-md sticky top-0 z-50 transition-colors border-b ${darkMode ? 'bg-gray-950/60 border-white/10' : 'bg-white/70 border-white shadow-sm'}`}>
       <div className="flex items-center gap-4 sm:gap-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className={`w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center border shadow-sm ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
