@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw } from 'lucide-react';
+import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw, Archive } from 'lucide-react';
 import AdModal from './AdModal';
 import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
@@ -440,6 +440,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const fetchWeatherAndOutfit = async (lat, lon, city) => {
     setLoading(true);
     setIsFavorite(false);
+    setOutfit(null); // Clear previous outfit so it doesn't linger on error
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       let url = `${API_URL}/api/weather?`;
