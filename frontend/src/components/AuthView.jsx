@@ -433,7 +433,128 @@ export default function AuthView({ setToken }) {
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
-                    <p className="text-gray-400 text-xs mt-1.5">Usa 6+ caracteres con un número o símbolo</p>
+
+                    {/* Password strength checklist — only shown when user starts typing */}
+                    <AnimatePresence>
+                      {password.length > 0 && (() => {
+                        const checks = [
+                          { key: 'len',     label: 'Mínimo 6 caracteres',          ok: password.length >= 6 },
+                          { key: 'upper',   label: 'Al menos una letra mayúscula', ok: /[A-Z]/.test(password) },
+                          { key: 'number',  label: 'Al menos un número',           ok: /[0-9]/.test(password) },
+                          { key: 'symbol',  label: 'Al menos un símbolo (!@#…)',   ok: /[^A-Za-z0-9]/.test(password) },
+                        ];
+                        const passed = checks.filter(c => c.ok).length;
+                        const strengthColor =
+                          passed <= 1 ? '#ef4444' :
+                          passed === 2 ? '#f97316' :
+                          passed === 3 ? '#eab308' :
+                          '#22c55e';
+                        const strengthLabel =
+                          passed <= 1 ? 'Muy débil' :
+                          passed === 2 ? 'Débil' :
+                          passed === 3 ? 'Buena' :
+                          '¡Fuerte!';
+
+                        return (
+                          <motion.div
+                            key="pw-checklist"
+                            initial={{ opacity: 0, y: -6, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -6, height: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-3 p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
+
+                              {/* Strength bar */}
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                  <motion.div
+                                    className="h-full rounded-full"
+                                    style={{ backgroundColor: strengthColor }}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(passed / 4) * 100}%` }}
+                                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                                  />
+                                </div>
+                                <motion.span
+                                  key={strengthLabel}
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="text-[10px] font-bold w-16 text-right"
+                                  style={{ color: strengthColor }}
+                                >
+                                  {strengthLabel}
+                                </motion.span>
+                              </div>
+
+                              {/* Check items */}
+                              {checks.map(({ key, label, ok }) => (
+                                <motion.div
+                                  key={key}
+                                  className="flex items-center gap-2"
+                                  initial={false}
+                                >
+                                  {/* SVG icon — circle with checkmark or dash */}
+                                  <motion.svg
+                                    width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    animate={{ scale: ok ? [1, 1.3, 1] : 1 }}
+                                    transition={{ duration: 0.3 }}
+                                  >
+                                    <motion.circle
+                                      cx="8" cy="8" r="7"
+                                      animate={{
+                                        stroke: ok ? '#22c55e' : '#d1d5db',
+                                        fill: ok ? '#f0fdf4' : '#f9fafb',
+                                      }}
+                                      transition={{ duration: 0.25 }}
+                                      strokeWidth="1.5"
+                                    />
+                                    <AnimatePresence mode="wait">
+                                      {ok ? (
+                                        <motion.path
+                                          key="check"
+                                          d="M5 8l2 2 4-4"
+                                          stroke="#22c55e"
+                                          strokeWidth="1.8"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          initial={{ pathLength: 0, opacity: 0 }}
+                                          animate={{ pathLength: 1, opacity: 1 }}
+                                          exit={{ pathLength: 0, opacity: 0 }}
+                                          transition={{ duration: 0.3, ease: 'easeOut' }}
+                                        />
+                                      ) : (
+                                        <motion.path
+                                          key="dash"
+                                          d="M5.5 8h5"
+                                          stroke="#9ca3af"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          initial={{ opacity: 0 }}
+                                          animate={{ opacity: 1 }}
+                                          exit={{ opacity: 0 }}
+                                          transition={{ duration: 0.2 }}
+                                        />
+                                      )}
+                                    </AnimatePresence>
+                                  </motion.svg>
+
+                                  <motion.span
+                                    className="text-xs"
+                                    animate={{ color: ok ? '#16a34a' : '#9ca3af' }}
+                                    transition={{ duration: 0.25 }}
+                                  >
+                                    {label}
+                                  </motion.span>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        );
+                      })()}
+                    </AnimatePresence>
                   </div>
 
                   {error && (
