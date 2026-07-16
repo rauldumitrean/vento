@@ -241,6 +241,20 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [showStyleOnboarding, setShowStyleOnboarding] = useState(false);
 
   useEffect(() => {
+    // Set theme color for mobile browsers to prevent native bar from picking up blob colors
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.name = 'theme-color';
+      document.head.appendChild(metaThemeColor);
+    }
+    metaThemeColor.setAttribute('content', darkMode ? '#030712' : '#fafafa');
+    
+    // Save dark mode preference
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+
+  useEffect(() => {
     const checkOnboarding = async () => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -567,7 +581,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       <div className="relative z-10 pb-20 md:pb-0">
         {view !== 'admin' && (
           <>
-            <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
+            <div className="hidden md:block">
+              <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
+            </div>
             <MobileNavBar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} />
           </>
         )}
