@@ -6,10 +6,11 @@ const IosInstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    // Check if it's an iOS device
+    // Check if it's an iOS device (including iPads on iPadOS 13+)
     const isIos = () => {
       const userAgent = window.navigator.userAgent.toLowerCase();
-      return /iphone|ipad|ipod/.test(userAgent);
+      const isMacWithTouch = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+      return /iphone|ipad|ipod/.test(userAgent) || isMacWithTouch;
     };
 
     // Check if it's Safari
@@ -23,23 +24,40 @@ const IosInstallPrompt = () => {
       return ('standalone' in window.navigator) && (window.navigator.standalone);
     };
 
+    // Global listener for manual triggers (from settings)
+    const handleManualTrigger = () => {
+      if (isIos() && isSafari() && !isStandalone()) {
+        setShowPrompt(true);
+      } else {
+        // If they click the button but they are not on Safari/iOS, we could show a fallback message, 
+        // but for now we just force it open so they see the instructions anyway.
+        setShowPrompt(true);
+      }
+    };
+    window.addEventListener('show-ios-prompt', handleManualTrigger);
+
     // Only show if iOS, Safari, not already installed, and hasn't been dismissed recently
     if (isIos() && isSafari() && !isStandalone()) {
-      const hasDismissed = localStorage.getItem('ios-pwa-dismissed');
+      const hasDismissed = localStorage.getItem('ios-pwa-dismissed-v2');
       if (!hasDismissed) {
         // Delay prompt slightly so it's not jarring on immediate load
         const timer = setTimeout(() => {
           setShowPrompt(true);
         }, 3000);
-        return () => clearTimeout(timer);
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener('show-ios-prompt', handleManualTrigger);
+        };
       }
     }
+    
+    return () => window.removeEventListener('show-ios-prompt', handleManualTrigger);
   }, []);
 
   const handleDismiss = () => {
     setShowPrompt(false);
     // Hide permanently once dismissed to not annoy the user
-    localStorage.setItem('ios-pwa-dismissed', 'true');
+    localStorage.setItem('ios-pwa-dismissed-v2', 'true');
   };
 
   return (

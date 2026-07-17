@@ -248,6 +248,19 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         </button>
       </form>
 
+      {/* Instalar App Manualmente */}
+      <div className={`mt-6 p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+        <h3 className={`text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Aplicación Nativa</h3>
+        <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Instala Ventoo en tu pantalla de inicio para una experiencia sin interrupciones.</p>
+        <button 
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('show-ios-prompt'))}
+          className={`w-full py-2 rounded-lg text-sm font-bold transition-all border ${darkMode ? 'border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50'}`}
+        >
+          Instalar App en el Móvil
+        </button>
+      </div>
+
       {/* Reportar un problema */}
       <div className={`mt-6 p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
         <h3 className={`text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reportar un Problema</h3>
