@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import axios from 'axios';
 import LandingView from './components/LandingView';
+import BanView from './components/BanView';
 
 const AuthView = lazy(() => import('./components/AuthView'));
 const DashboardView = lazy(() => import('./components/DashboardView'));
@@ -21,6 +22,10 @@ const LoginRedirect = () => {
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken'));
+  const [bannedData, setBannedData] = useState(() => {
+    const data = localStorage.getItem('bannedData');
+    return data ? JSON.parse(data) : null;
+  });
   
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
@@ -30,13 +35,17 @@ function App() {
           if (error.response.status === 401) {
             // If the token is invalid or the user was deleted, log them out
             setToken(null);
+            setBannedData(null);
+            localStorage.removeItem('bannedData');
           } else if (error.response.status === 403 && error.response.data?.error === 'BANNED') {
             // Real-time ban enforcement
-            localStorage.setItem('bannedData', JSON.stringify({
+            const banInfo = {
               bannedUntil: error.response.data.bannedUntil,
               banReason: error.response.data.banReason
-            }));
-            setToken(null);
+            };
+            localStorage.setItem('bannedData', JSON.stringify(banInfo));
+            setBannedData(banInfo);
+            // Do NOT setToken(null) here so we can refresh the token status later
           }
         }
         return Promise.reject(error);
@@ -70,6 +79,17 @@ function App() {
 
   return (
     <BrowserRouter>
+      {bannedData && token && (
+        <BanView 
+          banDetails={bannedData} 
+          setBannedData={setBannedData} 
+          onLogout={() => {
+            setToken(null);
+            setBannedData(null);
+            localStorage.removeItem('bannedData');
+          }} 
+        />
+      )}
       <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden">
         <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center bg-black"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
