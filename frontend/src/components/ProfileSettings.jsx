@@ -7,6 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [name, setName] = useState(localStorage.getItem('userName') || '');
   const [gender, setGender] = useState(localStorage.getItem('userGender') || 'Mujer');
+  const [age, setAge] = useState(localStorage.getItem('userAge') || '');
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
   const [historyCount, setHistoryCount] = useState(0);
@@ -25,6 +26,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         if (res.data.user) {
           setName(res.data.user.name || '');
           setGender(res.data.user.gender || 'Mujer');
+          setAge(res.data.user.age || '');
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
           setHistoryCount(res.data.user.historyCount || 0);
@@ -41,11 +43,12 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
     setLoading(true);
     setMessage('');
     try {
-      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, estiloPersonal, estiloDetalles }, {
+      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       localStorage.setItem('userName', res.data.user.name);
       localStorage.setItem('userGender', res.data.user.gender);
+      localStorage.setItem('userAge', res.data.user.age || '');
       setMessage('Perfil actualizado con éxito');
       // FIX: Auto-dismiss success message after 4 seconds
       setTimeout(() => setMessage(''), 4000);
@@ -127,7 +130,19 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
             <option value="Hombre">Hombre</option>
             <option value="Otro">Otro</option>
           </select>
-          {/* FIX: Simplified useless ternary - both branches were 'text-gray-500' */}
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Edad</label>
+          <input 
+            type="number" 
+            min="1"
+            max="120"
+            value={age}
+            onChange={e => setAge(e.target.value)}
+            className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800/80 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'} border shadow-sm`}
+            placeholder="Ej: 25"
+          />
           <p className="mt-2 text-xs text-gray-500">Esta información se usa para mejorar las recomendaciones de estilo.</p>
         </div>
 
@@ -248,18 +263,26 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         </button>
       </form>
 
-      {/* Instalar App Manualmente */}
-      <div className={`mt-6 p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
-        <h3 className={`text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Aplicación Nativa</h3>
-        <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Instala Ventoo en tu pantalla de inicio para una experiencia sin interrupciones.</p>
-        <button 
-          type="button"
-          onClick={() => window.dispatchEvent(new Event('show-ios-prompt'))}
-          className={`w-full py-2 rounded-lg text-sm font-bold transition-all border ${darkMode ? 'border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50'}`}
-        >
-          Instalar App en el Móvil
-        </button>
-      </div>
+      {/* Instalar App Manualmente (Solo en iOS) */}
+      {(() => {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        const isMacWithTouch = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        const isIos = /iphone|ipad|ipod/.test(userAgent) || isMacWithTouch;
+        
+        return isIos ? (
+          <div className={`mt-6 p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+            <h3 className={`text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Aplicación Nativa</h3>
+            <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Instala Ventoo en tu pantalla de inicio para una experiencia sin interrupciones.</p>
+            <button 
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('show-ios-prompt'))}
+              className={`w-full py-2 rounded-lg text-sm font-bold transition-all border ${darkMode ? 'border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50'}`}
+            >
+              Instalar App en el Móvil
+            </button>
+          </div>
+        ) : null;
+      })()}
 
       {/* Reportar un problema */}
       <div className={`mt-6 p-4 rounded-xl border ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>

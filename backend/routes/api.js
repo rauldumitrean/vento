@@ -146,10 +146,16 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
 
     let ageText = "";
     if (dbUser.age) {
-      ageText = `IMPORTANTE: El usuario tiene ${dbUser.age} años de edad. Las prendas sugeridas deben ser acordes a su edad.`;
+      ageText = `IMPORTANTE: El usuario tiene ${dbUser.age} años de edad. CRÍTICO: Las prendas sugeridas DEBEN SER estrictamente acordes y apropiadas para alguien de ${dbUser.age} años.`;
+    }
+    
+    let nameText = "";
+    if (dbUser.name) {
+      nameText = `IMPORTANTE: El usuario se llama ${dbUser.name}. Hazle un guiño personal mencionando su nombre de forma natural en el resumen o consejo extra.`;
     }
 
-    const prompt = `Eres un asesor de moda experto. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
+    const prompt = `Eres un asesor de moda experto y personal. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
+${nameText}
 ${genderText}
 ${ageText}
 ${styleText}
@@ -240,13 +246,19 @@ router.post('/chat', authMiddleware, async (req, res) => {
 
     let ageTextChat = "";
     if (dbUser && dbUser.age) {
-      ageTextChat = `Toma en cuenta que el usuario tiene ${dbUser.age} años de edad.`;
+      ageTextChat = `Toma en cuenta que el usuario tiene ${dbUser.age} años de edad. Adapta tus recomendaciones y tono para alguien de su edad.`;
+    }
+    
+    let nameTextChat = "";
+    if (dbUser && dbUser.name) {
+      nameTextChat = `El usuario se llama ${dbUser.name}. Respóndele por su nombre para ser amigable y cercano.`;
     }
 
     const model = genAI.getGenerativeModel({ 
       // FIX: Use gemini-3.1-flash-lite as it supports vision and is in the user's quota
       model: "gemini-3.1-flash-lite", // Soporta vision
-      systemInstruction: `Eres un experto asesor de moda de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
+      systemInstruction: `Eres un experto asesor de moda personal de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
+${nameTextChat}
 ${ageTextChat}
 ${styleTextChat}
 REGLA ESTRICTA 1: SÓLO puedes responder a preguntas de moda y clima. Niégate educadamente a otros temas.
@@ -587,12 +599,13 @@ router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res)
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
-    const { email, name, gender, role, password } = req.body;
+    const { email, name, gender, age, role, password } = req.body;
     // FIX: Only include defined fields to avoid overwriting with undefined
     const dataToUpdate = {};
     if (email !== undefined) dataToUpdate.email = email;
     if (name !== undefined) dataToUpdate.name = name;
     if (gender !== undefined) dataToUpdate.gender = gender;
+    if (age !== undefined) dataToUpdate.age = age === '' || age === null ? null : parseInt(age);
     if (role !== undefined) dataToUpdate.role = role;
     if (password && password.trim() !== '') {
       // FIX: bcrypt now used from top-level import

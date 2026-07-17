@@ -154,7 +154,7 @@ const AdminView = ({ token }) => {
 
   const startEdit = (user) => {
     setEditUserId(user.id);
-    setEditUserData({ email: user.email, name: user.name || '', gender: user.gender || 'Mujer', role: user.role, password: '' });
+    setEditUserData({ email: user.email, name: user.name || '', gender: user.gender || 'Mujer', age: user.age || '', role: user.role, password: '' });
   };
 
   const handleSaveEdit = async () => {
@@ -683,10 +683,16 @@ const AdminView = ({ token }) => {
                                   >
                                     <option value="Mujer">Mujer</option>
                                     <option value="Hombre">Hombre</option>
-                                    <option value="Otro">Otro</option>
+                                    <option value="No binario">No binario</option>
                                   </select>
                                   <input 
-                                    type="password" placeholder="Nueva contraseña" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})}
+                                    type="number" value={editUserData.age} onChange={e => setEditUserData({...editUserData, age: e.target.value})} 
+                                    className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-20 text-sm" placeholder="Edad"
+                                    min="1" max="120"
+                                  />
+                                  <input 
+                                    type="password" value={editUserData.password} onChange={e => setEditUserData({...editUserData, password: e.target.value})} 
+                                    placeholder="Nueva contraseña (dejar en blanco si no cambia)"
                                     className="p-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 w-40 text-sm"
                                   />
                                   <select 
