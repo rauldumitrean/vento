@@ -716,7 +716,7 @@ const AdminView = ({ token }) => {
                                         <span className="font-medium text-gray-900">{u.email}</span>
                                         {u.isBanned && <span className="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">Baneado</span>}
                                       </div>
-                                      <span className="text-xs text-gray-500">{u.name ? `${u.name} (${u.gender})` : 'Sin nombre'}</span>
+                                      <span className="text-xs text-gray-500">{u.name ? `${u.name} (${u.gender}${u.age ? `, ${u.age} años` : ''})` : 'Sin nombre'}</span>
                                       <span className="text-xs text-gray-400">ID: #{u.id}</span>
                                     </div>
                                   </div>

@@ -495,7 +495,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
 
     const users = await prisma.user.findMany({
       select: { 
-        id: true, email: true, name: true, gender: true, role: true, isPremium: true, premiumPlan: true, createdAt: true,
+        id: true, email: true, name: true, gender: true, age: true, role: true, isPremium: true, premiumPlan: true, createdAt: true,
         isBanned: true, bannedUntil: true, banReason: true,
         consultas: {
           where: { createdAt: { gte: startOfDay } },
@@ -512,6 +512,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
       email: u.email,
       name: u.name,
       gender: u.gender,
+      age: u.age,
       role: u.role,
       isPremium: u.isPremium,
       premiumPlan: u.premiumPlan,
