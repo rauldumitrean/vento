@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield } from 'lucide-react';
+import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 
@@ -98,6 +98,59 @@ const AppPreviewAnimation = () => {
     </div>
   );
 };
+// ─── FAQ Component ─────────────────────────────────────────────────────────────
+const faqs = [
+  {
+    q: "¿Ventoo es completamente gratis?",
+    a: "Sí, tenemos un plan Básico gratuito que te permite generar hasta 5 outfits diarios basados en el clima de tu zona y guardar 15 conjuntos en tu historial."
+  },
+  {
+    q: "¿Qué me ofrece el plan Premium?",
+    a: "El plan Premium te da outfits ilimitados, te permite subir fotos para que la IA reconozca tus prendas, elimina la publicidad, aumenta tu historial y desbloquea el asistente de estilo avanzado."
+  },
+  {
+    q: "¿Cómo funciona la recomendación por IA?",
+    a: "Nuestra Inteligencia Artificial analiza la temperatura, clima actual y tus preferencias de estilo para crear instantáneamente el look perfecto que combine con el tiempo."
+  },
+  {
+    q: "¿Puedo subir fotos de mi propia ropa?",
+    a: "¡Sí! Con el plan Premium puedes subir imágenes de tus prendas. La IA las procesa usando visión artificial para armar conjuntos reales basándose en tu propio armario."
+  },
+  {
+    q: "¿Tengo que instalar algo?",
+    a: "No. Ventoo es una Web App que funciona en cualquier navegador (PC, Mac, iPhone, Android). Además, en móviles te permite instalarla en tu pantalla de inicio como una app nativa en segundos."
+  }
+];
+
+const FaqItem = ({ q, a }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border border-white/[0.08] bg-gray-900/40 rounded-2xl overflow-hidden backdrop-blur-sm transition-all hover:border-white/[0.15]">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="w-full px-6 py-5 flex items-center justify-between text-left"
+      >
+        <span className="font-bold text-white pr-4">{q}</span>
+        <ChevronDown className={`text-gray-400 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} size={20} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }} 
+            animate={{ height: 'auto', opacity: 1 }} 
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-5 text-gray-400 text-sm leading-relaxed">
+              {a}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 
 // ─── Stat counter ──────────────────────────────────────────────────────────────
 const StatCard = ({ value, label, delay = 0 }) => (
@@ -425,6 +478,21 @@ export default function LandingView({ token }) {
               badge={<><Crown size={13} fill="currentColor" /> MEJOR VALOR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'lifetime' })}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Preguntas Frecuentes ── */}
+      <section id="faq" className="relative z-10 py-24 px-6 border-t border-white/[0.06]">
+        <div className="max-w-3xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-black mb-4">Preguntas Frecuentes</h2>
+            <p className="text-gray-400">Resolvemos tus dudas sobre el asistente de estilo IA.</p>
+          </motion.div>
+          <div className="flex flex-col gap-3">
+            {faqs.map((faq, idx) => (
+              <FaqItem key={idx} q={faq.q} a={faq.a} />
+            ))}
           </div>
         </div>
       </section>
