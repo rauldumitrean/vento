@@ -66,6 +66,11 @@ function App() {
       localStorage.removeItem('premiumPlan');
       localStorage.removeItem('pendingCheckout');
       localStorage.removeItem('adShown');
+      // Asegurarse de que si se borra el token, se limpie el banData
+      if (bannedData) {
+        setBannedData(null);
+        localStorage.removeItem('bannedData');
+      }
     }
   }, [token]);
 
