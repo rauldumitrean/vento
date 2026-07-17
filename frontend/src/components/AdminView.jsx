@@ -1274,18 +1274,28 @@ const AdminView = ({ token }) => {
                   selectedChat.mensajes.map((msg, i) => {
                     const isModel = msg.rol === 'model';
                     let contentText = msg.contenido;
-                    let banReason = null;
                     
                     if (isModel) {
                       try {
                         const parsed = JSON.parse(msg.contenido);
                         if (parsed.texto) contentText = parsed.texto;
-                        
-                        if (parsed.infraccion && parsed.infraccion.es_infraccion) {
-                          banReason = parsed.infraccion.razon || 'Incumplimiento de normas detectado';
-                        }
                       } catch (e) {
                         // Si no es JSON válido, lo mostramos tal cual
+                      }
+                    }
+
+                    let userBanReason = null;
+                    if (!isModel && i + 1 < selectedChat.mensajes.length) {
+                      const nextMsg = selectedChat.mensajes[i + 1];
+                      if (nextMsg.rol === 'model') {
+                        try {
+                          const parsedNext = JSON.parse(nextMsg.contenido);
+                          if (parsedNext.infraccion && parsedNext.infraccion.es_infraccion) {
+                            userBanReason = parsedNext.infraccion.razon || 'Incumplimiento de normas';
+                          }
+                        } catch (e) {
+                          // Ignore
+                        }
                       }
                     }
 
@@ -1297,12 +1307,12 @@ const AdminView = ({ token }) => {
                           </div>
                           <p className="text-sm whitespace-pre-wrap leading-relaxed">{contentText}</p>
                         </div>
-                        {banReason && (
-                          <div className="max-w-[85%] mt-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700 shadow-sm">
+                        {userBanReason && (
+                          <div className="max-w-[85%] mt-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700 shadow-sm text-left">
                             <AlertCircle size={16} className="mt-0.5 shrink-0" />
                             <div>
-                              <div className="text-xs font-bold uppercase tracking-wider mb-0.5">El Auto-Moderador ha detectado:</div>
-                              <div className="text-sm font-medium">{banReason}</div>
+                              <div className="text-xs font-bold uppercase tracking-wider mb-0.5">Motivo del Bloqueo:</div>
+                              <div className="text-sm font-medium">El Auto-Moderador detectó: {userBanReason} en este mensaje.</div>
                             </div>
                           </div>
                         )}
