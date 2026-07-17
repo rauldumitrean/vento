@@ -19,6 +19,24 @@ const LoginRedirect = () => {
   return <Navigate to={returnTo} replace />;
 };
 
+const GlobalBanOverlay = ({ token, bannedData, setBannedData, setToken }) => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/admin')) return null;
+  if (!bannedData || !token) return null;
+
+  return (
+    <BanView 
+      banDetails={bannedData} 
+      setBannedData={setBannedData} 
+      onLogout={() => {
+        setToken(null);
+        setBannedData(null);
+        localStorage.removeItem('bannedData');
+      }} 
+    />
+  );
+};
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken'));
@@ -84,17 +102,12 @@ function App() {
 
   return (
     <BrowserRouter>
-      {bannedData && token && (
-        <BanView 
-          banDetails={bannedData} 
-          setBannedData={setBannedData} 
-          onLogout={() => {
-            setToken(null);
-            setBannedData(null);
-            localStorage.removeItem('bannedData');
-          }} 
-        />
-      )}
+      <GlobalBanOverlay 
+        token={token} 
+        bannedData={bannedData} 
+        setBannedData={setBannedData} 
+        setToken={setToken} 
+      />
       <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden">
         <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center bg-black"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
