@@ -303,10 +303,16 @@ export default function AuthView({ setToken }) {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <div
-      className="min-h-[100dvh] font-sans flex items-center justify-center bg-gray-100 p-4"
+      className="min-h-[100dvh] font-sans flex items-center justify-center bg-[#0A0A0B] p-4 relative overflow-hidden"
       style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
     >
-      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex">
+      {/* Background depth effect */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full mix-blend-screen filter blur-[120px] opacity-30 bg-indigo-600"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full mix-blend-screen filter blur-[150px] opacity-30 bg-purple-600"></div>
+      </div>
+
+      <div className="w-full max-w-4xl bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden flex border border-white/20 relative z-10 hover:shadow-[0_30px_80px_-15px_rgba(99,102,241,0.2)] transition-shadow duration-500">
         
         {/* ── Accent panel (left on login, right on register) ── */}
         <AnimatePresence mode="wait">
