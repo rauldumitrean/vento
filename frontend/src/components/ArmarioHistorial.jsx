@@ -100,7 +100,48 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center p-12"><div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"></div></div>
+        activeTab === 'armario' ? (
+          <div>
+            <div className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+              <div className={`h-10 w-full sm:w-48 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+              <div className={`h-10 flex-1 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+              <div className={`h-10 w-full sm:w-32 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+              <div className={`h-10 w-full sm:w-24 rounded animate-pulse ${darkMode ? 'bg-indigo-900/30' : 'bg-indigo-100'}`}></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className={`p-4 rounded-lg flex justify-between items-start border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                  <div className="w-full">
+                    <div className={`h-5 w-16 rounded mb-3 animate-pulse ${darkMode ? 'bg-indigo-900/30' : 'bg-indigo-50'}`}></div>
+                    <div className={`h-4 w-3/4 rounded mb-2 animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                    <div className={`h-3 w-1/2 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`h-4 w-48 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  <div className="flex gap-2">
+                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  </div>
+                </div>
+                <div className={`h-4 w-full rounded mb-2 animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                <div className={`h-4 w-5/6 rounded mb-6 animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                <div className="flex flex-wrap gap-2">
+                  <div className={`h-6 w-24 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  <div className={`h-6 w-32 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  <div className={`h-6 w-20 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : activeTab === 'armario' ? (
         <div>
           <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
