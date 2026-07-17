@@ -51,6 +51,16 @@ export default function PrivacyView() {
             <h2 className="text-2xl font-bold text-white mb-4">5. Compartir Información</h2>
             <p>No vendemos ni alquilamos tu información personal a terceros. Solo compartimos la información estrictamente necesaria con proveedores de servicios (como Stripe para pagos) para operar la plataforma.</p>
           </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">6. Monitorización de Seguridad y Auto-Moderación</h2>
+            <p className="mb-3">Como parte esencial para proporcionar un entorno seguro, empleamos sistemas automatizados de moderación en tiempo real. En relación a tu privacidad, debes saber que:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Análisis de contenido:</strong> Los textos de tu perfil y mensajes enviados en el chat de la aplicación son analizados automáticamente por nuestros proveedores de IA para detectar posibles infracciones a los Términos de Servicio.</li>
+              <li><strong>Retención de pruebas:</strong> En caso de que el Auto-Moderador aplique un bloqueo sobre tu cuenta, el sistema registrará de forma temporal la justificación del bloqueo para que nuestro equipo técnico pueda consultarlo si decides interponer una reclamación o apelación a través del soporte técnico.</li>
+              <li><strong>No entrenamiento:</strong> Estos análisis de moderación son privados. Ningún texto interceptado por los filtros de moderación se compartirá públicamente ni se venderá a terceros bajo ninguna circunstancia.</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>

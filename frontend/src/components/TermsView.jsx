@@ -51,6 +51,17 @@ export default function TermsView() {
             <h2 className="text-2xl font-bold text-white mb-4">5. Propiedad Intelectual</h2>
             <p>Todo el contenido original, características y funcionalidad son propiedad exclusiva de Ventoo y están protegidos por las leyes internacionales de derechos de autor.</p>
           </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">6. Sistema de Auto-Moderación y Conducta</h2>
+            <p className="mb-3">Para garantizar una experiencia segura, Ventoo implementa un sistema de <strong>Auto-Moderación automatizado mediante Inteligencia Artificial</strong>, aplicable tanto en los perfiles como en los chats de recomendaciones:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Prohibiciones estrictas:</strong> Queda terminantemente prohibido usar los servicios para solicitar contenido ilegal, violencia, actos explícitos de naturaleza sexual, discurso de odio, o cualquier forma de abuso.</li>
+              <li><strong>Bloqueo automático:</strong> El sistema evalúa los textos en tiempo real. En caso de detectar violaciones a estas normas o intentos de alterar las instrucciones del sistema ("jailbreaks"), la cuenta será suspendida de manera automática e instantánea.</li>
+              <li><strong>Duración de sanciones:</strong> Las suspensiones varían según el grado de severidad dictaminado por la IA: Infracciones leves (1 día), infracciones medias (7 días) e infracciones graves (30 días). Casos extremos podrían conllevar bloqueos permanentes tras revisión manual.</li>
+              <li><strong>Derecho a apelación:</strong> Si consideras que el sistema de seguridad te ha bloqueado por error, puedes utilizar el botón de apelación en la pantalla de bloqueo para que un administrador humano revise tu caso.</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>
