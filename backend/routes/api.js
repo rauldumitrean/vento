@@ -182,7 +182,8 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
     }
     // ... OBLIGATORIO: La tienda siempre debe ser "Amazon". El enlace debe ser de búsqueda de amazon.es y debe contener EXACTAMENTE la etiqueta &tag=${amazonTag} al final.
   ],
-  "consejo_extra": "Un consejo de estilo corto"
+  "consejo_extra": "Un consejo de estilo corto",
+  "infraccion": null // Pon null si todo es correcto. SI detectas lenguaje ofensivo, sexual, o malicioso en el nombre o estilo del usuario, devuelve { "es_infraccion": true, "razon": "Motivo", "nivel_severidad": "bajo|medio|alto" }
 }`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
@@ -199,6 +200,31 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin text
     } catch(e) {
       console.error("Error parseando JSON de Gemini:", textResult);
       return res.status(500).json({ error: 'Error procesando respuesta de IA' });
+    }
+
+    // --- AUTO-MODERATOR: Check for violations ---
+    if (recomendacionJSON.infraccion && recomendacionJSON.infraccion.es_infraccion) {
+      const severidad = recomendacionJSON.infraccion.nivel_severidad || 'bajo';
+      const days = severidad === 'alto' ? 30 : severidad === 'medio' ? 7 : 1;
+      const bannedUntil = new Date();
+      bannedUntil.setDate(bannedUntil.getDate() + days);
+      const banReason = `[AutoModerator] ${recomendacionJSON.infraccion.razon}`;
+
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { isBanned: true, bannedUntil, banReason }
+      });
+      // Try to send email async
+      setTimeout(() => {
+        sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
+      }, 0);
+
+      return res.status(403).json({ 
+        error: 'BANNED', 
+        message: 'Tu cuenta ha sido bloqueada por violar las normas.',
+        bannedUntil,
+        banReason 
+      });
     }
 
     const consulta = await prisma.consulta.create({
@@ -269,7 +295,8 @@ Estructura obligatoria del JSON:
   "nuevas_prendas": [
     // OPCIONAL. SÓLO si el usuario pide cambiar el outfit o sugiere otra prenda, añade aquí la prenda.
     // { "categoria": "TOP" (o BOTTOM, CALZADO), "descripcion": "...", "razon": "...", "color": "...", "enlace_compra": "https://amazon.es/s?k=...", "tienda_recomendada": "Amazon" }
-  ]
+  ],
+  "infraccion": null // Pon null si todo es correcto. SI el usuario pide cosas ilegales, contenido sexual explícito, o viola gravemente las reglas, devuelve { "es_infraccion": true, "razon": "Motivo detallado", "nivel_severidad": "bajo|medio|alto" }
 }`
     });
     
@@ -286,7 +313,41 @@ Estructura obligatoria del JSON:
     }
 
     const result = await chat.sendMessage(parts);
-    const textResponse = result.response.text();
+    let textResponse = result.response.text();
+    
+    // Parse to check for infractions
+    if(textResponse.includes('\`\`\`json')) {
+        textResponse = textResponse.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+    }
+    
+    try {
+      const responseJSON = JSON.parse(textResponse);
+      if (responseJSON.infraccion && responseJSON.infraccion.es_infraccion) {
+        const severidad = responseJSON.infraccion.nivel_severidad || 'bajo';
+        const days = severidad === 'alto' ? 30 : severidad === 'medio' ? 7 : 1;
+        const bannedUntil = new Date();
+        bannedUntil.setDate(bannedUntil.getDate() + days);
+        const banReason = `[AutoModerator] ${responseJSON.infraccion.razon}`;
+
+        await prisma.user.update({
+          where: { id: req.user.id },
+          data: { isBanned: true, bannedUntil, banReason }
+        });
+        
+        setTimeout(() => {
+          sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
+        }, 0);
+
+        return res.status(403).json({ 
+          error: 'BANNED', 
+          message: 'Tu cuenta ha sido bloqueada por violar las normas.',
+          bannedUntil,
+          banReason 
+        });
+      }
+    } catch(e) {
+      // Ignoramos errores de parseo aquí, si falla se enviará como texto plano
+    }
 
     const nuevoMensaje = await prisma.mensajeChat.create({
       data: { consultaId, rol: 'model', contenido: textResponse }

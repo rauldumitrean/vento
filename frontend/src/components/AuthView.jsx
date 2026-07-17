@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, Crown, Eye, EyeOff, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
@@ -24,6 +24,20 @@ export default function AuthView({ setToken }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [isBannedError, setIsBannedError] = useState(false);
   const [banDetails, setBanDetails] = useState(null);
+
+  useEffect(() => {
+    const bannedData = localStorage.getItem('bannedData');
+    if (bannedData) {
+      try {
+        const parsed = JSON.parse(bannedData);
+        setIsBannedError(true);
+        setBanDetails(parsed);
+        localStorage.removeItem('bannedData');
+      } catch (e) {
+        localStorage.removeItem('bannedData');
+      }
+    }
+  }, []);
 
   const handleAuth = async (e, endpoint) => {
     e.preventDefault();

@@ -26,9 +26,18 @@ function App() {
     const interceptor = axios.interceptors.response.use(
       response => response,
       error => {
-        if (error.response && error.response.status === 401) {
-          // If the token is invalid or the user was deleted, log them out
-          setToken(null);
+        if (error.response) {
+          if (error.response.status === 401) {
+            // If the token is invalid or the user was deleted, log them out
+            setToken(null);
+          } else if (error.response.status === 403 && error.response.data?.error === 'BANNED') {
+            // Real-time ban enforcement
+            localStorage.setItem('bannedData', JSON.stringify({
+              bannedUntil: error.response.data.bannedUntil,
+              banReason: error.response.data.banReason
+            }));
+            setToken(null);
+          }
         }
         return Promise.reject(error);
       }
