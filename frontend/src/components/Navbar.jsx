@@ -9,12 +9,15 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
   return (
     <nav className={`w-full hidden md:flex flex-wrap items-center justify-between gap-4 p-4 mb-4 sm:mb-8 backdrop-blur-md sticky top-0 z-50 transition-colors border-b ${darkMode ? 'bg-gray-950/60 border-white/10' : 'bg-white/70 border-white shadow-sm'}`}>
       <div className="flex items-center gap-4 sm:gap-6">
-        <div className="flex items-center gap-2 sm:gap-3">
+        <button 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <div className={`w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center border shadow-sm ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
             <img src="/favicon.svg" alt="Ventoo" className="w-full h-full object-cover p-1" />
           </div>
           <h1 className="text-xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent hidden sm:block">Ventoo</h1>
-        </div>
+        </button>
         
         <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-8">
           <button 
