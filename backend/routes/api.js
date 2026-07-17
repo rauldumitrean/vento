@@ -778,4 +778,22 @@ router.delete('/admin/tickets', authMiddleware, adminMiddleware, async (req, res
   }
 });
 
+// CHATS ADMIN
+router.get('/admin/chats', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const chats = await prisma.consulta.findMany({
+      where: { mensajes: { some: {} } },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { id: true, email: true, isBanned: true, bannedUntil: true, name: true, gender: true } },
+        mensajes: { orderBy: { createdAt: 'asc' } }
+      }
+    });
+    res.json(chats);
+  } catch (error) {
+    console.error('Error fetching admin chats:', error);
+    res.status(500).json({ error: 'Error obteniendo chats' });
+  }
+});
+
 module.exports = router;

@@ -9,6 +9,7 @@ const AdminView = ({ token }) => {
   const [users, setUsers] = useState([]);
   const [outfits, setOutfits] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [chats, setChats] = useState([]);
   const [selectedUserFilter, setSelectedUserFilter] = useState(''); // '' means all
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ const AdminView = ({ token }) => {
   const [userToBan, setUserToBan] = useState(null);
   const [banDurationValue, setBanDurationValue] = useState(1);
   const [banDurationUnit, setBanDurationUnit] = useState('days'); // 'days' | 'weeks' | 'years' | 'permanent'
+  const [selectedChat, setSelectedChat] = useState(null); // Chat para el modal
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -64,19 +66,33 @@ const AdminView = ({ token }) => {
     }
   };
 
+  const fetchChats = async () => {
+    try {
+      setIsRefreshing(true);
+      const res = await axios.get(`${API_URL}/api/admin/chats`, { headers: { Authorization: `Bearer ${token}` } });
+      setChats(res.data);
+    } catch (err) {
+      showAdminMsg('Error obteniendo chats');
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersRes, statsRes, outfitsRes, ticketsRes] = await Promise.all([
+      const [usersRes, statsRes, outfitsRes, ticketsRes, chatsRes] = await Promise.all([
         axios.get(`${API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/admin/chats`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setUsers(usersRes.data);
       setStats(statsRes.data);
       setOutfits(outfitsRes.data);
       setTickets(ticketsRes.data);
+      setChats(chatsRes.data);
       setSelectedUserFilter(''); // Reset filter on full refresh
     } catch (error) {
       showAdminMsg('Error de conexión. Verifica tus permisos.');
@@ -299,6 +315,12 @@ const AdminView = ({ token }) => {
               className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'tickets' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
             >
               <MessageSquare size={18} /> <span className="whitespace-nowrap">Tickets</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('chats')}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'chats' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+            >
+              <MessageSquare size={18} /> <span className="whitespace-nowrap">Chats</span>
             </button>
           </nav>
         </div>
@@ -983,6 +1005,100 @@ const AdminView = ({ token }) => {
                   )}
                 </motion.div>
               )}
+
+              {activeTab === 'chats' && (
+                <motion.div key="chats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-2xl font-normal text-gray-900 mb-1 tracking-tight">Registro de Chats IA</h2>
+                      <p className="text-gray-500 text-sm">Auditoría de conversaciones con el Auto-Moderador</p>
+                    </div>
+                    <button 
+                      onClick={fetchChats}
+                      disabled={isRefreshing}
+                      className="mt-3 sm:mt-0 self-start flex items-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 rounded-md text-sm transition-all disabled:opacity-50"
+                    >
+                      <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin' : ''}`} />
+                      Actualizar
+                    </button>
+                  </div>
+
+                  {isRefreshing ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-lg p-6 relative overflow-hidden h-24">
+                          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-gray-200/50 to-transparent"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">
+                      {chats.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400">No hay historiales de chat registrados</div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="border-b border-gray-100 bg-gray-50/50">
+                                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha / Consulta</th>
+                                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuario</th>
+                                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Mensajes</th>
+                                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Acción</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {chats.map(chat => (
+                                <tr key={chat.id} className="hover:bg-gray-50 transition-colors">
+                                  <td className="p-4">
+                                    <div className="font-medium text-gray-900">ID: {chat.id}</div>
+                                    <div className="text-sm text-gray-500">{new Date(chat.createdAt).toLocaleString()}</div>
+                                  </td>
+                                  <td className="p-4">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium text-gray-900">{chat.user.email}</span>
+                                      {chat.user.isBanned && <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-bold uppercase tracking-wider">Baneado</span>}
+                                    </div>
+                                  </td>
+                                  <td className="p-4">
+                                    <div className="text-sm text-gray-500 font-medium">
+                                      {chat.mensajes?.length || 0} mensajes
+                                    </div>
+                                  </td>
+                                  <td className="p-4 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button 
+                                        onClick={() => setSelectedChat(chat)}
+                                        className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs rounded-md transition-colors"
+                                      >
+                                        Ver Chat
+                                      </button>
+                                      {chat.user.isBanned ? (
+                                        <button 
+                                          onClick={() => handleUnban(chat.user.id)}
+                                          className="px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 font-bold text-xs rounded-md transition-colors"
+                                        >
+                                          Desbanear
+                                        </button>
+                                      ) : (
+                                        <button 
+                                          onClick={() => { setUserToBan(chat.user); setBanModalOpen(true); }}
+                                          className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded-md transition-colors"
+                                        >
+                                          Banear
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         )}
@@ -1058,6 +1174,57 @@ const AdminView = ({ token }) => {
                 >
                   Confirmar Ban
                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chat View Modal */}
+      <AnimatePresence>
+        {selectedChat && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-gray-100 flex flex-col max-h-[85vh] overflow-hidden"
+            >
+              <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Historial de Chat - {selectedChat.user.email}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    ID Consulta: {selectedChat.id} • {new Date(selectedChat.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <button onClick={() => setSelectedChat(null)} className="text-gray-400 hover:bg-gray-200 p-2 rounded-md transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+                {selectedChat.mensajes && selectedChat.mensajes.length > 0 ? (
+                  selectedChat.mensajes.map((msg, i) => {
+                    const isModel = msg.rol === 'model';
+                    return (
+                      <div key={i} className={`flex ${isModel ? 'justify-start' : 'justify-end'}`}>
+                        <div className={`max-w-[85%] p-3 rounded-2xl ${isModel ? 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm' : 'bg-indigo-600 text-white shadow-sm rounded-tr-sm'}`}>
+                          <div className={`text-[10px] font-bold mb-1 uppercase tracking-wider ${isModel ? 'text-indigo-400' : 'text-indigo-200'}`}>
+                            {isModel ? 'Auto-Moderador / IA' : selectedChat.user.name || 'Usuario'}
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.contenido}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-gray-400 p-8">No hay mensajes guardados en este chat.</div>
+                )}
               </div>
             </motion.div>
           </motion.div>
