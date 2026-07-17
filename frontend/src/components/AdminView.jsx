@@ -25,6 +25,8 @@ const AdminView = ({ token }) => {
   const [banDurationValue, setBanDurationValue] = useState(1);
   const [banDurationUnit, setBanDurationUnit] = useState('days'); // 'days' | 'weeks' | 'years' | 'permanent'
   const [selectedChat, setSelectedChat] = useState(null); // Chat para el modal
+  const [chatFilterEmail, setChatFilterEmail] = useState('');
+  const [chatFilterName, setChatFilterName] = useState('');
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -1032,12 +1034,65 @@ const AdminView = ({ token }) => {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">
-                      {chats.length === 0 ? (
-                        <div className="p-8 text-center text-gray-400">No hay historiales de chat registrados</div>
+                    <div className="space-y-6">
+                      {/* Búsqueda */}
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center">
+                        <div className="flex-1 w-full">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">Buscar por Correo</label>
+                          <select 
+                            value={chatFilterEmail}
+                            onChange={(e) => { setChatFilterEmail(e.target.value); setChatFilterName(''); }}
+                            className="w-full p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 text-sm"
+                          >
+                            <option value="">Selecciona un correo...</option>
+                            {[...new Set(chats.map(c => c.user.email))].map(email => (
+                              <option key={email} value={email}>{email}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="hidden md:block text-gray-400 font-bold text-sm">O</div>
+                        <div className="flex-1 w-full">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">Buscar por Nombre</label>
+                          <input 
+                            type="text"
+                            placeholder="Introduce el nombre..."
+                            value={chatFilterName}
+                            onChange={(e) => { setChatFilterName(e.target.value); setChatFilterEmail(''); }}
+                            className="w-full p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 text-sm"
+                          />
+                        </div>
+                        {(chatFilterEmail || chatFilterName) && (
+                          <button 
+                            onClick={() => { setChatFilterEmail(''); setChatFilterName(''); }}
+                            className="mt-5 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm font-semibold transition-colors"
+                          >
+                            Limpiar
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Tabla */}
+                      {(!chatFilterEmail && !chatFilterName) ? (
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center flex flex-col items-center justify-center">
+                          <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
+                            <MessageSquare size={32} />
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">Busca un usuario</h3>
+                          <p className="text-gray-500 max-w-sm">
+                            Selecciona un correo electrónico o introduce un nombre en el buscador superior para visualizar su historial de conversaciones.
+                          </p>
+                        </div>
                       ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left border-collapse">
+                        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                          {chats.filter(c => {
+                            if (chatFilterEmail && c.user.email !== chatFilterEmail) return false;
+                            if (chatFilterName && !c.user.name?.toLowerCase().includes(chatFilterName.toLowerCase())) return false;
+                            return true;
+                          }).length === 0 ? (
+                            <div className="p-12 text-center text-gray-500 font-medium">No se encontraron chats para esta búsqueda.</div>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-gray-100 bg-gray-50/50">
                                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Fecha / Consulta</th>
@@ -1047,7 +1102,11 @@ const AdminView = ({ token }) => {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                              {chats.map(chat => (
+                              {chats.filter(c => {
+                                if (chatFilterEmail && c.user.email !== chatFilterEmail) return false;
+                                if (chatFilterName && !c.user.name?.toLowerCase().includes(chatFilterName.toLowerCase())) return false;
+                                return true;
+                              }).map(chat => (
                                 <tr key={chat.id} className="hover:bg-gray-50 transition-colors">
                                   <td className="p-4">
                                     <div className="font-medium text-gray-900">ID: {chat.id}</div>
@@ -1056,6 +1115,7 @@ const AdminView = ({ token }) => {
                                   <td className="p-4">
                                     <div className="flex items-center gap-2">
                                       <span className="font-medium text-gray-900">{chat.user.email}</span>
+                                      <span className="text-sm text-gray-500 hidden md:inline ml-1">({chat.user.name || 'Sin nombre'})</span>
                                       {chat.user.isBanned && <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-bold uppercase tracking-wider">Baneado</span>}
                                     </div>
                                   </td>
@@ -1093,6 +1153,8 @@ const AdminView = ({ token }) => {
                               ))}
                             </tbody>
                           </table>
+                        </div>
+                          )}
                         </div>
                       )}
                     </div>
