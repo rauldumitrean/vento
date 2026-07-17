@@ -192,20 +192,31 @@ export default function AuthView({ setToken }) {
             </svg>
           </motion.div>
           <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Cuenta Bloqueada</h2>
-          <p className="text-gray-400 mb-6">Tu cuenta ha sido suspendida por un administrador.</p>
-          <div className="bg-red-950/50 text-red-300 p-4 rounded-xl w-full mb-8 font-medium border border-red-900/40">
+          <p className="text-gray-400 mb-6">Tu cuenta ha sido suspendida por el sistema de seguridad o un administrador.</p>
+          <div className="bg-red-950/50 text-red-300 p-4 rounded-xl w-full mb-6 font-medium border border-red-900/40">
+            {banDetails?.banReason && (
+              <p className="mb-4 text-sm text-red-200 bg-red-900/30 p-2 rounded italic">"{banDetails.banReason}"</p>
+            )}
             {banDetails?.bannedUntil ? (
               <p>El bloqueo expirará el: <br/><strong className="text-lg">{new Date(banDetails.bannedUntil).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
             ) : (
               <p className="text-lg font-bold">Bloqueo Permanente</p>
             )}
           </div>
-          <button 
-            onClick={() => { setIsBannedError(false); setBanDetails(null); }}
-            className="text-sm font-semibold text-gray-500 hover:text-white transition-colors"
-          >
-            ← Volver al inicio de sesión
-          </button>
+          <div className="flex flex-col gap-3 w-full mb-4">
+            <a 
+              href="mailto:soporte@ventoo.app?subject=Revisión de bloqueo de cuenta"
+              className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors"
+            >
+              Contactar Soporte (Apelar)
+            </a>
+            <button 
+              onClick={() => { setIsBannedError(false); setBanDetails(null); }}
+              className="text-sm font-semibold text-gray-500 hover:text-white transition-colors py-2"
+            >
+              ← Volver al inicio de sesión
+            </button>
+          </div>
         </motion.div>
       </div>
     );
