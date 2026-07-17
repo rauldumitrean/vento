@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown } from 'lucide-react';
+import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import VerticalAd from './VerticalAd';
@@ -245,6 +245,7 @@ export default function LandingView({ setToken }) {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const containerRef = useRef(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Comprobar si hay un usuario premium conectado para ocultar anuncios
   const isPremium = localStorage.getItem('isPremium') === 'true';
@@ -288,7 +289,7 @@ export default function LandingView({ setToken }) {
             <a href="#how" className="hover:text-white transition-colors">Cómo funciona</a>
             <a href="#pricing" className="hover:text-white transition-colors">Precios</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             {!localStorage.getItem('token') ? (
               <>
                 <button onClick={() => navigate('/login')} className="px-4 py-2 text-gray-300 text-sm font-medium hover:text-white transition-colors">Entrar</button>
