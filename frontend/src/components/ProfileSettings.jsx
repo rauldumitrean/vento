@@ -11,6 +11,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
   const [historyCount, setHistoryCount] = useState(0);
+  const [dailyCount, setDailyCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -30,6 +31,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
           setHistoryCount(res.data.user.historyCount || 0);
+          setDailyCount(res.data.user.dailyCount || 0);
         }
       } catch (err) {
         console.error("Error fetching profile", err);
@@ -49,6 +51,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
       localStorage.setItem('userName', res.data.user.name);
       localStorage.setItem('userGender', res.data.user.gender);
       localStorage.setItem('userAge', res.data.user.age || '');
+      setDailyCount(res.data.user.dailyCount || 0);
       setMessage('Perfil actualizado con éxito');
       // FIX: Auto-dismiss success message after 4 seconds
       setTimeout(() => setMessage(''), 4000);
@@ -222,6 +225,38 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Límite Diario */}
+        <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'}`}>
+          <h3 className={`text-sm font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Outfits Hoy</h3>
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between text-sm">
+              <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Outfits Generados</span>
+              <span className={`font-bold ${dailyCount >= (localStorage.getItem('isPremium') === 'true' ? 999999 : 5) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
+                {localStorage.getItem('isPremium') === 'true' ? (
+                   <span>Ilimitado</span>
+                ) : (
+                   <>{dailyCount} / 5</>
+                )}
+              </span>
+            </div>
+            {localStorage.getItem('isPremium') !== 'true' && (
+              <>
+                <div className={`w-full h-2 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-500 ${dailyCount >= 5 ? 'bg-red-500' : dailyCount >= 3 ? 'bg-orange-500' : 'bg-indigo-500'}`}
+                    style={{ width: `${Math.min((dailyCount / 5) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {dailyCount >= 5 
+                    ? 'Has alcanzado el límite diario de 5 outfits. Vuelve mañana o hazte Premium.' 
+                    : 'Con el plan básico puedes generar hasta 5 outfits cada día.'}
+                </p>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Límite de Historial */}

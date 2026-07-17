@@ -76,16 +76,31 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.get('/me', authMiddleware, async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       include: {
         _count: {
-          select: { consultas: { where: { isFavorite: false } } }
+          select: { 
+            consultas: { where: { isFavorite: false } }
+          }
         }
       }
     });
+
+    const consultasHoyCount = await prisma.consulta.count({
+      where: {
+        userId: req.user.id,
+        createdAt: { gte: todayStart, lte: todayEnd }
+      }
+    });
+
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas, dailyCount: consultasHoyCount } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener perfil' });
@@ -98,6 +113,11 @@ router.put('/profile', authMiddleware, async (req, res) => {
     const updateData = { name, gender, estiloPersonal, estiloDetalles };
     if (age !== undefined) updateData.age = age === '' || age === null ? null : parseInt(age);
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
     const user = await prisma.user.update({
       where: { id: req.user.id },
       data: updateData,
@@ -107,7 +127,15 @@ router.put('/profile', authMiddleware, async (req, res) => {
         }
       }
     });
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas } });
+
+    const consultasHoyCount = await prisma.consulta.count({
+      where: {
+        userId: req.user.id,
+        createdAt: { gte: todayStart, lte: todayEnd }
+      }
+    });
+
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, historyCount: user._count.consultas, dailyCount: consultasHoyCount } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar perfil.' });
