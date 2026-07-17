@@ -24,7 +24,7 @@ const VerticalAd = ({ className = "" }) => {
         <ins className="adsbygoogle"
              style={{ display: 'block', width: '100%', height: '100%' }}
              data-ad-client="ca-pub-7031196086140700"
-             data-ad-slot="XXXXXXXXXX"
+             data-ad-slot="4164504071"
              data-ad-format="vertical"
              data-full-width-responsive="true"></ins>
       </div>
