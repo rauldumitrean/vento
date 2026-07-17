@@ -9,6 +9,7 @@ import ProfileSettings from './ProfileSettings';
 import Navbar from './Navbar';
 import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
+import VerticalAd from './VerticalAd';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
@@ -706,15 +707,24 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         {/* Mobile bottom pill nav */}
         <MobileNavBar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
 
-      {view === 'armario' ? (
-        <ArmarioHistorial token={token} darkMode={darkMode} />
-      ) : view === 'admin' ? (
-        // FIX: Only render AdminView if user actually has ADMIN role
-        localStorage.getItem('userRole') === 'ADMIN'
-          ? <AdminView token={token} darkMode={darkMode} />
-          : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
-      ) : view === 'profile' ? (
-        <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full pt-8">
+      <div className="flex w-full max-w-[1600px] mx-auto px-2 sm:px-4">
+        {/* Left Ad - Solo si no es premium */}
+        {localStorage.getItem('isPremium') !== 'true' && (
+          <div className="hidden xl:flex w-[200px] shrink-0 sticky top-24 h-[calc(100vh-120px)] mr-4 pt-8">
+            <VerticalAd className="w-full h-full" />
+          </div>
+        )}
+
+        <div className="flex-1 w-full max-w-7xl mx-auto">
+          {view === 'armario' ? (
+            <ArmarioHistorial token={token} darkMode={darkMode} />
+          ) : view === 'admin' ? (
+            // FIX: Only render AdminView if user actually has ADMIN role
+            localStorage.getItem('userRole') === 'ADMIN'
+              ? <AdminView token={token} darkMode={darkMode} />
+              : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
+          ) : view === 'profile' ? (
+            <main className="flex-1 pb-8 w-full pt-8">
           <ProfileSettings token={token} darkMode={darkMode} onLogout={onLogout} />
         </main>
       ) : view === 'chat' ? (
@@ -870,6 +880,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           {chatWidget}
         </main>
       )}
+        </div>
+
+        {/* Right Ad - Solo si no es premium */}
+        {localStorage.getItem('isPremium') !== 'true' && (
+          <div className="hidden xl:flex w-[200px] shrink-0 sticky top-24 h-[calc(100vh-120px)] ml-4 pt-8">
+            <VerticalAd className="w-full h-full" />
+          </div>
+        )}
+      </div>
       </div>
 
       {/* Limit Warning Modal */}

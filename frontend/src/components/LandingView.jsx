@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
+import VerticalAd from './VerticalAd';
 
 // ─── Animated Icons (preserved) ───────────────────────────────────────────────
 const AnimatedWeatherIcon = () => (
@@ -240,20 +241,32 @@ const PricingCard = ({ plan, price, period, desc, features, cta, accent, badge, 
 };
 
 // ─── Main Landing ──────────────────────────────────────────────────────────────
-export default function LandingView({ token }) {
+export default function LandingView({ setToken }) {
   const navigate = useNavigate();
-  const heroRef = useRef(null);
-  const { scrollY } = useScroll();
+  const [scrollY, setScrollY] = useState(0);
+  const containerRef = useRef(null);
+
+  // Comprobar si hay un usuario premium conectado para ocultar anuncios
+  const isPremium = localStorage.getItem('isPremium') === 'true';
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
   const heroY = useTransform(scrollY, [0, 400], [0, -60]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  const goAuth = (opts = {}) => navigate(token ? '/app' : '/login', { state: opts });
+  const goAuth = (opts = {}) => navigate(localStorage.getItem('token') ? '/app' : '/login', { state: opts });
 
   return (
-    <div className="min-h-[100dvh] bg-[#060608] text-gray-100 font-sans overflow-x-hidden selection:bg-indigo-500/30">
+    <div className="min-h-[100dvh] bg-[#0A0A0B] text-white selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden flex justify-center">
+      
+      {/* Left Ad - Solo si no es premium */}
+      {!isPremium && (
+        <div className="hidden 2xl:flex w-[250px] shrink-0 sticky top-0 h-screen p-4 py-24">
+          <VerticalAd className="w-full h-full" />
+        </div>
+      )}
 
+      {/* Main Content Container */}
+      <div className="flex-1 max-w-7xl mx-auto w-full" ref={containerRef}>
       {/* ── Background ── */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)]" />
@@ -264,7 +277,7 @@ export default function LandingView({ token }) {
       </div>
 
       {/* ── Navbar ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] pt-[env(safe-area-inset-top)]" style={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(6,6,8,0.7)' }}>
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Cloud className="text-indigo-400" size={26} />
@@ -276,7 +289,7 @@ export default function LandingView({ token }) {
             <a href="#pricing" className="hover:text-white transition-colors">Precios</a>
           </div>
           <div className="flex items-center gap-3">
-            {!token ? (
+            {!localStorage.getItem('token') ? (
               <>
                 <button onClick={() => navigate('/login')} className="px-4 py-2 text-gray-300 text-sm font-medium hover:text-white transition-colors">Entrar</button>
                 <button onClick={() => navigate('/login', { state: { isRegister: true } })} className="px-5 py-2 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-100 transition-colors">
@@ -293,7 +306,7 @@ export default function LandingView({ token }) {
       </nav>
 
       {/* ── Hero ── */}
-      <section ref={heroRef} className="relative z-10 pt-32 pb-24 px-6 min-h-[100dvh] flex flex-col justify-center items-center text-center">
+      <section className="relative z-10 pt-32 pb-24 px-6 min-h-[100dvh] flex flex-col justify-center items-center text-center">
         <motion.div style={{ opacity: heroOpacity, y: heroY }} className="max-w-5xl mx-auto">
 
           {/* Badge */}
@@ -459,14 +472,14 @@ export default function LandingView({ token }) {
               accent="gray" plan="Básico" price="Gratis" period=""
               desc="Perfecto para probar Ventoo. Financiado con anuncios."
               features={['5 outfits diarios', 'Análisis climático básico', 'Imágenes IA estándar', 'Armario virtual (hasta 20 prendas)', 'Historial de 15 outfits']}
-              cta={token ? 'Ir a mi panel' : 'Comenzar gratis'}
+              cta={localStorage.getItem('token') ? 'Ir a mi panel' : 'Comenzar gratis'}
               onClick={() => goAuth({ isRegister: true, plan: 'free' })}
             />
             <PricingCard
               accent="indigo" plan="Premium Mensual" price="1,99€" period="/mes"
               desc="Todo el potencial de Ventoo sin compromiso a largo plazo."
               features={['Outfits ilimitados', '100% sin anuncios', 'Visión por IA (sube fotos)', 'Chatbot de estilo avanzado', 'Armario virtual infinito', 'Historial de 50 outfits', 'Acceso a funciones beta']}
-              cta={token ? 'Mejorar a Mensual' : 'Suscribirse por 1,99€'}
+              cta={localStorage.getItem('token') ? 'Mejorar a Mensual' : 'Suscribirse por 1,99€'}
               badge={<><Zap size={13} fill="currentColor" /> POPULAR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'monthly' })}
             />
@@ -474,7 +487,7 @@ export default function LandingView({ token }) {
               accent="purple" plan="Premium Lifetime" price="20€" period=" pago único"
               desc="Paga una sola vez y disfruta de Ventoo Premium para siempre."
               features={['Todo lo incluido en Mensual', 'Pago único sin recurrencias', 'Acceso vitalicio garantizado', 'Todas las mejoras futuras', 'Estatus de Usuario Fundador']}
-              cta={token ? 'Comprar pase vitalicio' : 'Adquirir por 20€'}
+              cta={localStorage.getItem('token') ? 'Comprar pase vitalicio' : 'Adquirir por 20€'}
               badge={<><Crown size={13} fill="currentColor" /> MEJOR VALOR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'lifetime' })}
             />
@@ -542,6 +555,15 @@ export default function LandingView({ token }) {
           </div>
         </div>
       </footer>
+      </div>
+
+      {/* Right Ad - Solo si no es premium */}
+      {!isPremium && (
+        <div className="hidden 2xl:flex w-[250px] shrink-0 sticky top-0 h-screen p-4 py-24">
+          <VerticalAd className="w-full h-full" />
+        </div>
+      )}
+
     </div>
   );
 }

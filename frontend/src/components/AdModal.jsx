@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 export default function AdModal({ onClose }) {
-  const [timeLeft, setTimeLeft] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(8);
 
   useEffect(() => {
     if (timeLeft > 0) {
