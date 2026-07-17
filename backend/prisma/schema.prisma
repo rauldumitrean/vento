@@ -8,12 +8,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String?
-  gender    String?
-  role      String   @default("USER")
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String?
+  authProvider String @default("local") // "local", "google", "apple"
+  providerId String?  // ID de Google o Apple
+  name       String?
+  gender     String?
+  role       String   @default("USER")
   isPremium  Boolean  @default(false)
   estiloPersonal String?
   estiloDetalles String?

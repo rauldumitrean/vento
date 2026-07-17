@@ -40,6 +40,10 @@ router.post('/login', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(400).json({ error: 'Credenciales inválidas.' });
 
+    if (!user.password) {
+      return res.status(400).json({ error: 'Esta cuenta se registró con Google. Inicia sesión con Google.' });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ error: 'Credenciales inválidas.' });
 
@@ -69,6 +73,93 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al iniciar sesión.' });
+  }
+});
+
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const appleSignin = require('apple-signin-auth');
+
+router.post('/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, sub: providerId, name } = payload;
+    
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: { email, name, authProvider: 'google', providerId }
+      });
+      await emailService.sendWelcomeEmail(user).catch(console.error);
+    } else if (user.authProvider === 'local' && !user.providerId) {
+      user = await prisma.user.update({
+        where: { email },
+        data: { authProvider: 'google', providerId }
+      });
+    }
+
+    if (user.isBanned) {
+      if (user.bannedUntil && new Date() > user.bannedUntil) {
+        await prisma.user.update({ where: { id: user.id }, data: { isBanned: false, bannedUntil: null, banReason: null } });
+      } else {
+        return res.status(403).json({ error: 'BANNED', message: 'Tu cuenta está bloqueada.', bannedUntil: user.bannedUntil });
+      }
+    }
+
+    const jwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
+    await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
+
+    res.json({ token: jwtToken, user });
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    res.status(401).json({ error: 'Token de Google inválido o caducado.' });
+  }
+});
+
+router.post('/apple', async (req, res) => {
+  try {
+    const { token, name: appleName } = req.body;
+    const { sub: providerId, email } = await appleSignin.verifyIdToken(token, {
+      audience: process.env.APPLE_CLIENT_ID,
+      ignoreExpiration: true,
+    });
+
+    let user;
+    if (email) {
+      user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        user = await prisma.user.create({
+          data: { email, name: appleName || null, authProvider: 'apple', providerId }
+        });
+        await emailService.sendWelcomeEmail(user).catch(console.error);
+      } else if (!user.providerId) {
+        user = await prisma.user.update({ where: { email }, data: { authProvider: 'apple', providerId } });
+      }
+    } else {
+      user = await prisma.user.findFirst({ where: { providerId, authProvider: 'apple' } });
+      if (!user) return res.status(400).json({ error: 'No se pudo obtener el usuario de Apple.' });
+    }
+
+    if (user.isBanned) {
+      if (user.bannedUntil && new Date() > user.bannedUntil) {
+        await prisma.user.update({ where: { id: user.id }, data: { isBanned: false, bannedUntil: null, banReason: null } });
+      } else {
+        return res.status(403).json({ error: 'BANNED', message: 'Tu cuenta está bloqueada.', bannedUntil: user.bannedUntil });
+      }
+    }
+
+    const jwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    res.json({ token: jwtToken, user });
+  } catch (error) {
+    console.error('Apple Auth Error:', error);
+    res.status(401).json({ error: 'Token de Apple inválido.' });
   }
 });
 

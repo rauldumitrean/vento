@@ -3,6 +3,9 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, Crown, Eye, EyeOff, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'TU_CLIENT_ID_DE_GOOGLE';
 
 // FIX: API_URL extracted once at module level, not duplicated inside try/catch blocks
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -81,6 +84,29 @@ export default function AuthView({ setToken }) {
         setBanDetails(err.response.data);
       } else {
         setError(err.response?.data?.error || 'Error de conexión');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/api/auth/google`, { token: credentialResponse.credential });
+      localStorage.setItem('userRole', res.data.user?.role || 'USER');
+      if (res.data.user?.name) localStorage.setItem('userName', res.data.user.name);
+      if (res.data.user?.isPremium !== undefined) localStorage.setItem('isPremium', res.data.user.isPremium);
+      if (res.data.user?.premiumPlan) localStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+      
+      setToken(res.data.token);
+    } catch (err) {
+      if (err.response?.data?.error === 'BANNED') {
+        setIsBannedError(true);
+        setBanDetails(err.response.data);
+      } else {
+        setError(err.response?.data?.error || 'Error con Google');
       }
     } finally {
       setLoading(false);
@@ -275,6 +301,7 @@ export default function AuthView({ setToken }) {
   const labelClass = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5";
 
   return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <div
       className="min-h-[100dvh] font-sans flex items-center justify-center bg-gray-100 p-4"
       style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
@@ -385,6 +412,28 @@ export default function AuthView({ setToken }) {
                     )}
                   </button>
                 </form>
+
+                <div className="mt-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">O continuar con</span>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => setError('Error al conectar con Google')}
+                      useOneTap
+                      theme="outline"
+                      shape="rectangular"
+                      size="large"
+                      width="100%"
+                    />
+                  </div>
+                </div>
 
                 <p className="text-gray-400 text-sm text-center mt-8">
                   ¿No tienes cuenta?{' '}
@@ -508,6 +557,28 @@ export default function AuthView({ setToken }) {
                   )}
                 </form>
 
+                <div className="mt-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">O registrarse con</span>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => setError('Error al conectar con Google')}
+                      useOneTap
+                      theme="outline"
+                      shape="rectangular"
+                      size="large"
+                      width="100%"
+                    />
+                  </div>
+                </div>
+
                 <p className="text-gray-400 text-sm text-center mt-6">
                   ¿Ya tienes cuenta?{' '}
                   <button onClick={() => switchMode(true)} className="text-purple-600 font-semibold hover:underline">
@@ -520,5 +591,6 @@ export default function AuthView({ setToken }) {
         </div>
       </div>
     </div>
+    </GoogleOAuthProvider>
   );
 }
