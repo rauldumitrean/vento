@@ -3,6 +3,9 @@ import axios from 'axios';
 import { Shield, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '927415757542-344is6ge14qvn0jd2hd66dsan2g5gvrs.apps.googleusercontent.com';
 
 const AdminLoginView = ({ setAdminToken }) => {
   const [email, setEmail] = useState('');
@@ -34,7 +37,30 @@ const AdminLoginView = ({ setAdminToken }) => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await axios.post(`${API_URL}/api/auth/google`, { token: credentialResponse.credential });
+      
+      if (res.data.user.role !== 'ADMIN') {
+        setError('Acceso denegado: ESTRICTAMENTE solo administradores pueden entrar aquí.');
+        setLoading(false);
+        return;
+      }
+      
+      setAdminToken(res.data.token);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error con Google');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <div className="min-h-[100dvh] bg-gray-950 flex flex-col justify-center items-center p-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -90,6 +116,28 @@ const AdminLoginView = ({ setAdminToken }) => {
             </button>
           </form>
 
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-900 text-gray-500 uppercase tracking-widest text-xs font-bold">Autenticación Segura</span>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-center opacity-90 hover:opacity-100 transition-opacity">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Error al conectar con Google')}
+                useOneTap={false}
+                theme="filled_black"
+                shape="rectangular"
+                size="large"
+                width="100%"
+              />
+            </div>
+          </div>
+
           <div className="mt-8 text-center">
             <button 
               onClick={() => {
@@ -105,6 +153,7 @@ const AdminLoginView = ({ setAdminToken }) => {
         </div>
       </motion.div>
     </div>
+    </GoogleOAuthProvider>
   );
 };
 
