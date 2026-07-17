@@ -1285,17 +1285,26 @@ const AdminView = ({ token }) => {
                     }
 
                     let userBanReason = null;
-                    if (!isModel && i + 1 < selectedChat.mensajes.length) {
-                      const nextMsg = selectedChat.mensajes[i + 1];
-                      if (nextMsg.rol === 'model') {
-                        try {
-                          const parsedNext = JSON.parse(nextMsg.contenido);
-                          if (parsedNext.infraccion && parsedNext.infraccion.es_infraccion) {
-                            userBanReason = parsedNext.infraccion.razon || 'Incumplimiento de normas';
+                    if (!isModel) {
+                      // Primero intentamos sacar el motivo de la respuesta de la IA (futuros mensajes)
+                      if (i + 1 < selectedChat.mensajes.length) {
+                        const nextMsg = selectedChat.mensajes[i + 1];
+                        if (nextMsg.rol === 'model') {
+                          try {
+                            const parsedNext = JSON.parse(nextMsg.contenido);
+                            if (parsedNext.infraccion && parsedNext.infraccion.es_infraccion) {
+                              userBanReason = parsedNext.infraccion.razon || 'Incumplimiento de normas';
+                            }
+                          } catch (e) {
+                            // Ignore
                           }
-                        } catch (e) {
-                          // Ignore
                         }
+                      }
+                      
+                      // Fallback para mensajes antiguos: Si es el último mensaje del usuario y está baneado, usamos el banReason del usuario
+                      if (!userBanReason && i === selectedChat.mensajes.length - 1 && selectedChat.user.isBanned) {
+                         // El motivo suele estar guardado como "[AutoModerator] Motivo..."
+                         userBanReason = selectedChat.user.banReason?.replace('[AutoModerator] ', '') || 'Incumplimiento detectado (Historial antiguo)';
                       }
                     }
 

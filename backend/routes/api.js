@@ -338,6 +338,11 @@ Estructura obligatoria del JSON:
           sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
         }, 0);
 
+        // Guardar el mensaje del modelo en el historial para auditoría en el panel de admin
+        await prisma.mensajeChat.create({
+          data: { consultaId, rol: 'model', contenido: textResponse }
+        });
+
         return res.status(403).json({ 
           error: 'BANNED', 
           message: 'Tu cuenta ha sido bloqueada por violar las normas.',
