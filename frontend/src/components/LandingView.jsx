@@ -243,7 +243,7 @@ const PricingCard = ({ plan, price, period, desc, features, cta, accent, badge, 
 // ─── Main Landing ──────────────────────────────────────────────────────────────
 export default function LandingView({ setToken }) {
   const navigate = useNavigate();
-  const [scrollY, setScrollY] = useState(0);
+  const { scrollY } = useScroll();
   const containerRef = useRef(null);
 
   // Comprobar si hay un usuario premium conectado para ocultar anuncios
