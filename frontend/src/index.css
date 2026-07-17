@@ -5,8 +5,6 @@
 @layer base {
   html, body {
     @apply w-full overflow-x-hidden;
-    overscroll-behavior-y: none;
-    -webkit-overflow-scrolling: touch;
   }
   body {
     @apply bg-neutral-50 text-neutral-900 font-sans antialiased;
