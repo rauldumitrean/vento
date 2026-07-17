@@ -39,13 +39,23 @@ export default function AdModal({ onClose }) {
             Para poder seguir ofreciéndote este servicio de Inteligencia Artificial de forma 100% gratuita, financiamos los servidores mediante publicidad.
           </p>
           {/* FIX: Added a real ad-slot placeholder. Replace "XXXXXXXXXX" with your actual AdSense slot ID */}
-          <div className="w-full flex-1 min-h-[250px] max-h-[400px] rounded overflow-hidden flex items-center justify-center bg-gray-50 border border-gray-200 shadow-inner">
-            <ins className="adsbygoogle"
-                 style={{ display: 'block', width: '100%', height: '100%' }}
-                 data-ad-client="ca-pub-7031196086140700"
-                 data-ad-slot="4164504071"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
+          <div className="relative w-full flex-1 min-h-[250px] max-h-[400px] rounded overflow-hidden flex items-center justify-center bg-gray-50 border border-gray-200 shadow-inner">
+            {/* Placeholder Visual (se tapa cuando carga el anuncio real) */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-30 pointer-events-none">
+              <div className="w-12 h-12 border-2 border-dashed border-gray-600 rounded flex items-center justify-center mb-2">
+                <span className="text-gray-500 font-bold text-xs">AD</span>
+              </div>
+              <p className="text-xs text-gray-500 font-medium">Espacio para anuncio principal</p>
+            </div>
+            
+            <div className="absolute inset-0 z-10 p-2">
+              <ins className="adsbygoogle"
+                   style={{ display: 'block', width: '100%', height: '100%' }}
+                   data-ad-client="ca-pub-7031196086140700"
+                   data-ad-slot="4164504071"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+            </div>
           </div>
         </div>
 
