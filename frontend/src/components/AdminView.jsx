@@ -1273,14 +1273,39 @@ const AdminView = ({ token }) => {
                 {selectedChat.mensajes && selectedChat.mensajes.length > 0 ? (
                   selectedChat.mensajes.map((msg, i) => {
                     const isModel = msg.rol === 'model';
+                    let contentText = msg.contenido;
+                    let banReason = null;
+                    
+                    if (isModel) {
+                      try {
+                        const parsed = JSON.parse(msg.contenido);
+                        if (parsed.texto) contentText = parsed.texto;
+                        
+                        if (parsed.infraccion && parsed.infraccion.es_infraccion) {
+                          banReason = parsed.infraccion.razon || 'Incumplimiento de normas detectado';
+                        }
+                      } catch (e) {
+                        // Si no es JSON válido, lo mostramos tal cual
+                      }
+                    }
+
                     return (
-                      <div key={i} className={`flex ${isModel ? 'justify-start' : 'justify-end'}`}>
+                      <div key={i} className={`flex flex-col ${isModel ? 'items-start' : 'items-end'}`}>
                         <div className={`max-w-[85%] p-3 rounded-2xl ${isModel ? 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm' : 'bg-indigo-600 text-white shadow-sm rounded-tr-sm'}`}>
                           <div className={`text-[10px] font-bold mb-1 uppercase tracking-wider ${isModel ? 'text-indigo-400' : 'text-indigo-200'}`}>
                             {isModel ? 'Auto-Moderador / IA' : selectedChat.user.name || 'Usuario'}
                           </div>
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.contenido}</p>
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{contentText}</p>
                         </div>
+                        {banReason && (
+                          <div className="max-w-[85%] mt-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700 shadow-sm">
+                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                            <div>
+                              <div className="text-xs font-bold uppercase tracking-wider mb-0.5">El Auto-Moderador ha detectado:</div>
+                              <div className="text-sm font-medium">{banReason}</div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })
