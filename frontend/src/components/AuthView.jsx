@@ -5,7 +5,7 @@ import { Cloud, Crown, Eye, EyeOff, ArrowRight, Sparkles, ShieldCheck } from 'lu
 import { useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'TU_CLIENT_ID_DE_GOOGLE';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '927415757542-344is6ge14qvn0jd2hd66dsan2g5gvrs.apps.googleusercontent.com';
 
 // FIX: API_URL extracted once at module level, not duplicated inside try/catch blocks
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
