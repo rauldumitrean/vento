@@ -67,8 +67,8 @@ router.post('/cancel-subscription', authMiddleware, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     
-    if (!user.isPremium || user.premiumPlan !== 'monthly') {
-      return res.status(400).json({ error: 'No tienes una suscripción mensual activa.' });
+    if (!user.isPremium || user.premiumPlan === 'lifetime') {
+      return res.status(400).json({ error: 'No puedes cancelar porque no tienes un plan mensual activo.' });
     }
 
     if (!user.stripeSubscriptionId) {
