@@ -260,4 +260,74 @@ router.post('/:friendId/share', authMiddleware, async (req, res) => {
   }
 });
 
+// Reportar a un usuario
+router.post('/:friendId/report', authMiddleware, async (req, res) => {
+  const friendId = parseInt(req.params.friendId);
+  const { reason, description } = req.body;
+
+  if (!reason) return res.status(400).json({ error: 'El motivo es obligatorio' });
+
+  try {
+    // Check if already reported
+    const existingReport = await prisma.report.findUnique({
+      where: {
+        reporterId_reportedId: {
+          reporterId: req.user.id,
+          reportedId: friendId
+        }
+      }
+    });
+
+    if (existingReport) {
+      return res.status(400).json({ error: 'Ya has reportado a este usuario anteriormente' });
+    }
+
+    // Create report
+    await prisma.report.create({
+      data: {
+        reporterId: req.user.id,
+        reportedId: friendId,
+        reason,
+        description
+      }
+    });
+
+    // Count distinct reporters for this user
+    const reportsCount = await prisma.report.count({
+      where: { reportedId: friendId }
+    });
+
+    // Auto-ban logic based on thresholds (5, 9, 12)
+    let banDays = 0;
+    if (reportsCount >= 12) {
+      banDays = 36500; // Permanent (100 years)
+    } else if (reportsCount >= 9) {
+      banDays = 7;
+    } else if (reportsCount >= 5) {
+      banDays = 1;
+    }
+
+    if (banDays > 0) {
+      const bannedUntil = new Date();
+      bannedUntil.setDate(bannedUntil.getDate() + banDays);
+      const banReason = `[AutoModerator] Has acumulado múltiples reportes de diferentes usuarios de la comunidad. (Total: ${reportsCount})`;
+
+      await prisma.user.update({
+        where: { id: friendId },
+        data: {
+          isBanned: true,
+          bannedUntil,
+          banReason
+        }
+      });
+      // Optionally could trigger an email here, but we'll stick to DB update for now.
+    }
+
+    res.json({ message: 'Reporte enviado con éxito' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error enviando el reporte' });
+  }
+});
+
 module.exports = router;

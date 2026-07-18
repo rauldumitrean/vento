@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import QRCode from 'react-qr-code';
 import { Scanner } from '@yudiel/react-qr-scanner';
-import { Users, UserPlus, User, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon, QrCode } from 'lucide-react';
+import { Users, UserPlus, User, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon, QrCode, Flag, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function FriendsView({ token, darkMode, onNavigate }) {
-  const [activeTab, setActiveTab] = useState('friends'); // 'friends', 'add', 'chat'
+  const [activeTab, setActiveTab] = useState('friends'); // 'friends', 'add', 'requests', 'chat'
   const [activeChatFriend, setActiveChatFriend] = useState(null);
 
   const [friendCode, setFriendCode] = useState('');
@@ -22,6 +22,12 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const chatScrollRef = useRef(null);
+
+  // Report Modal State
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('Spam');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportMessage, setReportMessage] = useState('');
 
   useEffect(() => {
     fetchFriendCode();
@@ -118,10 +124,35 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
     e.preventDefault();
     if (!newMessage.trim() || !activeChatFriend) return;
     try {
-      const res = await axios.post(`${API_URL}/api/friends/${activeChatFriend.id}/messages`, { content: newMessage }, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API_URL}/api/friends/${activeChatFriend.id}/messages`, { content: newMessage }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setMessages([...messages, res.data.message]);
       setNewMessage('');
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReport = async (e) => {
+    e.preventDefault();
+    if (!activeChatFriend) return;
+    try {
+      await axios.post(`${API_URL}/api/friends/${activeChatFriend.id}/report`, {
+        reason: reportReason,
+        description: reportDescription
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setReportMessage('Reporte enviado correctamente.');
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportMessage('');
+        setReportDescription('');
+      }, 2000);
+    } catch (err) {
+      setReportMessage(err.response?.data?.error || 'Error enviando el reporte.');
+    }
   };
 
   const openChat = (friend) => {
@@ -336,22 +367,31 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
           <motion.div key="chat" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className={`flex flex-col h-full flex-1 rounded-3xl border overflow-hidden ${darkMode ? 'bg-gray-900/80 border-gray-800' : 'bg-white shadow-sm border-gray-200'}`}>
             
             {/* Chat Header */}
-            <div className={`flex items-center p-4 border-b ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}>
-              <button onClick={closeChat} className={`p-2 mr-3 rounded-xl transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-200 text-gray-600'}`}>
-                <ArrowLeft size={20} />
-              </button>
-              <div className="flex items-center gap-3">
-                {activeChatFriend.profilePicture ? (
-                  <img src={activeChatFriend.profilePicture} alt={activeChatFriend.name} className="w-10 h-10 rounded-full object-cover" />
-                ) : (
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
-                    <User size={18} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+            <div className={`flex items-center justify-between p-4 border-b ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}>
+              <div className="flex items-center">
+                <button onClick={closeChat} className={`p-2 mr-3 rounded-xl transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-200 text-gray-600'}`}>
+                  <ArrowLeft size={20} />
+                </button>
+                <div className="flex items-center gap-3">
+                  {activeChatFriend.profilePicture ? (
+                    <img src={activeChatFriend.profilePicture} alt={activeChatFriend.name} className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
+                      <User size={18} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-bold">{activeChatFriend.name || 'Usuario'}</h3>
                   </div>
-                )}
-                <div>
-                  <h3 className="font-bold">{activeChatFriend.name || 'Usuario'}</h3>
                 </div>
               </div>
+              <button 
+                onClick={() => setShowReportModal(true)}
+                title="Reportar Usuario"
+                className={`p-2 rounded-xl transition-colors ${darkMode ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-100 text-red-500'}`}
+              >
+                <AlertTriangle size={20} />
+              </button>
             </div>
 
             {/* Chat Messages */}
@@ -409,6 +449,78 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`w-full max-w-md p-6 rounded-3xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white shadow-2xl'}`}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className={`text-xl font-black flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <Flag className="text-red-500" /> Reportar Usuario
+              </h3>
+              <button onClick={() => setShowReportModal(false)} className={`p-1.5 rounded-full ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              ¿Por qué quieres reportar a <strong>{activeChatFriend?.name}</strong>? Los reportes son anónimos y son revisados por un administrador.
+            </p>
+
+            <form onSubmit={handleReport} className="space-y-4">
+              <div>
+                <label className={`block text-xs font-bold uppercase mb-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>Motivo</label>
+                <select 
+                  value={reportReason} 
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className={`w-full p-3 rounded-xl border focus:ring-2 focus:ring-red-500 outline-none ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                >
+                  <option value="Spam">Spam</option>
+                  <option value="Acoso o Insultos">Acoso o Insultos</option>
+                  <option value="Contenido Inapropiado">Contenido Inapropiado</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className={`block text-xs font-bold uppercase mb-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>Detalles (Opcional)</label>
+                <textarea 
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  placeholder="Añade más información..."
+                  className={`w-full p-3 rounded-xl border focus:ring-2 focus:ring-red-500 outline-none min-h-[100px] resize-none ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                />
+              </div>
+
+              {reportMessage && (
+                <p className={`text-sm font-medium ${reportMessage.includes('Error') || reportMessage.includes('Ya has') ? 'text-red-500' : 'text-green-500'}`}>
+                  {reportMessage}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowReportModal(false)}
+                  className={`flex-1 py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-colors"
+                >
+                  Enviar Reporte
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

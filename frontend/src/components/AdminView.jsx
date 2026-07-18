@@ -10,6 +10,7 @@ const AdminView = ({ token }) => {
   const [outfits, setOutfits] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [chats, setChats] = useState([]);
+  const [reports, setReports] = useState([]);
   const [selectedUserFilter, setSelectedUserFilter] = useState(''); // '' means all
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,21 +81,35 @@ const AdminView = ({ token }) => {
     }
   };
 
+  const fetchReports = async () => {
+    try {
+      setIsRefreshing(true);
+      const res = await axios.get(`${API_URL}/api/admin/reports`, { headers: { Authorization: `Bearer ${token}` } });
+      setReports(res.data.reports || []);
+    } catch (err) {
+      showAdminMsg('Error obteniendo reportes');
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersRes, statsRes, outfitsRes, ticketsRes, chatsRes] = await Promise.all([
+      const [usersRes, statsRes, outfitsRes, ticketsRes, chatsRes, reportsRes] = await Promise.all([
         axios.get(`${API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/chats`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/admin/chats`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/admin/reports`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setUsers(usersRes.data);
       setStats(statsRes.data);
       setOutfits(outfitsRes.data);
       setTickets(ticketsRes.data);
       setChats(chatsRes.data);
+      setReports(reportsRes.data.reports || []);
       setSelectedUserFilter(''); // Reset filter on full refresh
     } catch (error) {
       showAdminMsg('Error de conexión. Verifica tus permisos.');
@@ -130,10 +145,20 @@ const AdminView = ({ token }) => {
     if (!window.confirm('¿Estás seguro de cerrar este ticket?')) return;
     try {
       await axios.put(`${API_URL}/api/admin/tickets/${id}/close`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      fetchTickets();
-      showAdminMsg('Ticket cerrado exitosamente');
+      setTickets(tickets.map(t => t.id === id ? { ...t, estado: 'CERRADO' } : t));
+      showAdminMsg('Ticket cerrado con éxito', 'success');
     } catch (err) {
-      showAdminMsg('Error al cerrar el ticket');
+      showAdminMsg('Error al cerrar ticket');
+    }
+  };
+
+  const handleResolveReport = async (id) => {
+    try {
+      await axios.put(`${API_URL}/api/admin/reports/${id}/resolve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setReports(reports.map(r => r.id === id ? { ...r, status: 'resolved' } : r));
+      showAdminMsg('Reporte resuelto', 'success');
+    } catch (err) {
+      showAdminMsg('Error al resolver reporte');
     }
   };
 
@@ -320,9 +345,20 @@ const AdminView = ({ token }) => {
             </button>
             <button 
               onClick={() => setActiveTab('chats')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'chats' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'chats' ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
-              <MessageSquare size={18} /> <span className="whitespace-nowrap">Chats</span>
+              <MessageSquare size={18} /> Moderar Chats
+            </button>
+            <button 
+              onClick={() => setActiveTab('reports')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'reports' ? 'bg-red-600 text-white shadow-md shadow-red-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
+            >
+              <AlertCircle size={18} /> Reportes
+              {reports.filter(r => r.status === 'pending').length > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {reports.filter(r => r.status === 'pending').length}
+                </span>
+              )}
             </button>
           </nav>
         </div>
@@ -1168,6 +1204,94 @@ const AdminView = ({ token }) => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        )}
+
+        {/* REPORTS TAB */}
+        {activeTab === 'reports' && (
+          <div className="flex-1 p-6 overflow-y-auto">
+            <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden flex flex-col">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <AlertCircle className="text-red-500" />
+                    Reportes de Comunidad
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">Revisa los reportes enviados por los usuarios en el chat.</p>
+                </div>
+                <button onClick={fetchReports} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
+                  <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+                  Actualizar
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-x-auto min-h-[400px]">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="bg-gray-50 border-y border-gray-100 text-gray-500 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">Reportado (Baneado?)</th>
+                      <th className="px-6 py-4 font-medium">Reportado por</th>
+                      <th className="px-6 py-4 font-medium">Motivo</th>
+                      <th className="px-6 py-4 font-medium">Descripción</th>
+                      <th className="px-6 py-4 font-medium">Fecha</th>
+                      <th className="px-6 py-4 font-medium text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {reports.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                          <div className="flex flex-col items-center justify-center">
+                            <Check size={40} className="text-green-400 mb-3" />
+                            <p className="text-lg font-medium text-gray-900">Todo limpio</p>
+                            <p>No hay reportes pendientes de revisar.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      reports.map(r => (
+                        <tr key={r.id} className={`hover:bg-gray-50 transition-colors ${r.status === 'resolved' ? 'opacity-50 bg-gray-50' : ''}`}>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-900">{r.reported?.name || r.reported?.email}</span>
+                              {r.reported?.isBanned && <span className="text-xs text-red-500 font-bold">BANEADO</span>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="text-gray-900">{r.reporter?.name || r.reporter?.email}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              {r.reason}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 max-w-xs truncate" title={r.description}>
+                            {r.description || '-'}
+                          </td>
+                          <td className="px-6 py-4 text-gray-500 text-xs">
+                            {new Date(r.createdAt).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {r.status === 'pending' ? (
+                              <button 
+                                onClick={() => handleResolveReport(r.id)}
+                                className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors font-medium text-xs flex items-center gap-1 ml-auto"
+                              >
+                                <Check size={14} /> Resolver
+                              </button>
+                            ) : (
+                              <span className="text-xs font-bold text-gray-400">RESUELTO</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
           </div>
         )}
       </div>

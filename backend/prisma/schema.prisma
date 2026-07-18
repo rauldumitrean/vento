@@ -37,6 +37,8 @@ model User {
   friendshipsReceived Friendship[] @relation("UserFriendshipsReceived")
   messagesSent        DirectMessage[] @relation("UserMessagesSent")
   messagesReceived    DirectMessage[] @relation("UserMessagesReceived")
+  reportsSent         Report[] @relation("UserReportsSent")
+  reportsReceived     Report[] @relation("UserReportsReceived")
 }
 
 model Consulta {
@@ -105,4 +107,19 @@ model DirectMessage {
   sender      User     @relation("UserMessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
   receiver    User     @relation("UserMessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
   outfit      Consulta? @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id          Int      @id @default(autoincrement())
+  reporterId  Int
+  reportedId  Int
+  reason      String
+  description String?
+  status      String   @default("pending") // pending, reviewed, resolved
+  createdAt   DateTime @default(now())
+
+  reporter    User     @relation("UserReportsSent", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported    User     @relation("UserReportsReceived", fields: [reportedId], references: [id], onDelete: Cascade)
+
+  @@unique([reporterId, reportedId])
 }

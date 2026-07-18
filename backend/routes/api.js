@@ -833,6 +833,37 @@ router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (r
   }
 });
 
+// GET: All reports
+router.get('/admin/reports', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const reports = await prisma.report.findMany({
+      include: {
+        reporter: { select: { id: true, email: true, name: true, friendCode: true } },
+        reported: { select: { id: true, email: true, name: true, friendCode: true, isBanned: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ reports });
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).json({ error: 'Error al obtener reportes' });
+  }
+});
+
+// PUT: Resolve report
+router.put('/admin/reports/:id/resolve', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const report = await prisma.report.update({
+      where: { id: parseInt(req.params.id) },
+      data: { status: 'resolved' }
+    });
+    res.json({ report });
+  } catch (error) {
+    console.error('Error resolving report:', error);
+    res.status(500).json({ error: 'Error al resolver reporte' });
+  }
+});
+
 router.delete('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     await prisma.ticket.deleteMany({});
