@@ -6,6 +6,7 @@ import AdModal from './AdModal';
 import AdminView from './AdminView';
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
+import FriendsView from './FriendsView';
 import Navbar from './Navbar';
 import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
@@ -725,8 +726,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
           ) : view === 'profile' ? (
             <main className="flex-1 pb-8 w-full pt-8">
-          <ProfileSettings token={token} darkMode={darkMode} onLogout={onLogout} />
-        </main>
+              <ProfileSettings token={token} darkMode={darkMode} onLogout={onLogout} />
+            </main>
+          ) : view === 'friends' ? (
+            <main className="flex-1 pb-8 w-full pt-8">
+              <FriendsView token={token} darkMode={darkMode} onNavigate={setView} />
+            </main>
       ) : view === 'chat' ? (
         <main className="flex-1 px-4 sm:px-8 pb-[100px] max-w-7xl mx-auto w-full pt-8 flex flex-col h-[calc(100vh-80px)]">
           {chatWidget}

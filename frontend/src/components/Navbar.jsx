@@ -1,6 +1,6 @@
 import React from 'react';
 // FIX: Removed unused imports: Wind, MapPin
-import { Sun, Moon, Shirt, LogOut, Search } from 'lucide-react';
+import { Sun, Moon, Shirt, LogOut, Search, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
@@ -36,6 +36,13 @@ const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'armario' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
           >
             <Shirt size={16} /> <span className="hidden sm:inline">Armario & Historial</span>
+          </button>
+
+          <button 
+            onClick={() => { setView('friends'); navigate('/app', { replace: true }); }}
+            className={`flex items-center gap-2 text-sm font-medium transition-colors ${view === 'friends' ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-500 hover:text-gray-400'}`}
+          >
+            <Users size={16} /> <span className="hidden sm:inline">Comunidad</span>
           </button>
         </div>
       </div>

@@ -7,6 +7,7 @@ dotenv.config();
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
 const paymentsRoutes = require('./routes/payments');
+const friendsRoutes = require('./routes/friends');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentsRoutes);
+app.use('/api/friends', friendsRoutes);
 app.use('/api', apiRoutes);
 
 const PORT = process.env.PORT || 3000;

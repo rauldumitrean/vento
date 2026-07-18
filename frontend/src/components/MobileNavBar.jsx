@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Shirt, User, Sun, Moon, LogOut, MessageSquare } from 'lucide-react';
+import { Search, Shirt, User, Users, Sun, Moon, LogOut, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,6 +12,7 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
     { id: 'dashboard', icon: Search, label: 'Inicio' },
     { id: 'chat', icon: MessageSquare, label: 'Chat' },
     { id: 'armario', icon: Shirt, label: 'Armario' },
+    { id: 'friends', icon: Users, label: 'Amigos' },
     { id: 'profile', icon: User, label: 'Perfil' },
   ];
 

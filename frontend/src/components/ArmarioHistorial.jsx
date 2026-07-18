@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 // FIX: Removed unused imports: Check, Shirt
-import { Trash2, Heart, Clock, Plus, MapPin } from 'lucide-react';
+import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2 } from 'lucide-react';
 
 // FIX: Use env variable instead of hardcoded localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -12,6 +12,10 @@ const ArmarioHistorial = ({ token, darkMode }) => {
   const [armario, setArmario] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [nuevaPrenda, setNuevaPrenda] = useState({ categoria: 'top', descripcion: '', color: '' });
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareConsultaId, setShareConsultaId] = useState(null);
+  const [friends, setFriends] = useState([]);
+  const [shareMessage, setShareMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
   // FIX: Added token to dependency array to avoid stale closure
@@ -74,8 +78,34 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       // FIX: Using API_URL env variable
       await axios.put(`${API_URL}/api/historial/${id}/favorito`, { isFavorite: !isFav }, { headers: { Authorization: `Bearer ${token}` } });
       setHistorial(historial.map(h => h.id === id ? { ...h, isFavorite: !isFav } : h));
-    } catch (error) {
-      alert("Error al actualizar favorito");
+    } catch (err) {
+      console.error("Error toggleando favorito", err);
+    }
+  };
+
+  const openShareModal = async (id) => {
+    setShareConsultaId(id);
+    setShareModalOpen(true);
+    setShareMessage('');
+    try {
+      const res = await axios.get(`${API_URL}/api/friends`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFriends(res.data.friends);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleShare = async (friendId) => {
+    try {
+      await axios.post(`${API_URL}/api/friends/${friendId}/share`, { consultaId: shareConsultaId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShareMessage('¡Outfit compartido!');
+      setTimeout(() => setShareModalOpen(false), 2000);
+    } catch (err) {
+      setShareMessage('Error al compartir');
     }
   };
 
@@ -215,6 +245,13 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
+                        onClick={() => openShareModal(h.id)}
+                        className={`p-2 rounded-full transition-colors text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20`}
+                        title="Compartir con un amigo"
+                      >
+                        <Share2 size={20} />
+                      </button>
+                      <button 
                         onClick={() => handleDeleteHistorial(h.id)}
                         className={`p-2 rounded-full transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20`}
                         title="Eliminar del historial"
@@ -242,6 +279,40 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               );
             })
           )}
+        </div>
+      )}
+
+      {shareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className={`w-full max-w-md rounded-3xl p-6 ${darkMode ? 'bg-gray-900 text-white border border-gray-800' : 'bg-white text-gray-900 shadow-2xl'}`}>
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Share2 size={24} className="text-indigo-500" /> Compartir Outfit</h3>
+            
+            {shareMessage ? (
+              <div className="py-8 text-center text-green-500 font-bold">{shareMessage}</div>
+            ) : (
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                {friends.length === 0 ? (
+                  <p className={`text-center py-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No tienes amigos para compartir. ¡Añade amigos en la Comunidad!</p>
+                ) : (
+                  friends.map(f => (
+                    <button key={f.friendshipId} onClick={() => handleShare(f.id)} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${darkMode ? 'bg-gray-800/50 border-gray-700 hover:bg-gray-800' : 'bg-gray-50 border-gray-200 hover:bg-indigo-50 hover:border-indigo-200'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                          {f.profilePicture ? <img src={f.profilePicture} className="w-full h-full object-cover" /> : <Users size={16} />}
+                        </div>
+                        <span className="font-bold">{f.name || 'Usuario'}</span>
+                      </div>
+                      <Send size={16} className="text-indigo-500" />
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+            
+            <button onClick={() => setShareModalOpen(false)} className={`mt-6 w-full py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}>
+              Cerrar
+            </button>
+          </div>
         </div>
       )}
     </motion.div>
