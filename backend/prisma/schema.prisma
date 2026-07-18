@@ -53,6 +53,9 @@ model Consulta {
   user               User     @relation(fields: [userId], references: [id])
   mensajes           MensajeChat[]
   directMessages     DirectMessage[]
+
+  @@index([userId, createdAt])
+  @@index([userId, isFavorite])
 }
 
 model MensajeChat {

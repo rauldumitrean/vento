@@ -85,16 +85,27 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/weather', authMiddleware, async (req, res) => {
+// Cache in-memory simple para el clima
+const weatherCache = new Map();
 
+router.get('/weather', authMiddleware, async (req, res) => {
   try {
     const { lat, lon, city } = req.query;
+    const cacheKey = city ? `city_${city.toLowerCase()}` : `coord_${lat}_${lon}`;
     
+    // Check cache (10 min TTL)
+    if (weatherCache.has(cacheKey)) {
+      const cached = weatherCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
+        return res.json(cached.data);
+      }
+      weatherCache.delete(cacheKey);
+    }
+
     let latitude = lat;
     let longitude = lon;
     
     if (city && (!lat || !lon)) {
-      // FIX: encodeURIComponent prevents parameter injection attacks
       const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
       if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
         return res.status(404).json({ error: 'Ciudad no encontrada' });
@@ -107,7 +118,6 @@ router.get('/weather', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Se requiere latitud y longitud o nombre de ciudad' });
     }
 
-    // FIX: Validate latitude and longitude are valid numbers in correct ranges
     const latNum = parseFloat(latitude);
     const lonNum = parseFloat(longitude);
     if (isNaN(latNum) || isNaN(lonNum) || latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
@@ -116,12 +126,16 @@ router.get('/weather', authMiddleware, async (req, res) => {
 
     const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=auto`);
     
-    res.json({
+    const responseData = {
       location: city || `${latitude}, ${longitude}`,
       lat: latitude,
       lon: longitude,
       current: weatherResponse.data.current
-    });
+    };
+
+    weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+
+    res.json(responseData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener el clima' });
@@ -132,22 +146,32 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
   try {
     const { lat, lon, ubicacion, clima } = req.body;
 
-    // --- SISTEMA FREEMIUM: Límite de 5 outfits al día ---
-    const dbUser = await prisma.user.findUnique({ where: { id: req.user.id } });
-    // FIX: Null check for dbUser before accessing properties
+    if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'INSERT_YOUR_GEMINI_KEY_HERE') {
+      return res.status(500).json({ error: 'La API Key de Gemini no está configurada en el backend.'});
+    }
+
+    // --- Optimizacion: Ejecutar peticiones a DB en paralelo ---
+    const [dbUser, armario, allNonFavsCount] = await Promise.all([
+      prisma.user.findUnique({ where: { id: req.user.id } }),
+      prisma.prendaArmario.findMany({ where: { userId: req.user.id } }),
+      prisma.consulta.count({ where: { userId: req.user.id, isFavorite: false } })
+    ]);
+
     if (!dbUser) return res.status(401).json({ error: 'Usuario no encontrado' });
     
-    // Si es Premium o Admin, salta el límite
+    // --- LÍMITE DE HISTORIAL ---
+    const historyLimit = dbUser.isPremium || dbUser.role === 'ADMIN' ? 50 : 15;
+    if (allNonFavsCount >= historyLimit) {
+      return res.status(403).json({ error: `Has alcanzado el límite máximo de tu historial (${historyLimit}/${historyLimit}). Borra algunos outfits desde tu Armario para generar nuevos.` });
+    }
+
+    // --- SISTEMA FREEMIUM: Límite de 5 outfits al día ---
     if (!dbUser.isPremium && dbUser.role !== 'ADMIN') {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const consultasHoy = await prisma.consulta.count({
-          where: {
-              userId: req.user.id,
-              createdAt: {
-                  gte: today
-              }
-          }
+          where: { userId: req.user.id, createdAt: { gte: today } }
       });
   
       if (consultasHoy >= 5) {
@@ -155,25 +179,7 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       }
     }
     // ----------------------------------------------------
-    
-    // --- LÍMITE DE HISTORIAL ---
-    const historyLimit = dbUser.isPremium || dbUser.role === 'ADMIN' ? 50 : 15;
-    const allNonFavsCount = await prisma.consulta.count({
-      where: { userId: req.user.id, isFavorite: false }
-    });
 
-    if (allNonFavsCount >= historyLimit) {
-      return res.status(403).json({ error: `Has alcanzado el límite máximo de tu historial (${historyLimit}/${historyLimit}). Borra algunos outfits desde tu Armario para generar nuevos.` });
-    }
-    // ----------------------------------------------------
-    
-    if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
-
-    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'INSERT_YOUR_GEMINI_KEY_HERE') {
-      return res.status(500).json({ error: 'La API Key de Gemini no está configurada en el backend.'});
-    }
-
-    const armario = await prisma.prendaArmario.findMany({ where: { userId: req.user.id } });
     let armarioText = "";
     if (armario.length > 0) {
       armarioText = "El usuario TIENE las siguientes prendas en su armario:\n" + armario.map(p => `- [${p.categoria}] ${p.descripcion} (${p.color || ''})`).join('\n') + "\nIMPORTANTE: PRIORIZA usar estas prendas exactas en tu recomendación si son adecuadas para el clima. Si necesitas algo que no tiene, recomiéndalo normalmente.";
