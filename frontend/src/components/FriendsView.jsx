@@ -33,6 +33,7 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
   const [showOutfitPicker, setShowOutfitPicker] = useState(false);
   const [userOutfits, setUserOutfits] = useState([]);
   const [savingOutfitId, setSavingOutfitId] = useState(null);
+  const [viewingOutfit, setViewingOutfit] = useState(null);
 
   useEffect(() => {
     fetchFriendCode();
@@ -459,10 +460,10 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
                         {/* Render Outfit Compartido */}
                         {msg.outfit && (
                           <div className={`mt-3 p-3 rounded-xl border ${isMine ? 'bg-indigo-700/50 border-indigo-500/50' : (darkMode ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200')}`}>
-                            <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-wider opacity-80 cursor-pointer" onClick={() => onNavigate('/history')}>
+                            <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-wider opacity-80 cursor-pointer" onClick={() => setViewingOutfit(msg.outfit)}>
                               <ImageIcon size={14} /> Outfit Compartido
                             </div>
-                            <p className="text-sm line-clamp-2 cursor-pointer" onClick={() => onNavigate('/history')}>{msg.outfit.ubicacion}</p>
+                            <p className="text-sm line-clamp-2 cursor-pointer" onClick={() => setViewingOutfit(msg.outfit)}>{msg.outfit.ubicacion}</p>
                             
                             {!isMine && (
                               <button 
@@ -653,6 +654,84 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
           </motion.div>
         </div>
       )}
+
+      {/* Viewing Outfit Modal */}
+      <AnimatePresence>
+        {viewingOutfit && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className={`w-full max-w-2xl p-6 rounded-3xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white shadow-2xl'} flex flex-col max-h-[85vh] overflow-y-auto`}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className={`text-xl font-black flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <ImageIcon className="text-indigo-500" /> Detalles del Outfit
+                </h3>
+                <button onClick={() => setViewingOutfit(null)} className={`p-1.5 rounded-full ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                  <p className="text-sm font-bold opacity-70 uppercase tracking-wider mb-2">Ubicación</p>
+                  <p className="text-lg font-medium">{viewingOutfit.ubicacion}</p>
+                </div>
+                
+                {(() => {
+                  let rec = {};
+                  try {
+                    rec = typeof viewingOutfit.recomendacion_json === 'string' 
+                      ? JSON.parse(viewingOutfit.recomendacion_json) 
+                      : viewingOutfit.recomendacion_json;
+                  } catch(e) {}
+                  
+                  return (
+                    <>
+                      {rec.resumen && (
+                        <p className={`font-medium italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          "{rec.resumen}"
+                        </p>
+                      )}
+                      
+                      {rec.prendas && rec.prendas.length > 0 && (
+                        <div className="space-y-3 mt-4">
+                          <p className="text-sm font-bold opacity-70 uppercase tracking-wider mb-2">Prendas Recomendadas</p>
+                          {rec.prendas.map((p, i) => (
+                            <div key={i} className={`p-3 rounded-xl border flex items-center gap-3 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                              <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-xl shrink-0">
+                                {p.tipo === 'superior' ? '👕' : p.tipo === 'inferior' ? '👖' : p.tipo === 'calzado' ? '👟' : '🧥'}
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm capitalize">{p.prenda}</p>
+                                <p className="text-xs opacity-70">{p.razon}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+                
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+                  <button 
+                    onClick={() => {
+                      handleSaveSharedOutfit(viewingOutfit.id);
+                      setViewingOutfit(null);
+                    }}
+                    className="w-full py-3 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Database size={18} /> Guardar en mi historial
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
