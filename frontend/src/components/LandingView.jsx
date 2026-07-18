@@ -345,7 +345,7 @@ export default function LandingView({ setToken }) {
               className="border-t border-white/10 bg-black/95 backdrop-blur-2xl overflow-hidden shadow-2xl"
             >
               <div className="flex flex-col px-6 py-6 space-y-4 max-w-7xl mx-auto">
-                <div className="lg:hidden flex flex-col space-y-4 pb-4 border-b border-white/10">
+                <div className="flex flex-col space-y-4 pb-4 border-b border-white/10">
                   <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium">Funciones</a>
                   <a href="#how" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium">Cómo funciona</a>
                   <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium">Precios</a>
