@@ -126,6 +126,28 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!window.confirm('¿Estás seguro de que quieres cancelar tu suscripción mensual? Perderás el acceso Premium.')) return;
+    
+    setCheckoutLoading(true);
+    setMessage('');
+    try {
+      const res = await axios.post(`${API_URL}/api/payments/cancel-subscription`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        localStorage.setItem('isPremium', 'false');
+        localStorage.removeItem('premiumPlan');
+        setMessage('Suscripción cancelada correctamente.');
+        setTimeout(() => window.location.reload(), 2000);
+      }
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Error al cancelar la suscripción.');
+      setCheckoutLoading(false);
+      setTimeout(() => setMessage(''), 4000);
+    }
+  };
+
   const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!reportMessage.trim()) return;
@@ -315,6 +337,16 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
                     {localStorage.getItem('premiumPlan') === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
                   </span>
                   <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
+                  {localStorage.getItem('premiumPlan') === 'monthly' && (
+                    <button 
+                      type="button" 
+                      onClick={handleCancelSubscription} 
+                      disabled={checkoutLoading}
+                      className="mt-2 w-max px-3 py-1.5 border border-red-500/50 text-red-500 hover:bg-red-500/10 text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      Cancelar Suscripción
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">

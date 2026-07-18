@@ -62,6 +62,45 @@ router.post('/create-checkout-session', authMiddleware, async (req, res) => {
   }
 });
 
+// Cancelar suscripción mensual
+router.post('/cancel-subscription', authMiddleware, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    
+    if (!user.isPremium || user.premiumPlan !== 'monthly') {
+      return res.status(400).json({ error: 'No tienes una suscripción mensual activa.' });
+    }
+
+    if (!user.stripeSubscriptionId) {
+      // Por si acaso no se guardó bien el ID, lo quitamos de la BD
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isPremium: false, premiumPlan: null }
+      });
+      return res.json({ success: true, message: 'Suscripción local cancelada.' });
+    }
+
+    // Cancelar en Stripe (se cancela inmediatamente)
+    await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+    
+    // Stripe enviará un webhook 'customer.subscription.deleted' que actualizará la BD, 
+    // pero para asegurar la UI instantánea lo actualizamos aquí también
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isPremium: false,
+        premiumPlan: null,
+        stripeSubscriptionId: null
+      }
+    });
+
+    res.json({ success: true, message: 'Suscripción cancelada correctamente.' });
+  } catch (error) {
+    console.error('Error canceling subscription:', error);
+    res.status(500).json({ error: 'Error interno al cancelar la suscripción.' });
+  }
+});
+
 // Webhook para recibir eventos de Stripe
 // ¡IMPORTANTE! Express necesita recibir esto en crudo (raw buffer), no parseado como JSON.
 router.post('/webhook', async (req, res) => {
