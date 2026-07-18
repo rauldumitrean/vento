@@ -7,8 +7,9 @@ import BanView from './components/BanView';
 
 import AuthView from './components/AuthView';
 import DashboardView from './components/DashboardView';
-import AdminView from './components/AdminView';
-import AdminLoginView from './components/AdminLoginView';
+import { Suspense, lazy } from 'react';
+const AdminView = lazy(() => import('./components/AdminView'));
+const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
 import IosInstallPrompt from './components/IosInstallPrompt';
 import TermsView from './components/TermsView';
 import PrivacyView from './components/PrivacyView';
@@ -130,7 +131,11 @@ function App() {
             />
             <Route 
               path="/admin" 
-              element={adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />} 
+              element={
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+                  {adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />}
+                </Suspense>
+              } 
             />
             <Route path="/terms" element={<TermsView />} />
             <Route path="/privacy" element={<PrivacyView />} />

@@ -4,7 +4,8 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw, Archive } from 'lucide-react';
 import AdModal from './AdModal';
-import AdminView from './AdminView';
+import { lazy, Suspense } from 'react';
+const AdminView = lazy(() => import('./AdminView'));
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import FriendsView from './FriendsView';
@@ -722,8 +723,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             <ArmarioHistorial token={token} darkMode={darkMode} />
           ) : view === 'admin' ? (
             // FIX: Only render AdminView if user actually has ADMIN role
-            Cookies.get('userRole') === 'ADMIN'
-              ? <AdminView token={token} darkMode={darkMode} />
+            userData?.role === 'ADMIN' 
+              ? <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>}><AdminView token={token} darkMode={darkMode} /></Suspense>
               : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
           ) : view === 'profile' ? (
             <main className="flex-1 pb-8 w-full pt-8">
