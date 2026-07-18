@@ -317,11 +317,6 @@ export default function LandingView({ setToken }) {
             <Cloud className="text-indigo-400" size={26} />
             <span className="text-lg font-black tracking-widest text-white">VENTOO</span>
           </div>
-          <div className="hidden lg:flex items-center gap-8 text-sm text-gray-400">
-            <a href="#features" className="hover:text-white transition-colors">Funciones</a>
-            <a href="#how" className="hover:text-white transition-colors">Cómo funciona</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Precios</a>
-          </div>
 
           {/* Hamburger Menu Button */}
           <div className="flex items-center gap-3">
