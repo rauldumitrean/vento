@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown, Menu, X } from 'lucide-react';
+import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown, Menu, X, Users, QrCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import VerticalAd from './VerticalAd';
@@ -38,6 +38,30 @@ const AnimatedChatIcon = () => (
       <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
       <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} />
     </div>
+  </div>
+);
+
+const AnimatedCommunityIcon = () => (
+  <div className="relative w-10 h-10 flex items-center justify-center">
+    <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+      <Users size={28} className="text-blue-400 drop-shadow-[0_0_5px_rgba(96,165,250,0.8)]" />
+    </motion.div>
+  </div>
+);
+
+const AnimatedShieldIcon = () => (
+  <div className="relative w-10 h-10 flex items-center justify-center">
+    <motion.div animate={{ rotate: [0, -10, 10, -10, 10, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
+      <Shield size={28} className="text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]" />
+    </motion.div>
+  </div>
+);
+
+const AnimatedCrownIcon = () => (
+  <div className="relative w-10 h-10 flex items-center justify-center">
+    <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+      <Crown size={28} className="text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]" />
+    </motion.div>
   </div>
 );
 
@@ -111,16 +135,24 @@ const faqs = [
     a: "El plan Premium te da outfits ilimitados, te permite subir fotos para que la IA reconozca tus prendas, elimina la publicidad, aumenta tu historial y desbloquea el asistente de estilo avanzado."
   },
   {
+    q: "¿Puedo chatear y añadir amigos?",
+    a: "¡Sí! Hemos añadido una nueva red social dentro de Ventoo. Puedes añadir amigos compartiendo tu código único o escaneando su código QR, y usar el chat privado para enviar y recibir outfits."
+  },
+  {
     q: "¿Cómo funciona la recomendación por IA?",
     a: "Nuestra Inteligencia Artificial analiza la temperatura, clima actual y tus preferencias de estilo para crear instantáneamente el look perfecto que combine con el tiempo."
   },
   {
     q: "¿Puedo subir fotos de mi propia ropa?",
-    a: "¡Sí! Con el plan Premium puedes subir imágenes de tus prendas. La IA las procesa usando visión artificial para armar conjuntos reales basándose en tu propio armario."
+    a: "¡Por supuesto! Con el plan Premium puedes subir imágenes de tus prendas. La IA las procesa usando visión artificial para armar conjuntos reales basándose en tu propio armario."
+  },
+  {
+    q: "¿Qué hacéis con mi privacidad y la comunidad?",
+    a: "Tu privacidad está protegida. Tenemos un sistema estricto de moderación automática. Si recibes mensajes inapropiados, puedes reportar al usuario, y el sistema aplicará bloqueos temporales o permanentes."
   },
   {
     q: "¿Tengo que instalar algo?",
-    a: "No. Ventoo es una Web App que funciona en cualquier navegador (PC, Mac, iPhone, Android). Además, en móviles te permite instalarla en tu pantalla de inicio como una app nativa en segundos."
+    a: "No. Ventoo es una Web App que funciona en cualquier navegador. Además, en móviles te permite instalarla en tu pantalla de inicio como una app nativa en segundos para un acceso más rápido."
   }
 ];
 
@@ -447,24 +479,42 @@ export default function LandingView({ setToken }) {
             <h2 className="text-4xl md:text-5xl font-black mb-4">El Futuro de la Moda</h2>
             <p className="text-gray-500 max-w-xl mx-auto">Nuestra IA va mucho más allá de sugerir "ponte un abrigo".</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               accent="indigo" delay={0}
               icon={<AnimatedWeatherIcon />}
               title="Clima Milimétrico"
-              desc="Cruzamos temperatura, humedad, viento y probabilidad de lluvia de tu ciudad exacta para evitar sorpresas meteorológicas."
+              desc="Cruzamos temperatura, humedad, viento y lluvia de tu ciudad exacta para evitar sorpresas meteorológicas."
             />
             <FeatureCard
               accent="purple" delay={0.1}
               icon={<AnimatedScannerIcon />}
               title="Visión por IA"
-              desc="Sube una foto de tu propia ropa. Nuestra IA analiza colores y texturas para decirte exactamente con qué combina."
+              desc="Sube una foto de tu propia ropa. Nuestra IA analiza colores y texturas para decirte con qué combina."
             />
             <FeatureCard
               accent="pink" delay={0.2}
               icon={<AnimatedChatIcon />}
-              title="Chatbot de Estilo"
-              desc="¿No te gusta el pantalón sugerido? Díselo al chat. Obtendrás una alternativa instantánea con imagen y enlace de compra."
+              title="Chat Privado"
+              desc="Comparte outfits y chatea con tus amigos dentro de Ventoo. Recomendaciones de IA en tiempo real."
+            />
+            <FeatureCard
+              accent="indigo" delay={0.3}
+              icon={<AnimatedCommunityIcon />}
+              title="Comunidad y Amigos"
+              desc="Añade a tus amigos usando tu código único o escaneando su código QR desde la app móvil."
+            />
+            <FeatureCard
+              accent="purple" delay={0.4}
+              icon={<AnimatedShieldIcon />}
+              title="Entorno Seguro"
+              desc="Sistema de reportes y moderación automática para asegurar que la comunidad de Ventoo sea segura."
+            />
+            <FeatureCard
+              accent="pink" delay={0.5}
+              icon={<AnimatedCrownIcon />}
+              title="Ventoo Premium"
+              desc="Outfits ilimitados, armarios sin restricciones, sin publicidad y un asistente personal de estilo avanzado."
             />
           </div>
         </div>

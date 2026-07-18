@@ -13,6 +13,7 @@ const IosInstallPrompt = lazy(() => import('./components/IosInstallPrompt'));
 const TermsView = lazy(() => import('./components/TermsView'));
 const PrivacyView = lazy(() => import('./components/PrivacyView'));
 const SupportView = lazy(() => import('./components/SupportView'));
+const CookieBanner = lazy(() => import('./components/CookieBanner'));
 
 const LoginRedirect = () => {
   const location = useLocation();
@@ -138,6 +139,9 @@ function App() {
         </Suspense>
         <Suspense fallback={null}>
           <IosInstallPrompt />
+        </Suspense>
+        <Suspense fallback={null}>
+          <CookieBanner />
         </Suspense>
       </div>
     </BrowserRouter>
