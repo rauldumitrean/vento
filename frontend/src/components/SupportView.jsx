@@ -76,7 +76,7 @@ export default function SupportView({ token }) {
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             <Cloud size={40} className="mx-auto mb-4 text-indigo-200" />
             <h1 className="text-3xl font-black mb-2 relative z-10">Soporte Ventoo</h1>
-            <p className="text-indigo-100 text-sm relative z-10">¿Tienes un problema o sugerencia? Cuéntanoslo.</p>
+            <p className="text-indigo-100 text-sm relative z-10">¿Tienes un problema, sugerencia, o necesitas reportar a un usuario en la Comunidad? Cuéntanoslo.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-5">

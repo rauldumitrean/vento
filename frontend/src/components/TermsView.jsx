@@ -62,6 +62,16 @@ export default function TermsView() {
               <li><strong>Derecho a apelación:</strong> Si consideras que el sistema de seguridad te ha bloqueado por error, puedes utilizar el botón de apelación en la pantalla de bloqueo para que un administrador humano revise tu caso.</li>
             </ul>
           </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">7. Comunidad y Mensajes Directos</h2>
+            <p className="mb-3">Ventoo ofrece funciones sociales como códigos de amigo (y escaneo de códigos QR) y un chat privado para compartir recomendaciones:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Interacciones de Usuario:</strong> Eres responsable de las interacciones que tengas con otros usuarios. Ventoo no interviene en disputas personales, pero se reserva el derecho de banear cuentas que acosen o realicen spam.</li>
+              <li><strong>Privacidad del Código de Amigo:</strong> Tu código de amigo es semipúblico (puede ser escaneado mediante QR). Puedes compartirlo bajo tu propio riesgo. Ventoo no se hace responsable si tu código llega a personas no deseadas.</li>
+              <li><strong>Moderación de Chat:</strong> El contenido de los chats directos está sujeto a las mismas reglas de auto-moderación automatizada estipuladas en la Sección 6.</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>

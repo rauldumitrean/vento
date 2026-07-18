@@ -29,12 +29,12 @@ export default function PrivacyView() {
         <div className="space-y-8 text-gray-300 leading-relaxed">
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Recopilación de Información</h2>
-            <p>Recopilamos la información que nos proporcionas directamente, como tu dirección de correo electrónico al registrarte, las preferencias de estilo que configuras en tu perfil y las imágenes que subes voluntariamente al chat de nuestro asistente de moda.</p>
+            <p>Recopilamos la información que nos proporcionas directamente, como tu dirección de correo electrónico al registrarte, las preferencias de estilo, imágenes subidas al asistente, y la información generada por tu uso de las funciones de <strong>Comunidad</strong> (mensajes directos, lista de amigos y tu Código de Amigo único).</p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">2. Uso de la Información</h2>
-            <p>Utilizamos tu información para proporcionar, mantener y mejorar Ventoo. Específicamente, tus preferencias y datos de ubicación se utilizan en tiempo real para generar recomendaciones de outfits a través de nuestros servicios de Inteligencia Artificial.</p>
+            <p>Utilizamos tu información para proporcionar y mejorar Ventoo. Tus preferencias y ubicación generan recomendaciones de outfits por IA. Los datos de la <strong>Comunidad</strong> se usan exclusivamente para facilitar la mensajería privada, el envío de solicitudes mediante Código QR/Texto y el poder compartir tus outfits históricos con tus amigos.</p>
           </section>
 
           <section>
@@ -49,7 +49,7 @@ export default function PrivacyView() {
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">5. Compartir Información</h2>
-            <p>No vendemos ni alquilamos tu información personal a terceros. Solo compartimos la información estrictamente necesaria con proveedores de servicios (como Stripe para pagos) para operar la plataforma.</p>
+            <p>No vendemos ni alquilamos tu información personal, mensajes de chat o lista de amigos a terceros. Solo compartimos la información estrictamente necesaria con proveedores de servicios (como Stripe para pagos o Neon para bases de datos) para operar la plataforma de forma segura.</p>
           </section>
 
           <section>
