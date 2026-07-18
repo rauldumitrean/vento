@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
   const navigate = useNavigate();
 
+  const profilePicture = localStorage.getItem('userProfilePicture');
+
   const navItems = [
     { id: 'dashboard', icon: Search, label: 'Inicio' },
     { id: 'chat', icon: MessageSquare, label: 'Chat' },
@@ -54,13 +56,17 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
                   />
                 )}
                 <div className="relative flex items-center gap-1.5">
-                  <Icon
-                    size={18}
-                    className={isActive
-                      ? darkMode ? 'text-indigo-400' : 'text-indigo-600'
-                      : ''
-                    }
-                  />
+                  {id === 'profile' && profilePicture ? (
+                    <img src={profilePicture} alt="Avatar" className={`w-[18px] h-[18px] rounded-full object-cover border ${isActive ? (darkMode ? 'border-indigo-400' : 'border-indigo-600') : 'border-transparent'}`} />
+                  ) : (
+                    <Icon
+                      size={18}
+                      className={isActive
+                        ? darkMode ? 'text-indigo-400' : 'text-indigo-600'
+                        : ''
+                      }
+                    />
+                  )}
                   <AnimatePresence mode="wait">
                     {isActive && (
                       <motion.span

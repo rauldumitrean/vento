@@ -36,6 +36,55 @@ router.post('/ping', authMiddleware, async (req, res) => {
   }
 });
 
+// Upload avatar to ImgBB
+router.post('/upload-avatar', authMiddleware, async (req, res) => {
+  try {
+    const { imageBase64 } = req.body;
+    if (!imageBase64) return res.status(400).json({ error: 'No se envió ninguna imagen.' });
+
+    // Ensure API key is configured
+    const apiKey = process.env.IMGBB_API_KEY;
+    if (!apiKey) {
+      console.warn("Falta IMGBB_API_KEY. Simulando subida de avatar.");
+      // Dummy success for development
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { profilePicture: 'https://i.ibb.co/dummy/avatar.jpg' }
+      });
+      return res.json({ profilePicture: 'https://i.ibb.co/dummy/avatar.jpg' });
+    }
+
+    // Prepare ImgBB payload
+    // ImgBB API requires just the base64 string without the "data:image/jpeg;base64," prefix
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const formData = new URLSearchParams();
+    formData.append('image', base64Data);
+
+    const response = await axios.post(`https://api.imgbb.com/1/upload?key=${apiKey}`, formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    if (response.data && response.data.data && response.data.data.url) {
+      const profilePicture = response.data.data.url;
+      
+      // Update DB
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { profilePicture }
+      });
+      
+      res.json({ profilePicture });
+    } else {
+      res.status(500).json({ error: 'Error inesperado al subir la imagen a ImgBB.' });
+    }
+  } catch (error) {
+    console.error('Error uploading avatar:', error?.response?.data || error.message);
+    res.status(500).json({ error: 'Error al subir la imagen.' });
+  }
+});
+
 router.get('/weather', authMiddleware, async (req, res) => {
 
   try {

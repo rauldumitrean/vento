@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut } from 'lucide-react';
+import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -10,9 +10,11 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [age, setAge] = useState(localStorage.getItem('userAge') || '');
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
+  const [profilePicture, setProfilePicture] = useState(localStorage.getItem('userProfilePicture') || '');
   const [historyCount, setHistoryCount] = useState(0);
   const [dailyCount, setDailyCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [reportMessage, setReportMessage] = useState('');
@@ -32,6 +34,8 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
           setAge(res.data.user.age || '');
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
+          setProfilePicture(res.data.user.profilePicture || '');
+          localStorage.setItem('userProfilePicture', res.data.user.profilePicture || '');
           setHistoryCount(res.data.user.historyCount || 0);
           setDailyCount(res.data.user.dailyCount || 0);
         }
@@ -41,6 +45,47 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
     };
     fetchProfile();
   }, [token]);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('Por favor, selecciona una imagen válida.');
+      setTimeout(() => setMessage(''), 4000);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('La imagen es demasiado grande (máximo 5MB).');
+      setTimeout(() => setMessage(''), 4000);
+      return;
+    }
+
+    setUploadingAvatar(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const res = await axios.post(`${API_URL}/api/upload-avatar`, {
+          imageBase64: reader.result
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.data.profilePicture) {
+          setProfilePicture(res.data.profilePicture);
+          localStorage.setItem('userProfilePicture', res.data.profilePicture);
+          setMessage('Foto de perfil actualizada con éxito.');
+        }
+      } catch (err) {
+        setMessage('Error al subir la foto de perfil.');
+      } finally {
+        setUploadingAvatar(false);
+        setTimeout(() => setMessage(''), 4000);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -151,6 +196,38 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         {/* WIDGET 1: Información Personal */}
         <WidgetSection id="personal" title="Información Personal" icon={User}>
           <div className="space-y-4">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 pb-2">
+              <div className="relative group cursor-pointer">
+                <div className={`w-20 h-20 rounded-full overflow-hidden border-2 ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'} flex items-center justify-center relative`}>
+                  {profilePicture ? (
+                    <img src={profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={32} className={darkMode ? 'text-gray-500' : 'text-gray-400'} />
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                </div>
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 group-hover:scale-110 transition-transform">
+                  <Camera size={14} />
+                </div>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={handleAvatarUpload}
+                  disabled={uploadingAvatar}
+                />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h4 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Foto de perfil</h4>
+                <p className={`text-xs mt-1 max-w-[200px] mx-auto sm:mx-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sube una imagen para tu avatar (máx 5MB). Aparecerá en tu menú y consultas.</p>
+              </div>
+            </div>
+
             <div>
               <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nombre</label>
               <input 

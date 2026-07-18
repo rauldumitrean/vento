@@ -734,12 +734,17 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       ) : (
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-            <div className="mb-2">
-              <h2 className="text-3xl font-extrabold tracking-tight flex items-center flex-wrap">
-                Hola de nuevo, {userName || 'aventurero'}
-                <Sparkles className="ml-3 w-7 h-7 text-yellow-500 animate-[pulse_3s_ease-in-out_infinite]" />
-              </h2>
-              <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{randomGreeting}</p>
+            <div className="mb-2 flex items-center gap-4">
+              {localStorage.getItem('userProfilePicture') && (
+                <img src={localStorage.getItem('userProfilePicture')} alt="Avatar" className={`w-12 h-12 rounded-full object-cover border-2 ${darkMode ? 'border-indigo-500/30' : 'border-indigo-200'}`} />
+              )}
+              <div>
+                <h2 className="text-3xl font-extrabold tracking-tight flex items-center flex-wrap">
+                  Hola de nuevo, {userName || 'aventurero'}
+                  <Sparkles className="ml-3 w-7 h-7 text-yellow-500 animate-[pulse_3s_ease-in-out_infinite]" />
+                </h2>
+                <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{randomGreeting}</p>
+              </div>
             </div>
             <motion.div 
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
