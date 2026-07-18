@@ -14,6 +14,7 @@
     "@tailwindcss/postcss": "^4.3.2",
     "@yudiel/react-qr-scanner": "^2.6.0",
     "axios": "^1.18.1",
+    "axios-cache-interceptor": "^1.12.0",
     "framer-motion": "^12.42.2",
     "js-cookie": "^3.0.8",
     "lucide-react": "^1.24.0",

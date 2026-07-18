@@ -98,7 +98,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
             src={imgSrc} 
             alt={prenda.descripcion} 
             className={`w-full h-full object-cover hover:scale-110 transition-transform duration-700 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
-            loading="lazy"
+            fetchpriority="high"
             onLoad={handleSuccess}
             onError={handleError}
           />

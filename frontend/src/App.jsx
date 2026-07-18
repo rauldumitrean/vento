@@ -1,14 +1,14 @@
 import Cookies from 'js-cookie';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import LandingView from './components/LandingView';
 import BanView from './components/BanView';
 
-const AuthView = lazy(() => import('./components/AuthView'));
-const DashboardView = lazy(() => import('./components/DashboardView'));
-const AdminView = lazy(() => import('./components/AdminView'));
-const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
+import AuthView from './components/AuthView';
+import DashboardView from './components/DashboardView';
+import AdminView from './components/AdminView';
+import AdminLoginView from './components/AdminLoginView';
 import IosInstallPrompt from './components/IosInstallPrompt';
 import TermsView from './components/TermsView';
 import PrivacyView from './components/PrivacyView';
@@ -111,7 +111,6 @@ function App() {
         setToken={setToken} 
       />
       <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden">
-        <Suspense fallback={<div className="min-h-[100dvh] flex items-center justify-center bg-black"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
             <Route 
               path="/" 
@@ -136,7 +135,6 @@ function App() {
             <Route path="/terms" element={<TermsView />} />
             <Route path="/privacy" element={<PrivacyView />} />
           </Routes>
-        </Suspense>
         <IosInstallPrompt />
         <CookieBanner />
       </div>
