@@ -19,6 +19,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [message, setMessage] = useState('');
   const [reportMessage, setReportMessage] = useState('');
   const [reportStatus, setReportStatus] = useState('idle'); // idle | loading | success | error
+  const [showCancelModal, setShowCancelModal] = useState(false);
   
   const [activeAccordion, setActiveAccordion] = useState('personal');
 
@@ -127,8 +128,6 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   };
 
   const handleCancelSubscription = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres cancelar tu suscripción mensual? Perderás el acceso Premium.')) return;
-    
     setCheckoutLoading(true);
     setMessage('');
     try {
@@ -139,11 +138,13 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         localStorage.setItem('isPremium', 'false');
         localStorage.removeItem('premiumPlan');
         setMessage('Suscripción cancelada correctamente.');
+        setShowCancelModal(false);
         setTimeout(() => window.location.reload(), 2000);
       }
     } catch (err) {
       setMessage(err.response?.data?.error || 'Error al cancelar la suscripción.');
       setCheckoutLoading(false);
+      setShowCancelModal(false);
       setTimeout(() => setMessage(''), 4000);
     }
   };
@@ -340,7 +341,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
                   {localStorage.getItem('premiumPlan') !== 'lifetime' && (
                     <button 
                       type="button" 
-                      onClick={handleCancelSubscription} 
+                      onClick={() => setShowCancelModal(true)} 
                       disabled={checkoutLoading}
                       className="mt-2 w-max px-3 py-1.5 border border-red-500/50 text-red-500 hover:bg-red-500/10 text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
                     >
@@ -463,6 +464,41 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         </div>
 
       </form>
+
+      {/* Modal Cancelar Suscripción */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className={`w-full max-w-sm p-6 rounded-3xl shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-100'}`}>
+            <div className="flex items-center gap-3 mb-4 text-red-500">
+              <AlertTriangle size={24} />
+              <h3 className="text-xl font-bold">Cancelar Suscripción</h3>
+            </div>
+            <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              ¿Estás seguro de que quieres cancelar tu suscripción mensual? 
+              Stripe dejará de cobrarte 1,99€ al mes inmediatamente y perderás el acceso a todas las funciones Premium.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                type="button" 
+                onClick={() => setShowCancelModal(false)}
+                disabled={checkoutLoading}
+                className={`flex-1 px-4 py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+              >
+                No, mantener
+              </button>
+              <button 
+                type="button" 
+                onClick={handleCancelSubscription}
+                disabled={checkoutLoading}
+                className="flex-1 px-4 py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white transition-colors flex items-center justify-center disabled:opacity-50"
+              >
+                {checkoutLoading ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
