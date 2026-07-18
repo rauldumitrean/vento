@@ -93,13 +93,13 @@ router.post('/google', async (req, res) => {
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       user = await prisma.user.create({
-        data: { email, name, authProvider: 'google', providerId, profilePicture: picture }
+        data: { email, name, authProvider: 'google', providerId, profilePicture: picture || null }
       });
       await emailService.sendWelcomeEmail(user).catch(console.error);
     } else if (user.authProvider === 'local' && !user.providerId) {
       user = await prisma.user.update({
         where: { email },
-        data: { authProvider: 'google', providerId, profilePicture: user.profilePicture || picture }
+        data: { authProvider: 'google', providerId, profilePicture: user.profilePicture || picture || null }
       });
     }
 
