@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import QRCode from 'react-qr-code';
-import { Users, UserPlus, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon } from 'lucide-react';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { Users, UserPlus, User, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -16,6 +17,7 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
   
   const [addCodeInput, setAddCodeInput] = useState('');
   const [addMessage, setAddMessage] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
   
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -89,6 +91,21 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
     }
   };
 
+  const handleScan = async (detectedCodes) => {
+    if (detectedCodes && detectedCodes.length > 0) {
+      setShowScanner(false);
+      const code = detectedCodes[0].rawValue;
+      try {
+        const res = await axios.post(`${API_URL}/api/friends/request`, { code: code }, { headers: { Authorization: `Bearer ${token}` } });
+        setAddMessage(res.data.message);
+        setTimeout(() => setAddMessage(''), 3000);
+      } catch (err) {
+        setAddMessage(err.response?.data?.error || 'Error al enviar solicitud');
+        setTimeout(() => setAddMessage(''), 3000);
+      }
+    }
+  };
+
   const handleAcceptRequest = async (friendshipId, accept) => {
     try {
       await axios.post(`${API_URL}/api/friends/accept`, { friendshipId, accept }, { headers: { Authorization: `Bearer ${token}` } });
@@ -140,10 +157,21 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
               <Users size={16} /> Mis Amigos
             </button>
             <button 
+              onClick={() => setActiveTab('requests')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all relative ${activeTab === 'requests' ? (darkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900')}`}
+            >
+              <UserPlus size={16} /> Solicitudes
+              {requests.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {requests.length}
+                </span>
+              )}
+            </button>
+            <button 
               onClick={() => setActiveTab('add')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${activeTab === 'add' ? (darkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900')}`}
             >
-              <UserPlus size={16} /> Añadir Amigos
+              <QrCode size={16} /> Añadir
             </button>
           </div>
         </div>
@@ -172,24 +200,41 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
               </div>
             </div>
 
-            {/* Add Friend Input */}
+            {/* Add Friend Input & Scanner */}
             <div className={`p-6 rounded-3xl border ${darkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white shadow-sm border-gray-200'}`}>
-              <h3 className="text-lg font-bold mb-4">Añadir con Código</h3>
-              <form onSubmit={handleSendRequest} className="flex gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    value={addCodeInput}
-                    onChange={(e) => setAddCodeInput(e.target.value.toUpperCase())}
-                    placeholder="Ej. 8F3A2B1C"
-                    className={`w-full pl-10 pr-4 py-3 rounded-xl border font-mono tracking-wider ${darkMode ? 'bg-black border-gray-800 focus:border-indigo-500 text-white placeholder-gray-600' : 'bg-gray-50 border-gray-200 focus:border-indigo-400 text-black placeholder-gray-400'} focus:outline-none transition-colors uppercase`}
-                  />
-                </div>
-                <button type="submit" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors">
-                  Enviar
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Añadir con Código</h3>
+                <button 
+                  onClick={() => setShowScanner(!showScanner)}
+                  className={`p-2 rounded-xl transition-colors ${showScanner ? 'bg-indigo-600 text-white' : (darkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}`}
+                >
+                  <QrCode size={20} />
                 </button>
-              </form>
+              </div>
+              
+              {showScanner ? (
+                <div className="mb-6 rounded-2xl overflow-hidden border-2 border-indigo-500 aspect-square max-w-sm mx-auto">
+                  <Scanner onScan={handleScan} onError={(e) => console.log('QR Error', e)} />
+                  <p className={`text-center py-2 text-sm font-medium bg-indigo-500 text-white`}>Escaneando código QR...</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSendRequest} className="flex gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      value={addCodeInput}
+                      onChange={(e) => setAddCodeInput(e.target.value.toUpperCase())}
+                      placeholder="Ej. 8F3A2B1C"
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl border font-mono tracking-wider ${darkMode ? 'bg-black border-gray-800 focus:border-indigo-500 text-white placeholder-gray-600' : 'bg-gray-50 border-gray-200 focus:border-indigo-400 text-black placeholder-gray-400'} focus:outline-none transition-colors uppercase`}
+                    />
+                  </div>
+                  <button type="submit" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors">
+                    Enviar
+                  </button>
+                </form>
+              )}
+              
               {addMessage && (
                 <p className={`mt-3 text-sm font-medium ${addMessage.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
                   {addMessage}
@@ -199,14 +244,17 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
           </motion.div>
         )}
 
-        {/* FRIENDS LIST TAB */}
-        {activeTab === 'friends' && (
-          <motion.div key="friends" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-            
-            {/* Pending Requests */}
-            {requests.length > 0 && (
-              <div className={`p-6 rounded-3xl border ${darkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white shadow-sm border-gray-200'}`}>
-                <h3 className="text-lg font-bold mb-4 text-indigo-500">Solicitudes Pendientes ({requests.length})</h3>
+        {/* REQUESTS LIST TAB */}
+        {activeTab === 'requests' && (
+          <motion.div key="requests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+            <div className={`p-6 rounded-3xl border ${darkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white shadow-sm border-gray-200'}`}>
+              <h3 className="text-lg font-bold mb-4 text-indigo-500">Solicitudes Recibidas</h3>
+              {requests.length === 0 ? (
+                <div className="text-center py-10">
+                  <UserPlus size={48} className={`mx-auto mb-4 ${darkMode ? 'text-gray-700' : 'text-gray-300'}`} />
+                  <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>No tienes solicitudes de amistad pendientes.</p>
+                </div>
+              ) : (
                 <div className="space-y-3">
                   {requests.map(req => (
                     <div key={req.id} className={`flex items-center justify-between p-3 rounded-2xl ${darkMode ? 'bg-black/50' : 'bg-gray-50'}`}>
@@ -234,9 +282,15 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          </motion.div>
+        )}
 
+        {/* FRIENDS LIST TAB */}
+        {activeTab === 'friends' && (
+          <motion.div key="friends" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+            
             {/* Friends List */}
             <div className={`p-6 rounded-3xl border flex-1 ${darkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white shadow-sm border-gray-200'}`}>
               <h3 className="text-lg font-bold mb-4">Tus Amigos ({friends.length})</h3>
