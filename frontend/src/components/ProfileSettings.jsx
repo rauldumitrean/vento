@@ -337,7 +337,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
                     {localStorage.getItem('premiumPlan') === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
                   </span>
                   <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
-                  {localStorage.getItem('premiumPlan') === 'monthly' && (
+                  {localStorage.getItem('premiumPlan') !== 'lifetime' && (
                     <button 
                       type="button" 
                       onClick={handleCancelSubscription} 
