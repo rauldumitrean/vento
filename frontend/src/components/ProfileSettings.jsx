@@ -20,6 +20,8 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [reportMessage, setReportMessage] = useState('');
   const [reportStatus, setReportStatus] = useState('idle'); // idle | loading | success | error
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isPremium, setIsPremium] = useState(localStorage.getItem('isPremium') === 'true');
+  const [premiumPlan, setPremiumPlan] = useState(localStorage.getItem('premiumPlan') || null);
   
   const [activeAccordion, setActiveAccordion] = useState('personal');
 
@@ -39,6 +41,16 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
           localStorage.setItem('userProfilePicture', res.data.user.profilePicture || '');
           setHistoryCount(res.data.user.historyCount || 0);
           setDailyCount(res.data.user.dailyCount || 0);
+          
+          setIsPremium(res.data.user.isPremium || false);
+          localStorage.setItem('isPremium', res.data.user.isPremium ? 'true' : 'false');
+          
+          setPremiumPlan(res.data.user.premiumPlan || null);
+          if (res.data.user.premiumPlan) {
+            localStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+          } else {
+            localStorage.removeItem('premiumPlan');
+          }
         }
       } catch (err) {
         console.error("Error fetching profile", err);
@@ -198,8 +210,6 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
     );
   };
 
-  const isPremium = localStorage.getItem('isPremium') === 'true';
-
   return (
     <div className={`p-4 md:p-8 max-w-6xl mx-auto rounded-3xl`}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -335,10 +345,10 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
               {isPremium ? (
                 <div className="flex flex-col gap-1">
                   <span className="text-indigo-500 font-bold">
-                    {localStorage.getItem('premiumPlan') === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
+                    {premiumPlan === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
                   </span>
                   <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
-                  {localStorage.getItem('premiumPlan') !== 'lifetime' && (
+                  {premiumPlan !== 'lifetime' && (
                     <button 
                       type="button" 
                       onClick={() => setShowCancelModal(true)} 
