@@ -612,8 +612,17 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
       select: { 
         id: true, email: true, name: true, gender: true, age: true, role: true, isPremium: true, premiumPlan: true, createdAt: true,
         isBanned: true, bannedUntil: true, banReason: true,
+        friendCode: true,
         consultas: {
           where: { createdAt: { gte: startOfDay } },
+          select: { id: true }
+        },
+        friendshipsSent: {
+          where: { status: 'accepted' },
+          select: { id: true }
+        },
+        friendshipsReceived: {
+          where: { status: 'accepted' },
           select: { id: true }
         },
         _count: {
@@ -635,6 +644,8 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
       bannedUntil: u.bannedUntil,
       banReason: u.banReason,
       createdAt: u.createdAt,
+      friendCode: u.friendCode,
+      friendsCount: u.friendshipsSent.length + u.friendshipsReceived.length,
       outfitsHoy: u.consultas.length,
       totalHistory: u._count.consultas,
     }));

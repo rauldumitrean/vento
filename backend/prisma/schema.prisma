@@ -88,8 +88,8 @@ model Friendship {
   status    String   @default("pending") // "pending", "accepted"
   createdAt DateTime @default(now())
 
-  user1     User     @relation("UserFriendshipsSent", fields: [user1Id], references: [id])
-  user2     User     @relation("UserFriendshipsReceived", fields: [user2Id], references: [id])
+  user1     User     @relation("UserFriendshipsSent", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2     User     @relation("UserFriendshipsReceived", fields: [user2Id], references: [id], onDelete: Cascade)
 
   @@unique([user1Id, user2Id])
 }
@@ -102,7 +102,7 @@ model DirectMessage {
   outfitId    Int?     // Referencia opcional a Consulta si es un outfit compartido
   createdAt   DateTime @default(now())
 
-  sender      User     @relation("UserMessagesSent", fields: [senderId], references: [id])
-  receiver    User     @relation("UserMessagesReceived", fields: [receiverId], references: [id])
-  outfit      Consulta? @relation(fields: [outfitId], references: [id])
+  sender      User     @relation("UserMessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("UserMessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  outfit      Consulta? @relation(fields: [outfitId], references: [id], onDelete: Cascade)
 }

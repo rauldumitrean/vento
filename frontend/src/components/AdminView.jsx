@@ -681,6 +681,7 @@ const AdminView = ({ token }) => {
                           <th className="px-6 py-4 font-medium">Usuario</th>
                           <th className="px-6 py-4 font-medium">Rol</th>
                           <th className="px-6 py-4 font-medium">Suscripción</th>
+                          <th className="px-6 py-4 font-medium text-center">Amigos</th>
                           <th className="px-6 py-4 font-medium">Outfits Hoy</th>
                           <th className="px-6 py-4 font-medium">Historial</th>
                           <th className="px-6 py-4 font-medium text-right">Acciones</th>
@@ -691,7 +692,7 @@ const AdminView = ({ token }) => {
                           <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
                             
                             {editUserId === u.id ? (
-                              <td className="px-6 py-4" colSpan="4">
+                              <td className="px-6 py-4" colSpan="5">
                                 <div className="flex flex-wrap items-center gap-4">
                                   <input 
                                     type="email" value={editUserData.email} onChange={e => setEditUserData({...editUserData, email: e.target.value})}
@@ -758,6 +759,11 @@ const AdminView = ({ token }) => {
                                     <Star size={12} fill={u.isPremium ? "currentColor" : "none"} className={u.isPremium ? "text-yellow-500" : ""} /> 
                                     {u.isPremium ? (u.premiumPlan === 'lifetime' ? 'Premium (De por vida)' : u.premiumPlan === 'monthly' ? 'Premium (Mensual)' : 'Premium Activo') : 'Básico'}
                                   </button>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    {u.friendsCount || 0}
+                                  </span>
                                 </td>
                                 {/* Outfits today column - only relevant for basic users */}
                                 <td className="px-6 py-4">
