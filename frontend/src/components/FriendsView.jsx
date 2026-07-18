@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import QRCode from 'react-qr-code';
 import { Scanner } from '@yudiel/react-qr-scanner';
-import { Users, UserPlus, User, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon, QrCode, Flag, AlertTriangle } from 'lucide-react';
+import { Users, UserPlus, User, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon, QrCode, Flag, AlertTriangle, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -28,6 +28,11 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
   const [reportReason, setReportReason] = useState('Spam');
   const [reportDescription, setReportDescription] = useState('');
   const [reportMessage, setReportMessage] = useState('');
+
+  // Outfit Sharing State
+  const [showOutfitPicker, setShowOutfitPicker] = useState(false);
+  const [userOutfits, setUserOutfits] = useState([]);
+  const [savingOutfitId, setSavingOutfitId] = useState(null);
 
   useEffect(() => {
     fetchFriendCode();
@@ -164,6 +169,48 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
   const closeChat = () => {
     setActiveChatFriend(null);
     setActiveTab('friends');
+  };
+
+  const fetchOutfits = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/historial`, { headers: { Authorization: `Bearer ${token}` } });
+      setUserOutfits(res.data);
+    } catch (err) {
+      console.error('Error fetching outfits:', err);
+    }
+  };
+
+  const openOutfitPicker = () => {
+    setShowOutfitPicker(true);
+    fetchOutfits();
+  };
+
+  const handleShareOutfit = async (outfitId) => {
+    if (!activeChatFriend) return;
+    try {
+      const res = await axios.post(`${API_URL}/api/friends/${activeChatFriend.id}/share`, 
+        { consultaId: outfitId }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessages([...messages, res.data.message]);
+      setShowOutfitPicker(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveSharedOutfit = async (outfitId) => {
+    try {
+      setSavingOutfitId(outfitId);
+      const res = await axios.post(`${API_URL}/api/historial/save-shared/${outfitId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert(res.data.message || 'Outfit guardado en tu historial exitosamente.');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error al guardar el outfit.');
+    } finally {
+      setSavingOutfitId(null);
+    }
   };
 
   const formatTime = (dateString) => {
@@ -411,12 +458,27 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
                         
                         {/* Render Outfit Compartido */}
                         {msg.outfit && (
-                          <div className={`mt-3 p-3 rounded-xl border ${isMine ? 'bg-indigo-700/50 border-indigo-500/50' : (darkMode ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200')} cursor-pointer`} onClick={() => onNavigate('/history')}>
-                            <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-wider opacity-80">
+                          <div className={`mt-3 p-3 rounded-xl border ${isMine ? 'bg-indigo-700/50 border-indigo-500/50' : (darkMode ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200')}`}>
+                            <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-wider opacity-80 cursor-pointer" onClick={() => onNavigate('/history')}>
                               <ImageIcon size={14} /> Outfit Compartido
                             </div>
-                            <p className="text-sm line-clamp-2">{msg.outfit.ubicacion}</p>
-                            <p className="text-xs mt-1 opacity-70">Ver detalles en el historial de outfits recibidos...</p>
+                            <p className="text-sm line-clamp-2 cursor-pointer" onClick={() => onNavigate('/history')}>{msg.outfit.ubicacion}</p>
+                            
+                            {!isMine && (
+                              <button 
+                                onClick={() => handleSaveSharedOutfit(msg.outfit.id)}
+                                disabled={savingOutfitId === msg.outfit.id}
+                                className={`mt-3 w-full py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}`}
+                              >
+                                {savingOutfitId === msg.outfit.id ? (
+                                  <span className="animate-pulse">Guardando...</span>
+                                ) : (
+                                  <>
+                                    <Database size={14} /> Guardar en mi historial
+                                  </>
+                                )}
+                              </button>
+                            )}
                           </div>
                         )}
                         
@@ -433,6 +495,14 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
             {/* Chat Input */}
             <div className={`p-4 border-t ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'}`}>
               <form onSubmit={handleSendMessage} className="flex gap-2">
+                <button 
+                  type="button" 
+                  onClick={openOutfitPicker}
+                  className={`p-3 rounded-xl transition-colors flex items-center justify-center ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-indigo-400' : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'}`}
+                  title="Compartir Outfit"
+                >
+                  <ImageIcon size={20} />
+                </button>
                 <input
                   type="text"
                   value={newMessage}
@@ -518,6 +588,68 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
                 </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Outfit Picker Modal */}
+      {showOutfitPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className={`w-full max-w-2xl p-6 rounded-3xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white shadow-2xl'} flex flex-col max-h-[80vh]`}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className={`text-xl font-black flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <ImageIcon className="text-indigo-500" /> Compartir Outfit
+              </h3>
+              <button onClick={() => setShowOutfitPicker(false)} className={`p-1.5 rounded-full ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto min-h-[300px]">
+              {userOutfits.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center opacity-50 p-8">
+                  <Database size={48} className="mb-4 text-indigo-400" />
+                  <p>No tienes outfits guardados en tu historial para compartir.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {userOutfits.map(outfit => {
+                    let recomendacion = {};
+                    try {
+                      recomendacion = JSON.parse(outfit.recomendacion_json);
+                    } catch (e) {}
+
+                    return (
+                      <div 
+                        key={outfit.id}
+                        onClick={() => handleShareOutfit(outfit.id)}
+                        className={`p-4 rounded-2xl border cursor-pointer transition-all hover:scale-[1.02] ${darkMode ? 'bg-gray-800 border-gray-700 hover:border-indigo-500' : 'bg-gray-50 border-gray-200 hover:border-indigo-500 hover:shadow-md'}`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-sm truncate pr-2">{outfit.ubicacion}</h4>
+                          <span className={`text-xs px-2 py-1 rounded-md font-bold ${darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'}`}>
+                            {outfit.isFavorite ? '❤️' : '👕'}
+                          </span>
+                        </div>
+                        <p className="text-xs opacity-70 line-clamp-2 mb-3">
+                          {recomendacion?.resumen || 'Detalles del outfit...'}
+                        </p>
+                        <div className="flex items-center justify-between text-xs font-bold opacity-60">
+                          <span>{new Date(outfit.createdAt).toLocaleDateString()}</span>
+                          <span className="flex items-center text-indigo-500 group-hover:underline">
+                            Compartir <Send size={12} className="ml-1" />
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </motion.div>
         </div>
       )}

@@ -322,41 +322,41 @@ const AdminView = ({ token }) => {
           <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2 px-4 min-w-max md:min-w-0">
             <button 
               onClick={() => setActiveTab('overview')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'overview' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'overview' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
               <BarChart2 size={18} /> <span className="whitespace-nowrap">Resumen</span>
             </button>
             <button 
               onClick={() => setActiveTab('users')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'users' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'users' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
               <Users size={18} /> <span className="whitespace-nowrap">Usuarios</span>
             </button>
             <button 
               onClick={() => setActiveTab('outfits')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'outfits' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'outfits' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
               <Database size={18} /> <span className="whitespace-nowrap">Outfits</span>
             </button>
             <button 
               onClick={() => setActiveTab('tickets')}
-              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'tickets' ? 'bg-gray-100 text-gray-900' : 'hover:bg-gray-50 hover:text-gray-900'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'tickets' ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
               <MessageSquare size={18} /> <span className="whitespace-nowrap">Tickets</span>
             </button>
             <button 
               onClick={() => setActiveTab('chats')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'chats' ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'chats' ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
-              <MessageSquare size={18} /> Moderar Chats
+              <MessageSquare size={18} /> <span className="whitespace-nowrap">Moderar Chats</span>
             </button>
             <button 
               onClick={() => setActiveTab('reports')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === 'reports' ? 'bg-red-600 text-white shadow-md shadow-red-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`flex-1 flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'reports' ? 'bg-red-600 text-white shadow-md shadow-red-500/20' : 'text-gray-600 hover:bg-gray-100'}`}
             >
-              <AlertCircle size={18} /> Reportes
+              <AlertCircle size={18} /> <span className="whitespace-nowrap">Reportes</span>
               {reports.filter(r => r.status === 'pending').length > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="ml-auto bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                   {reports.filter(r => r.status === 'pending').length}
                 </span>
               )}
@@ -1204,98 +1204,96 @@ const AdminView = ({ token }) => {
                   )}
                 </motion.div>
               )}
+
+              {activeTab === 'reports' && (
+                <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden flex flex-col min-h-[400px]">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <AlertCircle className="text-red-500" />
+                        Reportes de Comunidad
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">Revisa los reportes enviados por los usuarios en el chat.</p>
+                    </div>
+                    <button onClick={fetchReports} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
+                      <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+                      Actualizar
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-gray-50 border-y border-gray-100 text-gray-500 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-6 py-4 font-medium">Reportado (Baneado?)</th>
+                          <th className="px-6 py-4 font-medium">Reportado por</th>
+                          <th className="px-6 py-4 font-medium">Motivo</th>
+                          <th className="px-6 py-4 font-medium">Descripción</th>
+                          <th className="px-6 py-4 font-medium">Fecha</th>
+                          <th className="px-6 py-4 font-medium text-right">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {reports.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                              <div className="flex flex-col items-center justify-center">
+                                <Check size={40} className="text-green-400 mb-3" />
+                                <p className="text-lg font-medium text-gray-900">Todo limpio</p>
+                                <p>No hay reportes pendientes de revisar.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          reports.map(r => (
+                            <tr key={r.id} className={`hover:bg-gray-50 transition-colors ${r.status === 'resolved' ? 'opacity-50 bg-gray-50' : ''}`}>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-gray-900">{r.reported?.name || r.reported?.email}</span>
+                                  {r.reported?.isBanned && <span className="text-xs text-red-500 font-bold">BANEADO</span>}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-col">
+                                  <span className="text-gray-900">{r.reporter?.name || r.reporter?.email}</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  {r.reason}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 max-w-xs truncate" title={r.description}>
+                                {r.description || '-'}
+                              </td>
+                              <td className="px-6 py-4 text-gray-500 text-xs">
+                                {new Date(r.createdAt).toLocaleString()}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                {r.status === 'pending' ? (
+                                  <button 
+                                    onClick={() => handleResolveReport(r.id)}
+                                    className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors font-medium text-xs flex items-center gap-1 ml-auto"
+                                  >
+                                    <Check size={14} /> Resolver
+                                  </button>
+                                ) : (
+                                  <span className="text-xs font-bold text-gray-400">RESUELTO</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         )}
-
-        {/* REPORTS TAB */}
-        {activeTab === 'reports' && (
-          <div className="flex-1 p-6 overflow-y-auto">
-            <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden flex flex-col">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <AlertCircle className="text-red-500" />
-                    Reportes de Comunidad
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-1">Revisa los reportes enviados por los usuarios en el chat.</p>
-                </div>
-                <button onClick={fetchReports} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
-                  <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-                  Actualizar
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-x-auto min-h-[400px]">
-                <table className="w-full text-left text-sm whitespace-nowrap">
-                  <thead className="bg-gray-50 border-y border-gray-100 text-gray-500 sticky top-0 z-10">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">Reportado (Baneado?)</th>
-                      <th className="px-6 py-4 font-medium">Reportado por</th>
-                      <th className="px-6 py-4 font-medium">Motivo</th>
-                      <th className="px-6 py-4 font-medium">Descripción</th>
-                      <th className="px-6 py-4 font-medium">Fecha</th>
-                      <th className="px-6 py-4 font-medium text-right">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {reports.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center justify-center">
-                            <Check size={40} className="text-green-400 mb-3" />
-                            <p className="text-lg font-medium text-gray-900">Todo limpio</p>
-                            <p>No hay reportes pendientes de revisar.</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      reports.map(r => (
-                        <tr key={r.id} className={`hover:bg-gray-50 transition-colors ${r.status === 'resolved' ? 'opacity-50 bg-gray-50' : ''}`}>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-gray-900">{r.reported?.name || r.reported?.email}</span>
-                              {r.reported?.isBanned && <span className="text-xs text-red-500 font-bold">BANEADO</span>}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="text-gray-900">{r.reporter?.name || r.reporter?.email}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              {r.reason}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 max-w-xs truncate" title={r.description}>
-                            {r.description || '-'}
-                          </td>
-                          <td className="px-6 py-4 text-gray-500 text-xs">
-                            {new Date(r.createdAt).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            {r.status === 'pending' ? (
-                              <button 
-                                onClick={() => handleResolveReport(r.id)}
-                                className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors font-medium text-xs flex items-center gap-1 ml-auto"
-                              >
-                                <Check size={14} /> Resolver
-                              </button>
-                            ) : (
-                              <span className="text-xs font-bold text-gray-400">RESUELTO</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </div>
+
       {/* Ban Modal */}
       <AnimatePresence>
         {banModalOpen && userToBan && (

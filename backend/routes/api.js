@@ -504,6 +504,47 @@ router.delete('/historial/:id', authMiddleware, async (req, res) => {
   }
 });
 
+router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    // Buscar la consulta compartida
+    const sharedConsulta = await prisma.consulta.findUnique({ where: { id } });
+    if (!sharedConsulta) return res.status(404).json({ error: 'Consulta no encontrada' });
+
+    // Verificar si ya la tiene guardada (para no duplicar innecesariamente)
+    const existing = await prisma.consulta.findFirst({
+      where: {
+        userId: req.user.id,
+        ubicacion: sharedConsulta.ubicacion,
+        clima_json: sharedConsulta.clima_json,
+        recomendacion_json: sharedConsulta.recomendacion_json
+      }
+    });
+
+    if (existing) {
+      return res.json({ success: true, message: 'Ya tienes este outfit en tu historial', consulta: existing });
+    }
+
+    // Crear una copia para el usuario actual
+    const newConsulta = await prisma.consulta.create({
+      data: {
+        userId: req.user.id,
+        ubicacion: sharedConsulta.ubicacion,
+        clima_json: sharedConsulta.clima_json,
+        recomendacion_json: sharedConsulta.recomendacion_json,
+        isFavorite: true // Se guarda como favorito por defecto al ser compartido
+      }
+    });
+
+    res.json({ success: true, consulta: newConsulta });
+  } catch (error) {
+    console.error('Error al guardar outfit compartido:', error);
+    res.status(500).json({ error: 'Error al guardar el outfit compartido' });
+  }
+});
+
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
