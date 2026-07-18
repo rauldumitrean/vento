@@ -9,11 +9,11 @@ const AuthView = lazy(() => import('./components/AuthView'));
 const DashboardView = lazy(() => import('./components/DashboardView'));
 const AdminView = lazy(() => import('./components/AdminView'));
 const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
-const IosInstallPrompt = lazy(() => import('./components/IosInstallPrompt'));
-const TermsView = lazy(() => import('./components/TermsView'));
-const PrivacyView = lazy(() => import('./components/PrivacyView'));
-const SupportView = lazy(() => import('./components/SupportView'));
-const CookieBanner = lazy(() => import('./components/CookieBanner'));
+import IosInstallPrompt from './components/IosInstallPrompt';
+import TermsView from './components/TermsView';
+import PrivacyView from './components/PrivacyView';
+import SupportView from './components/SupportView';
+import CookieBanner from './components/CookieBanner';
 
 const LoginRedirect = () => {
   const location = useLocation();
@@ -137,12 +137,8 @@ function App() {
             <Route path="/privacy" element={<PrivacyView />} />
           </Routes>
         </Suspense>
-        <Suspense fallback={null}>
-          <IosInstallPrompt />
-        </Suspense>
-        <Suspense fallback={null}>
-          <CookieBanner />
-        </Suspense>
+        <IosInstallPrompt />
+        <CookieBanner />
       </div>
     </BrowserRouter>
   );

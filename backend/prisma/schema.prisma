@@ -49,6 +49,7 @@ model Consulta {
   recomendacion_json String
   createdAt          DateTime @default(now())
   isFavorite         Boolean  @default(false)
+  isShared           Boolean  @default(false)
   user               User     @relation(fields: [userId], references: [id])
   mensajes           MensajeChat[]
   directMessages     DirectMessage[]

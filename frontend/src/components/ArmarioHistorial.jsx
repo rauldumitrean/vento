@@ -9,6 +9,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const ArmarioHistorial = ({ token, darkMode }) => {
   const [activeTab, setActiveTab] = useState('armario');
+  const [historialFilter, setHistorialFilter] = useState('mis_generaciones');
   const [armario, setArmario] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [nuevaPrenda, setNuevaPrenda] = useState({ categoria: 'top', descripcion: '', color: '' });
@@ -227,10 +228,37 @@ const ArmarioHistorial = ({ token, darkMode }) => {
         </div>
       ) : (
         <div className="space-y-6">
-          {historial.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No tienes historial de consultas todavía.</p>
-          ) : (
-            historial.map(h => {
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+            <button
+              onClick={() => setHistorialFilter('mis_generaciones')}
+              className={`pb-3 px-4 font-bold text-sm transition-colors border-b-2 ${historialFilter === 'mis_generaciones' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+            >
+              Mis Generaciones
+            </button>
+            <button
+              onClick={() => setHistorialFilter('compartidos')}
+              className={`pb-3 px-4 font-bold text-sm transition-colors border-b-2 flex items-center gap-2 ${historialFilter === 'compartidos' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+            >
+              <Users size={16} /> De mis Amigos
+            </button>
+          </div>
+
+          {(() => {
+            const displayHistorial = historial.filter(h => historialFilter === 'compartidos' ? h.isShared : !h.isShared);
+
+            if (displayHistorial.length === 0) {
+              return (
+                <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                  <p className="text-gray-500">
+                    {historialFilter === 'compartidos' 
+                      ? 'No tienes outfits guardados de tus amigos.' 
+                      : 'No tienes historial de consultas todavía.'}
+                  </p>
+                </div>
+              );
+            }
+
+            return displayHistorial.map(h => {
               // FIX: JSON.parse wrapped in try/catch to avoid crashes on malformed data
               let clima = {};
               let outfit = { resumen: '', prendas: [] };
@@ -277,8 +305,8 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                   </div>
                 </div>
               );
-            })
-          )}
+            });
+          })()}
         </div>
       )}
 

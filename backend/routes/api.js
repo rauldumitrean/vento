@@ -534,7 +534,8 @@ router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
         ubicacion: sharedConsulta.ubicacion,
         clima_json: sharedConsulta.clima_json,
         recomendacion_json: sharedConsulta.recomendacion_json,
-        isFavorite: true // Se guarda como favorito por defecto al ser compartido
+        isFavorite: true, // Se guarda como favorito por defecto al ser compartido
+        isShared: true
       }
     });
 
