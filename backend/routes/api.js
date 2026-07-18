@@ -258,15 +258,16 @@ ${ageText}
 ${styleText}
 ${armarioText}
 
-Genera un outfit elegante y moderno, combinando prendas adecuadamente.
+Genera un outfit de altísimo nivel, elegante, moderno y estéticamente superior, combinando prendas adecuadamente.
+CRÍTICO para la generación de imágenes: La "descripcion" de cada prenda DEBE ser extremadamente detallada, visual y específica. Incluye el tipo de tejido, corte, color exacto y estilo (ej. no digas "Camiseta blanca", di "Camiseta oversize de algodón pesado premium en color blanco roto con corte urbano").
 Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin texto markdown ni explicaciones adicionales fuera del JSON:
 {
   "resumen": "Un resumen corto del por qué elegiste esto",
   "prendas": [
     { 
       "categoria": "top", 
-      "descripcion": "ej. Camiseta básica blanca de algodón", 
-      "razon": "ej. Fresca para la temperatura",
+      "descripcion": "ej. Sobrecamisa de pana gruesa en tono terracota con botones vintage y corte relajado", 
+      "razon": "ej. Aporta textura y abrigo ligero perfecto para la transición climática",
       "tienda_recomendada": "Amazon",
       "enlace_compra": "https://www.amazon.es/s?k=camiseta+basica+blanca+algodon&tag=${amazonTag}"
     },

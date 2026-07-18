@@ -37,7 +37,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       }, 30000);
 
       try {
-        const simplePrompt = `${prenda.descripcion}, product photography, flat lay, white background, no humans`.trim();
+        // Ultra-mejora del prompt visual para aprovechar al máximo Flux.1 Schnell
+        const simplePrompt = `A single standalone piece of clothing: ${prenda.descripcion}. High-end fashion editorial photography, cinematic studio lighting, 8k resolution, photorealistic, trendy streetwear catalog style, clean modern minimalist textured background, highly detailed fabric textures, premium look, no humans, no text, no mannequins`.trim();
         
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const res = await axios.post(
