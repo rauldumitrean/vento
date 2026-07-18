@@ -175,7 +175,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
 };
 
 // Manages sequential image loading: card 0 first, then card 1, then card 2...
-const OutfitGrid = ({ prendas, darkMode }) => {
+const OutfitGrid = ({ prendas, darkMode, token }) => {
   const [loadIndex, setLoadIndex] = useState(0);
   const handleLoadComplete = () => setLoadIndex(prev => prev + 1);
 
@@ -195,7 +195,7 @@ const OutfitGrid = ({ prendas, darkMode }) => {
   );
 };
 
-const ChatMessage = ({ msg, darkMode }) => {
+const ChatMessage = ({ msg, darkMode, token }) => {
   if (msg.role === 'user') {
     return (
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col items-end gap-2 max-w-[85%] self-end">
@@ -635,7 +635,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         ) : (
           <>
             {chat.map((msg, idx) => (
-              <ChatMessage key={idx} msg={msg} darkMode={darkMode} />
+              <ChatMessage key={idx} msg={msg} darkMode={darkMode} token={token} />
             ))}
             {isChatLoading && (
               <div className="flex justify-start">
@@ -910,7 +910,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 
                 <p className="mb-6 italic opacity-80">"{outfit.resumen}"</p>
                 
-                <OutfitGrid prendas={outfit.prendas} darkMode={darkMode} />
+                <OutfitGrid prendas={outfit.prendas} darkMode={darkMode} token={token} />
                 
                 {outfit.consejo_extra && (
                   <div className={`mt-6 p-4 rounded-lg text-sm border ${darkMode ? 'bg-indigo-900/20 border-indigo-500/20 text-indigo-200' : 'bg-neutral-50 border-neutral-200 text-neutral-700'}`}>
