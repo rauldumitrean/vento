@@ -334,8 +334,11 @@ export default function LandingView({ setToken }) {
                     </button>
                   </div>
                 ) : (
-                  <div className="pt-2 pb-2">
-                    <button onClick={() => { setIsMobileMenuOpen(false); navigate('/app'); }} className="w-full sm:w-auto px-8 py-3 text-center bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
+                  <div className="pt-2 pb-2 flex items-center gap-3">
+                    {localStorage.getItem('userProfilePicture') && (
+                      <img src={localStorage.getItem('userProfilePicture')} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-indigo-500/50" />
+                    )}
+                    <button onClick={() => { setIsMobileMenuOpen(false); navigate('/app'); }} className="flex-1 sm:w-auto px-8 py-3 text-center bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
                       Ir al Panel <ArrowRight size={16} />
                     </button>
                   </div>
@@ -383,19 +386,36 @@ export default function LandingView({ setToken }) {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <button
-              onClick={() => goAuth({ isRegister: true, plan: 'free' })}
-              className="group w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-gray-100 transition-all flex items-center justify-center gap-3 text-base shadow-[0_0_40px_rgba(255,255,255,0.1)]"
-            >
-              Empezar gratis
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
-              onClick={() => { const el = document.getElementById('pricing'); el?.scrollIntoView({ behavior: 'smooth' }); }}
-              className="w-full sm:w-auto px-8 py-4 border border-white/15 text-gray-300 font-medium rounded-xl hover:border-white/30 hover:text-white transition-all text-base"
-            >
-              Ver precios
-            </button>
+            {localStorage.getItem('token') ? (
+              <div className="flex items-center gap-4 p-2 pr-4 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.05] transition-colors">
+                {localStorage.getItem('userProfilePicture') && (
+                  <img src={localStorage.getItem('userProfilePicture')} alt="Avatar" className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500/50" />
+                )}
+                <button
+                  onClick={() => navigate('/app')}
+                  className="group px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 text-base shadow-[0_0_40px_rgba(79,70,229,0.3)]"
+                >
+                  Ir al Panel
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => goAuth({ isRegister: true, plan: 'free' })}
+                  className="group w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-gray-100 transition-all flex items-center justify-center gap-3 text-base shadow-[0_0_40px_rgba(255,255,255,0.1)]"
+                >
+                  Empezar gratis
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button
+                  onClick={() => { const el = document.getElementById('pricing'); el?.scrollIntoView({ behavior: 'smooth' }); }}
+                  className="w-full sm:w-auto px-8 py-4 border border-white/15 text-gray-300 font-medium rounded-xl hover:border-white/30 hover:text-white transition-all text-base"
+                >
+                  Ver precios
+                </button>
+              </>
+            )}
           </motion.div>
 
           {/* Trust bar */}
