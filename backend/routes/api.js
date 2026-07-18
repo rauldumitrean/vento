@@ -85,6 +85,48 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
   }
 });
 
+// Endpoint para generar imágenes con NVIDIA NIM (Flux.1 Schnell)
+router.post('/generate-image', authMiddleware, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Se requiere un prompt' });
+
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'La API Key de NVIDIA no está configurada en el servidor.' });
+    }
+
+    const response = await axios.post(
+      'https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell',
+      {
+        prompt: prompt,
+        width: 1024,
+        height: 1024,
+        steps: 4,
+        seed: Math.floor(Math.random() * 1000000)
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    // NVIDIA returns base64 string in response.data.data[0].b64_json or similar structure
+    // Let's handle the typical OpenAI-like response format that NIM uses for images
+    if (response.data && response.data.data && response.data.data[0] && response.data.data[0].b64_json) {
+      res.json({ imageBase64: `data:image/jpeg;base64,${response.data.data[0].b64_json}` });
+    } else {
+      res.status(500).json({ error: 'Formato de respuesta inesperado de NVIDIA' });
+    }
+  } catch (error) {
+    console.error('Error en generación de imagen NVIDIA:', error?.response?.data || error.message);
+    res.status(500).json({ error: 'Error al generar la imagen con IA' });
+  }
+});
+
 // Cache in-memory simple para el clima
 const weatherCache = new Map();
 

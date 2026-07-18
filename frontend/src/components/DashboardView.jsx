@@ -14,32 +14,62 @@ import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 import VerticalAd from './VerticalAd';
 
-const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete }) => {
+const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
 
-  const buildPromptUrl = () => {
-    const simplePrompt = `${prenda.descripcion}, product photography, flat lay, white background, no humans`.trim();
-    return `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=300&height=300&model=flux-schnell&nologo=true&enhance=false&seed=${loadAttempt}`;
-  };
-
   useEffect(() => {
     let timeoutId;
-    if (canLoad && imgStatus === 'waiting') {
-      setImgStatus('loading');
-      setImgSrc(buildPromptUrl());
+    let isMounted = true;
+
+    const fetchImage = async () => {
+      if (!canLoad || imgStatus !== 'waiting') return;
       
-      // 20 second timeout - Pollinations can be slow
+      setImgStatus('loading');
+      
+      // 30 second timeout for NVIDIA NIM API 
       timeoutId = setTimeout(() => {
-        setImgStatus('error');
-        if (onLoadComplete) onLoadComplete();
-      }, 20000);
-    }
+        if (isMounted) {
+          setImgStatus('error');
+          if (onLoadComplete) onLoadComplete();
+        }
+      }, 30000);
+
+      try {
+        const simplePrompt = `${prenda.descripcion}, product photography, flat lay, white background, no humans`.trim();
+        
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const res = await axios.post(
+          `${apiUrl}/api/generate-image`,
+          { prompt: simplePrompt },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (isMounted && res.data && res.data.imageBase64) {
+          clearTimeout(timeoutId);
+          setImgSrc(res.data.imageBase64);
+          // Wait for <img onLoad> to set 'loaded'
+        } else {
+          throw new Error('No image returned');
+        }
+      } catch (err) {
+        console.error('Error fetching image:', err);
+        if (isMounted) {
+          clearTimeout(timeoutId);
+          setImgStatus('error');
+          if (onLoadComplete) onLoadComplete();
+        }
+      }
+    };
+
+    fetchImage();
+
     return () => {
+      isMounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [canLoad, imgStatus, loadAttempt]);
+  }, [canLoad, imgStatus, loadAttempt, prenda.descripcion, token]);
 
   const handleSuccess = () => {
     if (imgStatus !== 'loaded') {
@@ -157,6 +187,7 @@ const OutfitGrid = ({ prendas, darkMode }) => {
           darkMode={darkMode}
           canLoad={idx <= loadIndex}
           onLoadComplete={idx === loadIndex ? handleLoadComplete : undefined}
+          token={token}
         />
       ))}
     </div>
@@ -203,7 +234,7 @@ const ChatMessage = ({ msg, darkMode }) => {
       {nuevasPrendas.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
           {nuevasPrendas.map((prenda, idx) => (
-            <PrendaCard key={idx} prenda={prenda} darkMode={darkMode} canLoad={true} />
+            <PrendaCard key={idx} prenda={prenda} darkMode={darkMode} canLoad={true} token={token} />
           ))}
         </div>
       )}
