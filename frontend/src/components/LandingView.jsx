@@ -284,26 +284,66 @@ export default function LandingView({ setToken }) {
             <Cloud className="text-indigo-400" size={26} />
             <span className="text-lg font-black tracking-widest text-white">VENTOO</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
+          <div className="hidden lg:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Funciones</a>
             <a href="#how" className="hover:text-white transition-colors">Cómo funciona</a>
             <a href="#pricing" className="hover:text-white transition-colors">Precios</a>
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            {!localStorage.getItem('token') ? (
-              <>
-                <button onClick={() => navigate('/login')} className="px-4 py-2 text-gray-300 text-sm font-medium hover:text-white transition-colors">Entrar</button>
-                <button onClick={() => navigate('/login', { state: { isRegister: true } })} className="px-5 py-2 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-100 transition-colors">
-                  Registrarse
-                </button>
-              </>
-            ) : (
-              <button onClick={() => navigate('/app')} className="px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-500 transition-colors flex items-center gap-2">
-                Panel <ArrowRight size={15} />
-              </button>
-            )}
+
+          {/* Hamburger Menu Button */}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-gray-300 hover:text-white p-2 transition-colors flex items-center gap-2"
+            >
+              <span className="hidden md:block text-sm font-medium mr-1">Menú</span>
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
+
+        {/* Menu Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="border-t border-white/10 bg-black/95 backdrop-blur-2xl overflow-hidden shadow-2xl"
+            >
+              <div className="flex flex-col px-6 py-6 space-y-4 max-w-7xl mx-auto">
+                <div className="lg:hidden flex flex-col space-y-4 pb-4 border-b border-white/10">
+                  <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium">Funciones</a>
+                  <a href="#how" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium">Cómo funciona</a>
+                  <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-300 hover:text-white font-medium">Precios</a>
+                </div>
+                
+                <button onClick={() => { setIsMobileMenuOpen(false); navigate('/support'); }} className="text-left text-gray-300 hover:text-white font-medium pt-2">Soporte técnico</button>
+                <button onClick={() => { setIsMobileMenuOpen(false); navigate('/terms'); }} className="text-left text-gray-300 hover:text-white font-medium">Términos de Servicio</button>
+                <button onClick={() => { setIsMobileMenuOpen(false); navigate('/privacy'); }} className="text-left text-gray-300 hover:text-white font-medium">Política de Privacidad</button>
+                
+                <div className="h-px bg-white/10 w-full my-4"></div>
+                
+                {!localStorage.getItem('token') ? (
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2 pb-2">
+                    <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} className="flex-1 py-3 text-center border border-white/20 text-white font-bold rounded-xl hover:bg-white/5 transition-colors">
+                      Iniciar sesión
+                    </button>
+                    <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login', { state: { isRegister: true } }); }} className="flex-1 py-3 text-center bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors">
+                      Registrarse
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-2 pb-2">
+                    <button onClick={() => { setIsMobileMenuOpen(false); navigate('/app'); }} className="w-full sm:w-auto px-8 py-3 text-center bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
+                      Ir al Panel <ArrowRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* ── Hero ── */}
