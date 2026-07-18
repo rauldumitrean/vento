@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React from 'react';
 import { Search, Shirt, User, Users, Sun, Moon, LogOut, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
   const navigate = useNavigate();
 
-  const profilePicture = localStorage.getItem('userProfilePicture');
+  const profilePicture = Cookies.get('userProfilePicture');
 
   const navItems = [
     { id: 'dashboard', icon: Search, label: 'Inicio' },

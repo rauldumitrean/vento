@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,14 +11,14 @@ export default function BanView({ banDetails, setBannedData, onLogout }) {
   const handleRefresh = async () => {
     setChecking(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = Cookies.get('token');
       // Intenta hacer ping al servidor. Si ya no está baneado, devolverá 200 OK.
       await axios.post(`${API_URL}/api/ping`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Si llega aquí, significa que el ban ha sido levantado
       setBannedData(null);
-      localStorage.removeItem('bannedData');
+      Cookies.remove('bannedData');
     } catch (err) {
       // Si sigue baneado, el interceptor volverá a dispararse (o simplemente lo ignoramos aquí)
     } finally {

@@ -15,6 +15,7 @@
     "@yudiel/react-qr-scanner": "^2.6.0",
     "axios": "^1.18.1",
     "framer-motion": "^12.42.2",
+    "js-cookie": "^3.0.8",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-apple-signin-auth": "^1.2.1",

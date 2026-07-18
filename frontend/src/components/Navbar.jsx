@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React from 'react';
 // FIX: Removed unused imports: Wind, MapPin
 import { Sun, Moon, Shirt, LogOut, Search, Users } from 'lucide-react';
@@ -6,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const Navbar = ({ view, setView, darkMode, setDarkMode, handleLogout }) => {
   const navigate = useNavigate();
 
-  const profilePicture = localStorage.getItem('userProfilePicture');
+  const profilePicture = Cookies.get('userProfilePicture');
 
   return (
     <nav className={`w-full hidden md:flex flex-wrap items-center justify-between gap-4 p-4 mb-4 sm:mb-8 backdrop-blur-md sticky top-0 z-50 transition-colors border-b ${darkMode ? 'bg-gray-950/60 border-white/10' : 'bg-white/70 border-white shadow-sm'}`}>

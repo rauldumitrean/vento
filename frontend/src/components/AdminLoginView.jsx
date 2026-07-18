@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Shield, Lock } from 'lucide-react';
@@ -142,7 +143,7 @@ const AdminLoginView = ({ setAdminToken }) => {
             <button 
               onClick={() => {
                 // FIX: Clear adminToken when navigating back to avoid stale session
-                localStorage.removeItem('adminToken');
+                Cookies.remove('adminToken');
                 navigate('/');
               }}
               className="text-gray-500 hover:text-white text-sm transition-colors"

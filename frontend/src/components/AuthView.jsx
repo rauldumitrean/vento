@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,15 +30,15 @@ export default function AuthView({ setToken }) {
   const [banDetails, setBanDetails] = useState(null);
 
   useEffect(() => {
-    const bannedData = localStorage.getItem('bannedData');
+    const bannedData = Cookies.get('bannedData');
     if (bannedData) {
       try {
         const parsed = JSON.parse(bannedData);
         setIsBannedError(true);
         setBanDetails(parsed);
-        localStorage.removeItem('bannedData');
+        Cookies.remove('bannedData');
       } catch (e) {
-        localStorage.removeItem('bannedData');
+        Cookies.remove('bannedData');
       }
     }
   }, []);
@@ -48,12 +49,12 @@ export default function AuthView({ setToken }) {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
-      localStorage.setItem('userRole', res.data.user?.role || 'USER');
-      if (res.data.user?.name) localStorage.setItem('userName', res.data.user.name);
-      if (res.data.user?.gender) localStorage.setItem('userGender', res.data.user.gender);
-      if (res.data.user?.age) localStorage.setItem('userAge', res.data.user.age);
-      if (res.data.user?.isPremium !== undefined) localStorage.setItem('isPremium', res.data.user.isPremium);
-      if (res.data.user?.premiumPlan) localStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+      Cookies.set('userRole', res.data.user?.role || 'USER', { expires: 365 });
+      if (res.data.user?.name) Cookies.set('userName', res.data.user.name, { expires: 365 });
+      if (res.data.user?.gender) Cookies.set('userGender', res.data.user.gender, { expires: 365 });
+      if (res.data.user?.age) Cookies.set('userAge', res.data.user.age, { expires: 365 });
+      if (res.data.user?.isPremium !== undefined) Cookies.set('isPremium', res.data.user.isPremium, { expires: 365 });
+      if (res.data.user?.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
       
       if (location.state?.plan && location.state.plan !== 'free') {
         try {
@@ -61,7 +62,7 @@ export default function AuthView({ setToken }) {
             headers: { Authorization: `Bearer ${res.data.token}` }
           });
           if (checkoutRes.data.url) {
-            localStorage.setItem('token', res.data.token);
+            Cookies.set('token', res.data.token, { expires: 365 });
             window.location.href = checkoutRes.data.url;
             return;
           }
@@ -95,10 +96,10 @@ export default function AuthView({ setToken }) {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/api/auth/google`, { token: credentialResponse.credential });
-      localStorage.setItem('userRole', res.data.user?.role || 'USER');
-      if (res.data.user?.name) localStorage.setItem('userName', res.data.user.name);
-      if (res.data.user?.isPremium !== undefined) localStorage.setItem('isPremium', res.data.user.isPremium);
-      if (res.data.user?.premiumPlan) localStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+      Cookies.set('userRole', res.data.user?.role || 'USER', { expires: 365 });
+      if (res.data.user?.name) Cookies.set('userName', res.data.user.name, { expires: 365 });
+      if (res.data.user?.isPremium !== undefined) Cookies.set('isPremium', res.data.user.isPremium, { expires: 365 });
+      if (res.data.user?.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
       
       setToken(res.data.token);
     } catch (err) {
@@ -120,7 +121,7 @@ export default function AuthView({ setToken }) {
         headers: { Authorization: `Bearer ${pendingAuth.token}` }
       });
       if (res.data.url) {
-        localStorage.setItem('token', pendingAuth.token);
+        Cookies.set('token', pendingAuth.token, { expires: 365 });
         window.location.href = res.data.url;
       }
     } catch (err) {

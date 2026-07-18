@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera } from 'lucide-react';
@@ -5,12 +6,12 @@ import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartp
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function ProfileSettings({ token, darkMode, onLogout }) {
-  const [name, setName] = useState(localStorage.getItem('userName') || '');
-  const [gender, setGender] = useState(localStorage.getItem('userGender') || 'Mujer');
-  const [age, setAge] = useState(localStorage.getItem('userAge') || '');
+  const [name, setName] = useState(Cookies.get('userName') || '');
+  const [gender, setGender] = useState(Cookies.get('userGender') || 'Mujer');
+  const [age, setAge] = useState(Cookies.get('userAge') || '');
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
-  const [profilePicture, setProfilePicture] = useState(localStorage.getItem('userProfilePicture') || '');
+  const [profilePicture, setProfilePicture] = useState(Cookies.get('userProfilePicture') || '');
   const [historyCount, setHistoryCount] = useState(0);
   const [dailyCount, setDailyCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -20,8 +21,8 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
   const [reportMessage, setReportMessage] = useState('');
   const [reportStatus, setReportStatus] = useState('idle'); // idle | loading | success | error
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [isPremium, setIsPremium] = useState(localStorage.getItem('isPremium') === 'true');
-  const [premiumPlan, setPremiumPlan] = useState(localStorage.getItem('premiumPlan') || null);
+  const [isPremium, setIsPremium] = useState(Cookies.get('isPremium') === 'true');
+  const [premiumPlan, setPremiumPlan] = useState(Cookies.get('premiumPlan') || null);
   
   const [activeAccordion, setActiveAccordion] = useState('personal');
 
@@ -38,18 +39,18 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
           setProfilePicture(res.data.user.profilePicture || '');
-          localStorage.setItem('userProfilePicture', res.data.user.profilePicture || '');
+          Cookies.set('userProfilePicture', res.data.user.profilePicture || '', { expires: 365 });
           setHistoryCount(res.data.user.historyCount || 0);
           setDailyCount(res.data.user.dailyCount || 0);
           
           setIsPremium(res.data.user.isPremium || false);
-          localStorage.setItem('isPremium', res.data.user.isPremium ? 'true' : 'false');
+          Cookies.set('isPremium', res.data.user.isPremium ? 'true' : 'false', { expires: 365 });
           
           setPremiumPlan(res.data.user.premiumPlan || null);
           if (res.data.user.premiumPlan) {
-            localStorage.setItem('premiumPlan', res.data.user.premiumPlan);
+            Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
           } else {
-            localStorage.removeItem('premiumPlan');
+            Cookies.remove('premiumPlan');
           }
         }
       } catch (err) {
@@ -87,7 +88,7 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         
         if (res.data.profilePicture) {
           setProfilePicture(res.data.profilePicture);
-          localStorage.setItem('userProfilePicture', res.data.profilePicture);
+          Cookies.set('userProfilePicture', res.data.profilePicture, { expires: 365 });
           setMessage('Foto de perfil actualizada con éxito.');
         }
       } catch (err) {
@@ -108,9 +109,9 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
       const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      localStorage.setItem('userName', res.data.user.name);
-      localStorage.setItem('userGender', res.data.user.gender);
-      localStorage.setItem('userAge', res.data.user.age || '');
+      Cookies.set('userName', res.data.user.name, { expires: 365 });
+      Cookies.set('userGender', res.data.user.gender, { expires: 365 });
+      Cookies.set('userAge', res.data.user.age || '', { expires: 365 });
       setDailyCount(res.data.user.dailyCount || 0);
       setMessage('Perfil actualizado con éxito');
       setTimeout(() => setMessage(''), 4000);
@@ -147,8 +148,8 @@ export default function ProfileSettings({ token, darkMode, onLogout }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
-        localStorage.setItem('isPremium', 'false');
-        localStorage.removeItem('premiumPlan');
+        Cookies.set('isPremium', 'false', { expires: 365 });
+        Cookies.remove('premiumPlan');
         setMessage('Suscripción cancelada correctamente.');
         setShowCancelModal(false);
         setTimeout(() => window.location.reload(), 2000);

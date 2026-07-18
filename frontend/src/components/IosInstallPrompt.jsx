@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share, PlusSquare, X } from 'lucide-react';
@@ -38,7 +39,7 @@ const IosInstallPrompt = () => {
 
     // Only show if iOS, Safari, not already installed, and hasn't been dismissed recently
     if (isIos() && isSafari() && !isStandalone()) {
-      const hasDismissed = localStorage.getItem('ios-pwa-dismissed-v2');
+      const hasDismissed = Cookies.get('ios-pwa-dismissed-v2');
       if (!hasDismissed) {
         // Delay prompt slightly so it's not jarring on immediate load
         const timer = setTimeout(() => {
@@ -57,7 +58,7 @@ const IosInstallPrompt = () => {
   const handleDismiss = () => {
     setShowPrompt(false);
     // Hide permanently once dismissed to not annoy the user
-    localStorage.setItem('ios-pwa-dismissed-v2', 'true');
+    Cookies.set('ios-pwa-dismissed-v2', 'true', { expires: 365 });
   };
 
   return (

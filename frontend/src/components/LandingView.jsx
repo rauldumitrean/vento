@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, Check, Search, CalendarDays, MonitorPlay, ThermometerSun, Image as ImageIcon, Archive, Infinity as InfinityIcon, Ban, MessageSquareText, Layers, Wand2, Gem, CreditCard, Gift, History, Shield, ChevronDown, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -248,13 +249,13 @@ export default function LandingView({ setToken }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Comprobar si hay un usuario premium conectado para ocultar anuncios
-  const isPremium = localStorage.getItem('isPremium') === 'true';
+  const isPremium = Cookies.get('isPremium') === 'true';
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
   const heroY = useTransform(scrollY, [0, 400], [0, -60]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  const goAuth = (opts = {}) => navigate(localStorage.getItem('token') ? '/app' : '/login', { state: opts });
+  const goAuth = (opts = {}) => navigate(Cookies.get('token') ? '/app' : '/login', { state: opts });
 
   return (
     <div className="min-h-[100dvh] bg-[#0A0A0B] text-white selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden flex justify-center">
@@ -324,7 +325,7 @@ export default function LandingView({ setToken }) {
                 
                 <div className="h-px bg-white/10 w-full my-4"></div>
                 
-                {!localStorage.getItem('token') ? (
+                {!Cookies.get('token') ? (
                   <div className="flex flex-col sm:flex-row gap-3 pt-2 pb-2">
                     <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} className="flex-1 py-3 text-center border border-white/20 text-white font-bold rounded-xl hover:bg-white/5 transition-colors">
                       Iniciar sesión
@@ -335,8 +336,8 @@ export default function LandingView({ setToken }) {
                   </div>
                 ) : (
                   <div className="pt-2 pb-2 flex items-center gap-3">
-                    {localStorage.getItem('userProfilePicture') && (
-                      <img src={localStorage.getItem('userProfilePicture')} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-indigo-500/50" />
+                    {Cookies.get('userProfilePicture') && (
+                      <img src={Cookies.get('userProfilePicture')} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-indigo-500/50" />
                     )}
                     <button onClick={() => { setIsMobileMenuOpen(false); navigate('/app'); }} className="flex-1 sm:w-auto px-8 py-3 text-center bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
                       Ir al Panel <ArrowRight size={16} />
@@ -386,10 +387,10 @@ export default function LandingView({ setToken }) {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            {localStorage.getItem('token') ? (
+            {Cookies.get('token') ? (
               <div className="flex items-center gap-4 p-2 pr-4 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.05] transition-colors">
-                {localStorage.getItem('userProfilePicture') && (
-                  <img src={localStorage.getItem('userProfilePicture')} alt="Avatar" className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500/50" />
+                {Cookies.get('userProfilePicture') && (
+                  <img src={Cookies.get('userProfilePicture')} alt="Avatar" className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500/50" />
                 )}
                 <button
                   onClick={() => navigate('/app')}
@@ -533,14 +534,14 @@ export default function LandingView({ setToken }) {
               accent="gray" plan="Básico" price="Gratis" period=""
               desc="Perfecto para probar Ventoo. Financiado con anuncios."
               features={['5 outfits diarios', 'Análisis climático básico', 'Imágenes IA estándar', 'Armario virtual (hasta 20 prendas)', 'Historial de 15 outfits']}
-              cta={localStorage.getItem('token') ? 'Ir a mi panel' : 'Comenzar gratis'}
+              cta={Cookies.get('token') ? 'Ir a mi panel' : 'Comenzar gratis'}
               onClick={() => goAuth({ isRegister: true, plan: 'free' })}
             />
             <PricingCard
               accent="indigo" plan="Premium Mensual" price="1,99€" period="/mes"
               desc="Todo el potencial de Ventoo sin compromiso a largo plazo."
               features={['Outfits ilimitados', '100% sin anuncios', 'Visión por IA (sube fotos)', 'Chatbot de estilo avanzado', 'Armario virtual infinito', 'Historial de 50 outfits', 'Acceso a funciones beta']}
-              cta={localStorage.getItem('token') ? 'Mejorar a Mensual' : 'Suscribirse por 1,99€'}
+              cta={Cookies.get('token') ? 'Mejorar a Mensual' : 'Suscribirse por 1,99€'}
               badge={<><Zap size={13} fill="currentColor" /> POPULAR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'monthly' })}
             />
@@ -548,7 +549,7 @@ export default function LandingView({ setToken }) {
               accent="purple" plan="Premium Lifetime" price="20€" period=" pago único"
               desc="Paga una sola vez y disfruta de Ventoo Premium para siempre."
               features={['Todo lo incluido en Mensual', 'Pago único sin recurrencias', 'Acceso vitalicio garantizado', 'Todas las mejoras futuras', 'Estatus de Usuario Fundador']}
-              cta={localStorage.getItem('token') ? 'Comprar pase vitalicio' : 'Adquirir por 20€'}
+              cta={Cookies.get('token') ? 'Comprar pase vitalicio' : 'Adquirir por 20€'}
               badge={<><Crown size={13} fill="currentColor" /> MEJOR VALOR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'lifetime' })}
             />

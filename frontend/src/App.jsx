@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import axios from 'axios';
@@ -31,17 +32,17 @@ const GlobalBanOverlay = ({ token, bannedData, setBannedData, setToken }) => {
       onLogout={() => {
         setToken(null);
         setBannedData(null);
-        localStorage.removeItem('bannedData');
+        Cookies.remove('bannedData');
       }} 
     />
   );
 };
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken'));
+  const [token, setToken] = useState(Cookies.get('token'));
+  const [adminToken, setAdminToken] = useState(Cookies.get('adminToken'));
   const [bannedData, setBannedData] = useState(() => {
-    const data = localStorage.getItem('bannedData');
+    const data = Cookies.get('bannedData');
     return data ? JSON.parse(data) : null;
   });
   
@@ -54,14 +55,14 @@ function App() {
             // If the token is invalid or the user was deleted, log them out
             setToken(null);
             setBannedData(null);
-            localStorage.removeItem('bannedData');
+            Cookies.remove('bannedData');
           } else if (error.response.status === 403 && error.response.data?.error === 'BANNED') {
             // Real-time ban enforcement
             const banInfo = {
               bannedUntil: error.response.data.bannedUntil,
               banReason: error.response.data.banReason
             };
-            localStorage.setItem('bannedData', JSON.stringify(banInfo));
+            Cookies.set('bannedData', JSON.stringify(banInfo, { expires: 365 }));
             setBannedData(banInfo);
             // Do NOT setToken(null) here so we can refresh the token status later
           }
@@ -74,29 +75,29 @@ function App() {
 
   useEffect(() => {
     if (token) {
-      localStorage.setItem('token', token);
+      Cookies.set('token', token, { expires: 365 });
     } else {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userName');
-      localStorage.removeItem('userGender');
-      localStorage.removeItem('isPremium');
-      localStorage.removeItem('premiumPlan');
-      localStorage.removeItem('pendingCheckout');
-      localStorage.removeItem('adShown');
+      Cookies.remove('token');
+      Cookies.remove('userRole');
+      Cookies.remove('userName');
+      Cookies.remove('userGender');
+      Cookies.remove('isPremium');
+      Cookies.remove('premiumPlan');
+      Cookies.remove('pendingCheckout');
+      Cookies.remove('adShown');
       // Asegurarse de que si se borra el token, se limpie el banData
       if (bannedData) {
         setBannedData(null);
-        localStorage.removeItem('bannedData');
+        Cookies.remove('bannedData');
       }
     }
   }, [token]);
 
   useEffect(() => {
     if (adminToken) {
-      localStorage.setItem('adminToken', adminToken);
+      Cookies.set('adminToken', adminToken, { expires: 365 });
     } else {
-      localStorage.removeItem('adminToken');
+      Cookies.remove('adminToken');
     }
   }, [adminToken]);
 

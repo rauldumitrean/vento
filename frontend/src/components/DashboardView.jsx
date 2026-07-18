@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -211,11 +212,11 @@ const ChatMessage = ({ msg, darkMode }) => {
 
 export default function DashboardView({ token, defaultView = 'dashboard', onLogout }) {
   const [showAd, setShowAd] = useState(() => {
-    if (localStorage.getItem('isPremium') === 'true') return false;
-    return !localStorage.getItem('adShown');
+    if (Cookies.get('isPremium') === 'true') return false;
+    return !Cookies.get('adShown');
   });
   const [view, setView] = useState(defaultView); // 'dashboard' | 'armario' | 'admin'
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+  const [darkMode, setDarkMode] = useState(Cookies.get('darkMode') === 'true');
   // FIX: Added toast state to replace alert() calls
   const [toast, setToast] = useState(null);
   
@@ -235,8 +236,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const userName = localStorage.getItem('userName');
-  const isPremium = localStorage.getItem('isPremium') === 'true';
+  const userName = Cookies.get('userName');
+  const isPremium = Cookies.get('isPremium') === 'true';
   const historyLimit = isPremium ? 50 : 15;
   const [historyCount, setHistoryCount] = useState(0);
   const [limitWarning, setLimitWarning] = useState(null); // { type: 'close' | 'reached', params: { lat, lon, city } }
@@ -258,7 +259,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           if (res.data.user.age === null) {
             setShowAgePrompt(true);
             if (!res.data.user.estiloPersonal) {
-              localStorage.setItem('needsStyleOnboarding', 'true');
+              Cookies.set('needsStyleOnboarding', 'true', { expires: 365 });
             }
           } else if (!res.data.user.estiloPersonal) {
             setShowStyleOnboarding(true);
@@ -282,11 +283,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       await axios.put(`${API_URL}/api/auth/profile`, { age: parseInt(ageInput) }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      localStorage.setItem('userAge', ageInput);
+      Cookies.set('userAge', ageInput, { expires: 365 });
       setShowAgePrompt(false);
       
-      if (localStorage.getItem('needsStyleOnboarding') === 'true') {
-        localStorage.removeItem('needsStyleOnboarding');
+      if (Cookies.get('needsStyleOnboarding') === 'true') {
+        Cookies.remove('needsStyleOnboarding');
         setShowStyleOnboarding(true);
       }
     } catch (err) {
@@ -320,10 +321,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     const checkout = params.get('checkout');
     const payment = params.get('payment');
     const plan = params.get('plan');
-    const pendingCheckout = localStorage.getItem('pendingCheckout');
+    const pendingCheckout = Cookies.get('pendingCheckout');
 
     if (pendingCheckout) {
-      localStorage.removeItem('pendingCheckout');
+      Cookies.remove('pendingCheckout');
       handleCheckout(pendingCheckout);
     } else if (checkout) {
       handleCheckout(checkout);
@@ -331,8 +332,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     if (payment === 'success') {
       // FIX: Update state in-place instead of alert()+reload() to preserve app state
-      localStorage.setItem('isPremium', 'true');
-      if (plan) localStorage.setItem('premiumPlan', plan);
+      Cookies.set('isPremium', 'true', { expires: 365 });
+      if (plan) Cookies.set('premiumPlan', plan, { expires: 365 });
       window.history.replaceState({}, '', '/app');
       setShowAd(false);
       showToast(`¡Gracias por tu compra! Tu plan ${plan || 'Premium'} ha sido activado. 🎉`, 'success');
@@ -394,7 +395,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   }, [location]);
 
   useEffect(() => {
-    localStorage.setItem('darkMode', darkMode);
+    Cookies.set('darkMode', darkMode, { expires: 365 });
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -416,7 +417,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   const handleCloseAd = () => {
     setShowAd(false);
-    localStorage.setItem('adShown', 'true');
+    Cookies.set('adShown', 'true', { expires: 365 });
   };
 
   const handleSearch = (e) => {
@@ -582,7 +583,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       document.head.appendChild(meta);
     }
     meta.setAttribute('content', darkMode ? '#030712' : '#f9fafb');
-    localStorage.setItem('darkMode', String(darkMode));
+    Cookies.set('darkMode', String(darkMode, { expires: 365 }));
   }, [darkMode]);
 
   if (showAd) return <AdModal onClose={handleCloseAd} />;
@@ -701,8 +702,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             </div>
             <span className="text-base font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Ventoo</span>
           </div>
-          <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${localStorage.getItem('isPremium') === 'true' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}`}>
-            {localStorage.getItem('isPremium') === 'true' ? '✦ Premium' : 'Básico'}
+          <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${Cookies.get('isPremium') === 'true' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}`}>
+            {Cookies.get('isPremium') === 'true' ? '✦ Premium' : 'Básico'}
           </div>
         </div>
         {/* Mobile bottom pill nav */}
@@ -710,7 +711,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
       <div className="flex w-full max-w-[1600px] mx-auto px-2 sm:px-4">
         {/* Left Ad - Solo si no es premium */}
-        {localStorage.getItem('isPremium') !== 'true' && (
+        {Cookies.get('isPremium') !== 'true' && (
           <div className="hidden xl:flex w-[200px] shrink-0 sticky top-24 h-[calc(100vh-120px)] mr-4 pt-8">
             <VerticalAd className="w-full h-full" />
           </div>
@@ -721,7 +722,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             <ArmarioHistorial token={token} darkMode={darkMode} />
           ) : view === 'admin' ? (
             // FIX: Only render AdminView if user actually has ADMIN role
-            localStorage.getItem('userRole') === 'ADMIN'
+            Cookies.get('userRole') === 'ADMIN'
               ? <AdminView token={token} darkMode={darkMode} />
               : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
           ) : view === 'profile' ? (
@@ -740,8 +741,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             <div className="mb-2 flex items-center gap-4">
-              {localStorage.getItem('userProfilePicture') && (
-                <img src={localStorage.getItem('userProfilePicture')} alt="Avatar" className={`w-12 h-12 rounded-full object-cover border-2 ${darkMode ? 'border-indigo-500/30' : 'border-indigo-200'}`} />
+              {Cookies.get('userProfilePicture') && (
+                <img src={Cookies.get('userProfilePicture')} alt="Avatar" className={`w-12 h-12 rounded-full object-cover border-2 ${darkMode ? 'border-indigo-500/30' : 'border-indigo-200'}`} />
               )}
               <div>
                 <h2 className="text-3xl font-extrabold tracking-tight flex items-center flex-wrap">
@@ -893,7 +894,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         </div>
 
         {/* Right Ad - Solo si no es premium */}
-        {localStorage.getItem('isPremium') !== 'true' && (
+        {Cookies.get('isPremium') !== 'true' && (
           <div className="hidden xl:flex w-[200px] shrink-0 sticky top-24 h-[calc(100vh-120px)] ml-4 pt-8">
             <VerticalAd className="w-full h-full" />
           </div>
