@@ -30,8 +30,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
 
-  const getFallbackImage = (tipo) => {
-    const t = tipo.toLowerCase();
+  const getFallbackImage = (categoria) => {
+    const t = (categoria || '').toLowerCase();
     if (t.includes('camiseta') || t.includes('camisa') || t.includes('top')) return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=512&h=512&fit=crop';
     if (t.includes('pantalón') || t.includes('pantalon') || t.includes('jeans') || t.includes('vaquero')) return 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=512&h=512&fit=crop';
     if (t.includes('chaqueta') || t.includes('abrigo') || t.includes('sobrecamisa')) return 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=512&h=512&fit=crop';
@@ -61,7 +61,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       timeoutId = setTimeout(() => {
         if (isMounted && imgStatus !== 'loaded') {
           console.warn('Pollinations timeout, falling back');
-          setImgSrc(getFallbackImage(prenda.tipo));
+          setImgSrc(getFallbackImage(prenda.categoria || ''));
         }
       }, 10000);
     };
@@ -84,7 +84,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   const handleError = () => {
     if (imgSrc && !imgSrc.includes('unsplash')) {
       console.warn('AI Image failed to load, triggering instant fallback');
-      setImgSrc(getFallbackImage(prenda.tipo));
+      setImgSrc(getFallbackImage(prenda.categoria || ''));
     } else if (imgStatus !== 'error') {
       setImgStatus('error');
       if (onLoadComplete) onLoadComplete();
