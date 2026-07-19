@@ -42,7 +42,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
       setImgStatus('loading');
       
       const seed = Math.floor(Math.random() * 1000000);
-      const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background`;
+      const simplePrompt = `Product photography of ${prenda.descripcion}, floating on plain white background, isolated, ghost mannequin, no people, no body, no models`;
       const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
       
       setImgSrc(url);
@@ -151,8 +151,10 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
         <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-2">
           {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
         </span>
-        <span className="font-bold text-lg leading-tight mb-2">{prenda.descripcion}</span>
-        <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed">{prenda.razon}</span>
+        <span className="font-bold text-lg leading-tight mb-2">{prenda.nombre_corto || prenda.descripcion}</span>
+        <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed whitespace-pre-line">
+          {prenda.nombre_corto ? `${prenda.descripcion}\n\n${prenda.razon}` : prenda.razon}
+        </span>
         <div className="mt-auto flex justify-center">
           {(prenda.enlace_compra && prenda.tienda_recomendada) && (
             <a 
@@ -416,12 +418,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!location.trim()) {
+      const loc = location.trim();
+      if (loc.length < 2) {
         setSuggestions(defaultCities);
         return;
       }
       try {
-        const res = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=5&language=es&format=json`);
+        const res = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&count=5&language=es&format=json`);
         if (res.data.results) {
           setSuggestions(res.data.results);
         } else {
@@ -434,7 +437,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     const timeoutId = setTimeout(() => {
       fetchSuggestions();
-    }, 150); // 150ms de debounce para que sea casi instantáneo
+    }, 500); // 500ms de debounce para no saturar la API al teclear
 
     return () => clearTimeout(timeoutId);
   }, [location]);

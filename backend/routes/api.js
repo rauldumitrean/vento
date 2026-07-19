@@ -242,6 +242,7 @@ IMPORTANTE: Basa el outfit en las condiciones de TODO el día, no solo en la act
 2. El "resumen" debe sonar experto, cálido y persuasivo.
 3. El "consejo_extra" debe ser un "pro-tip" de estilismo útil y avanzado aplicable al outfit recomendado.
 4. CRÍTICO PARA LA IA DE IMÁGENES: La "descripcion" de cada prenda DEBE ser extremadamente detallada, altamente visual y fotográfica. Especifica el tejido, el corte (fit), el tono exacto del color, y detalles de diseño (ej. "Jersey oversize de punto grueso en lana merino color verde musgo con cuello perkins" en lugar de "Jersey verde").
+5. "nombre_corto" debe ser el título simple de la prenda para mostrar en grande en la app (ej. "Camiseta Básica (Blanca)", "Pantalón Cargo (Beige)", "Zapatillas Nike (Gris)").
 
 Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloques de código markdown ni explicaciones adicionales:
 {
@@ -249,6 +250,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
   "prendas": [
     { 
       "categoria": "top", 
+      "nombre_corto": "Nombre corto y comercial de la prenda (Ej: Pantalón de Lino (Arena))",
       "descripcion": "Descripción ultra-detallada y fotográfica de la prenda", 
       "razon": "Justificación técnica o estilística para incluir esta prenda",
       "tienda_recomendada": "Amazon",
@@ -367,10 +369,14 @@ Estructura obligatoria del JSON:
   "texto": "Tu respuesta amigable y conversacional",
   "nuevas_prendas": [
     // OPCIONAL. SÓLO si el usuario pide cambiar el outfit o sugiere otra prenda, añade aquí la prenda.
-    // { "categoria": "TOP" (o BOTTOM, CALZADO), "descripcion": "...", "razon": "...", "color": "...", "enlace_compra": "https://amazon.es/s?k=...", "tienda_recomendada": "Amazon" }
+    // { "categoria": "TOP" (o BOTTOM, CALZADO), "nombre_corto": "Nombre simple (Ej: Botas Chelsea Negras)", "descripcion": "Descripción mega detallada y visual", "razon": "Por qué es mejor opción", "color": "...", "enlace_compra": "https://amazon.es/s?k=...", "tienda_recomendada": "Amazon" }
   ],
   "infraccion": null // Pon null si todo es correcto. SI el usuario pide cosas ilegales, contenido sexual explícito, o viola gravemente las reglas, devuelve { "es_infraccion": true, "razon": "Motivo detallado", "nivel_severidad": "bajo|medio|alto" }
-}`
+}
+1. Responde siempre en JSON.
+2. Si sugieres prendas nuevas (por ejemplo, porque el usuario quiere cambiar una zapatilla por botas), devuélvelas en la clave "nuevas_prendas". Cada nueva prenda debe seguir el formato estricto: {"categoria": "TOP|BOTTOM|CALZADO|ACCESORIO", "nombre_corto": "Nombre corto (Ej: Botas Chelsea)", "descripcion": "Descripción mega detallada y visual", "razon": "Por qué es mejor opción", "tienda_recomendada": "Amazon", "enlace_compra": "https://www.amazon.es/s?k=..."}.
+3. NO incluyas "nuevas_prendas" si solo estás conversando o dando un tip general.
+4. "nombre_corto" es OBLIGATORIO en "nuevas_prendas" y debe ser el título corto de la prenda.`
     });
     
     const chat = model.startChat({ history });
