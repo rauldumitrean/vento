@@ -24,7 +24,7 @@ const loadingSteps = [
   "A punto de terminar..."
 ];
 
-const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
+const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx = 0 }) => {
   if (!prenda) return null;
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
@@ -48,7 +48,13 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       setImgSrc(url);
     };
 
-    fetchImage();
+    if (delayIdx > 0 && loadAttempt === 0) {
+      timeoutId = setTimeout(() => {
+        if (isMounted) fetchImage();
+      }, delayIdx * 2000);
+    } else {
+      fetchImage();
+    }
 
     return () => {
       isMounted = false;
@@ -182,6 +188,7 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
           darkMode={darkMode}
           canLoad={true}
           token={token}
+          delayIdx={idx}
         />
       ))}
     </div>
@@ -228,7 +235,7 @@ const ChatMessage = ({ msg, darkMode, token }) => {
       {nuevasPrendas.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
           {nuevasPrendas.map((prenda, idx) => (
-            <PrendaCard key={idx} prenda={prenda} darkMode={darkMode} canLoad={true} token={token} />
+            <PrendaCard key={idx} prenda={prenda} darkMode={darkMode} canLoad={true} token={token} delayIdx={idx} />
           ))}
         </div>
       )}
