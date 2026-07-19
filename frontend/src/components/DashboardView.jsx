@@ -855,7 +855,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </button>
             </motion.div>
 
-            {/* Si no hay clima todavía y estamos cargando, mostrar el esqueleto completo */}
+            {/* Si no hay clima todavía y estamos cargando, mostrar SOLO el esqueleto del clima */}
             {loading && !weather && (
               <div className="flex flex-col gap-6 w-full animate-pulse mt-4">
                 {/* Weather Skeleton */}
@@ -867,23 +867,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       <div className={`h-3 w-40 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
                       <div className={`h-3 w-64 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Outfit Skeleton */}
-                <div className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={`h-4 w-40 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    <div className={`h-10 w-10 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  </div>
-                  
-                  <div className={`h-4 w-full rounded mb-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  <div className={`h-4 w-5/6 rounded mb-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className={`rounded-xl aspect-square ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    ))}
                   </div>
                 </div>
               </div>
