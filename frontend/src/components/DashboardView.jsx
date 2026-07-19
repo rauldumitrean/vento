@@ -74,7 +74,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
           clearTimeout(timeoutId);
           // Fallback timeout in case the blob fails to load in the img tag
           timeoutId = setTimeout(() => {
-            if (isMounted && imgStatus !== 'loaded') setImgStatus('error');
+            if (isMounted) setImgStatus(prev => prev !== 'loaded' ? 'error' : prev);
           }, 15000);
         }
       } catch (err) {
@@ -83,7 +83,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
           setImgSrc(getFallbackImage(prenda.tipo));
           clearTimeout(timeoutId);
           timeoutId = setTimeout(() => {
-             if (isMounted && imgStatus !== 'loaded') setImgStatus('error');
+             if (isMounted) setImgStatus(prev => prev !== 'loaded' ? 'error' : prev);
           }, 15000);
         }
       }
@@ -95,7 +95,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       isMounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [canLoad, imgStatus, loadAttempt, prenda.descripcion, token]);
+  }, [canLoad, loadAttempt, prenda.descripcion, token]);
 
   const handleSuccess = () => {
     if (imgStatus !== 'loaded') {
