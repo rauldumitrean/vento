@@ -49,17 +49,14 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
       setImgSrc(url);
     };
 
-    if (delayIdx > 0 && loadAttempt === 0) {
-      timeoutId = setTimeout(() => {
-        if (isMounted) fetchImage();
-      }, delayIdx * 3500);
-    } else {
+    if (canLoad && loadAttempt === 0) {
+      fetchImage();
+    } else if (loadAttempt > 0) {
       fetchImage();
     }
 
     return () => {
       isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [canLoad, loadAttempt, prenda.descripcion, token]);
 
@@ -188,6 +185,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
 
 // Loads all images in parallel for maximum speed
 const OutfitGrid = ({ prendas = [], darkMode, token }) => {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  
   if (!prendas || !Array.isArray(prendas)) return null;
 
   return (
@@ -197,9 +196,9 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
           key={idx}
           prenda={prenda}
           darkMode={darkMode}
-          canLoad={true}
+          canLoad={idx <= currentIdx}
+          onLoadComplete={() => setCurrentIdx(prev => Math.max(prev, idx + 1))}
           token={token}
-          delayIdx={idx}
         />
       ))}
     </div>
@@ -238,6 +237,8 @@ const ChatMessage = ({ msg, darkMode, token }) => {
     // Es texto normal o falló el parseo
   }
 
+  const [currentChatIdx, setCurrentChatIdx] = useState(0);
+
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-2 max-w-[95%] self-start">
       <div className={`p-3 rounded-lg text-sm ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-neutral-100 text-neutral-900'}`}>
@@ -246,7 +247,14 @@ const ChatMessage = ({ msg, darkMode, token }) => {
       {nuevasPrendas.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
           {nuevasPrendas.map((prenda, idx) => (
-            <PrendaCard key={idx} prenda={prenda} darkMode={darkMode} canLoad={true} token={token} delayIdx={idx} />
+            <PrendaCard 
+              key={idx} 
+              prenda={prenda} 
+              darkMode={darkMode} 
+              canLoad={idx <= currentChatIdx} 
+              onLoadComplete={() => setCurrentChatIdx(prev => Math.max(prev, idx + 1))}
+              token={token} 
+            />
           ))}
         </div>
       )}
@@ -445,10 +453,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         }
       } catch (e) {
         console.error("Error al obtener sugerencias");
-        if (isMounted && location.trim().length >= 2) {
-          // Si falló pero hay texto, intentamos no borrarlo o mostrar un error silencioso
-          // No hacemos setSuggestions([]) para que no desaparezca de golpe si es un timeout
-        }
+        if (isMounted) setSuggestions([]);
       }
     };
 
