@@ -39,29 +39,34 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       
       setImgStatus('loading');
       
-      // 30 second timeout
       timeoutId = setTimeout(() => {
-        if (isMounted) {
-          setImgStatus('error');
-        }
-      }, 30000);
+        if (isMounted) setImgStatus('error');
+      }, 20000); // Reduce timeout to 20s
 
       try {
-        // Prompt simplificado para que la IA genere mucho más rápido sin sobrecargar
-        const simplePrompt = `Standalone piece of clothing: ${prenda.descripcion}. High-end fashion editorial photography, clean minimalist background, premium look, no text`.trim();
+        // 1. Try Hugging Face FLUX.1-schnell direct API (no key needed for basic usage from residential IPs)
+        const simplePrompt = `A catalog shot of a single clothing item: ${prenda.descripcion}. Clean background, highly detailed.`;
         
-        // Usar Pollinations AI por defecto (Turbo) para máxima velocidad (1-2s) en paralelo
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?nologo=true&width=512&height=512&seed=${Math.floor(Math.random() * 1000000)}`;
+        const res = await fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: simplePrompt })
+        });
         
+        if (!res.ok) {
+          throw new Error(`HF error: ${res.status}`);
+        }
+        
+        const blob = await res.blob();
         if (isMounted) {
-          setImgSrc(url);
-          // Wait for <img onLoad> to set 'loaded'
+          setImgSrc(URL.createObjectURL(blob));
         }
       } catch (err) {
-        console.error('Error fetching image:', err);
+        console.warn('AI Image failed, using smart fallback:', err);
+        // 2. Ultra-fast fallback if AI is congested
         if (isMounted) {
-          clearTimeout(timeoutId);
-          setImgStatus('error');
+          const keyword = prenda.tipo.split(' ')[0].toLowerCase();
+          setImgSrc(`https://loremflickr.com/512/512/fashion,${encodeURIComponent(keyword)}?random=${Math.random()}`);
         }
       }
     };
@@ -100,18 +105,29 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
-          <div className={`absolute inset-0 z-10 ${darkMode ? 'bg-gray-700/60' : 'bg-gray-200/70'}`}>
+          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
             {/* Shimmer sweep */}
             <div className="absolute inset-0 overflow-hidden">
               <div
                 className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite]"
                 style={{
                   background: darkMode
-                    ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%)'
-                    : 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)'
+                    ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)'
+                    : 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%)'
                 }}
               />
             </div>
+            {/* New premium loading indicator instead of circle */}
+            <motion.div 
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              className="z-20 text-indigo-400 mb-3"
+            >
+              <Sparkles className="w-8 h-8" />
+            </motion.div>
+            <span className={`z-20 text-xs font-semibold tracking-widest uppercase ${darkMode ? 'text-indigo-300' : 'text-indigo-500'}`}>
+              Generando
+            </span>
           </div>
         )}
 
@@ -867,10 +883,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
             {loading && !weather && (
               <div className="flex flex-col gap-6 w-full mt-12 mb-12 items-center justify-center space-y-6">
-                <div className="relative w-20 h-20">
-                  <div className={`absolute inset-0 border-4 rounded-full ${darkMode ? 'border-gray-700' : 'border-indigo-100'}`}></div>
-                  <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                </div>
+                <motion.div 
+                  animate={{ y: [0, -15, 0], scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className={`p-6 rounded-3xl shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-indigo-900/30 border border-indigo-500/30' : 'bg-indigo-50 border border-indigo-200'}`}
+                >
+                  <Sparkles className={`w-16 h-16 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                </motion.div>
                 <div className="h-8 overflow-hidden">
                   <motion.p
                     key={loadingStepIndex}
@@ -907,10 +926,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
             {loading && weather && (
               <div className="flex flex-col gap-6 w-full mt-12 mb-12 items-center justify-center space-y-6">
-                <div className="relative w-20 h-20">
-                  <div className={`absolute inset-0 border-4 rounded-full ${darkMode ? 'border-gray-700' : 'border-indigo-100'}`}></div>
-                  <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                </div>
+                <motion.div 
+                  animate={{ y: [0, -15, 0], scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className={`p-6 rounded-3xl shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-indigo-900/30 border border-indigo-500/30' : 'bg-indigo-50 border border-indigo-200'}`}
+                >
+                  <Sparkles className={`w-16 h-16 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                </motion.div>
                 <div className="h-8 overflow-hidden">
                   <motion.p
                     key={loadingStepIndex}
