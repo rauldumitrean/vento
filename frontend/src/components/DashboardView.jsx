@@ -15,6 +15,7 @@ import StyleOnboardingModal from './StyleOnboardingModal';
 import VerticalAd from './VerticalAd';
 
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
+  if (!prenda) return null;
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -175,9 +176,11 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
 };
 
 // Manages sequential image loading: card 0 first, then card 1, then card 2...
-const OutfitGrid = ({ prendas, darkMode, token }) => {
+const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const [loadIndex, setLoadIndex] = useState(0);
   const handleLoadComplete = () => setLoadIndex(prev => prev + 1);
+
+  if (!prendas || !Array.isArray(prendas)) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -852,7 +855,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </button>
             </motion.div>
 
-            {loading && (
+            {/* Si no hay clima todavía y estamos cargando, mostrar el esqueleto completo */}
+            {loading && !weather && (
               <div className="flex flex-col gap-6 w-full animate-pulse mt-4">
                 {/* Weather Skeleton */}
                 <div className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
@@ -885,7 +889,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </div>
             )}
 
-            {weather && !loading && (
+            {/* Mostrar el clima tan pronto como exista, sin importar si el outfit sigue cargando */}
+            {weather && (
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-4">
@@ -897,6 +902,27 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                   </div>
                 </div>
               </motion.div>
+            )}
+
+            {/* Si ya cargó el clima pero seguimos esperando el outfit, mostrar solo el esqueleto del outfit */}
+            {loading && weather && (
+              <div className="flex flex-col gap-6 w-full animate-pulse mt-4">
+                <div className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
+                  <div className="flex justify-between items-start mb-6">
+                    <div className={`h-4 w-40 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                    <div className={`h-10 w-10 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  </div>
+                  
+                  <div className={`h-4 w-full rounded mb-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  <div className={`h-4 w-5/6 rounded mb-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className={`rounded-xl aspect-square ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
 
             {outfit && !loading && (
