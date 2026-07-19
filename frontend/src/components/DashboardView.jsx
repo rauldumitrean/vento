@@ -71,9 +71,17 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
   };
 
   const handleError = () => {
-    if (imgStatus !== 'error') {
-      setImgStatus('error');
-      if (onLoadComplete) onLoadComplete();
+    if (loadAttempt < 3) {
+      setTimeout(() => {
+        setImgStatus('waiting');
+        setImgSrc(null);
+        setLoadAttempt(prev => prev + 1);
+      }, 1500);
+    } else {
+      if (imgStatus !== 'error') {
+        setImgStatus('error');
+        if (onLoadComplete) onLoadComplete();
+      }
     }
   };
 
@@ -418,30 +426,40 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   // FIX: Removed redundant useEffect - isPremium check is already handled in the useState initializer above
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchSuggestions = async () => {
       const loc = location.trim();
       if (loc.length < 2) {
-        setSuggestions(defaultCities);
+        if (isMounted) setSuggestions(defaultCities);
         return;
       }
       try {
         const res = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&count=5&language=es&format=json`);
-        if (res.data.results) {
-          setSuggestions(res.data.results);
-        } else {
-          setSuggestions([]);
+        if (isMounted) {
+          if (res.data.results) {
+            setSuggestions(res.data.results);
+          } else {
+            setSuggestions([]);
+          }
         }
       } catch (e) {
         console.error("Error al obtener sugerencias");
-        setSuggestions([]);
+        if (isMounted && location.trim().length >= 2) {
+          // Si falló pero hay texto, intentamos no borrarlo o mostrar un error silencioso
+          // No hacemos setSuggestions([]) para que no desaparezca de golpe si es un timeout
+        }
       }
     };
 
     const timeoutId = setTimeout(() => {
       fetchSuggestions();
-    }, 100); // 100ms debounce para maxima velocidad
+    }, 300); // Volvemos a 300ms que es el estándar de la industria para evitar bloqueos de API
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [location]);
 
   useEffect(() => {
