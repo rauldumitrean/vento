@@ -85,8 +85,20 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
   }
 });
 
-// Cache in-memory simple para el clima
+// Cache in-memory simple para el clima y autocompletado
 const weatherCache = new Map();
+
+router.get('/autocomplete', authMiddleware, async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) return res.json({ results: [] });
+    const geoRes = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=es&format=json`);
+    res.json({ results: geoRes.data.results || [] });
+  } catch (error) {
+    console.error('Error in /autocomplete:', error.message);
+    res.json({ results: [] });
+  }
+});
 
 router.get('/weather', authMiddleware, async (req, res) => {
   try {

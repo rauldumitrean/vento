@@ -443,17 +443,19 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         return;
       }
       try {
-        const res = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&count=5&language=es&format=json`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/autocomplete?q=${encodeURIComponent(loc)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (isMounted) {
-          if (res.data.results) {
+          if (res.data.results && res.data.results.length > 0) {
             setSuggestions(res.data.results);
           } else {
-            setSuggestions([]);
+            setSuggestions([{ name: 'No se encontraron resultados' }]);
           }
         }
       } catch (e) {
         console.error("Error al obtener sugerencias");
-        if (isMounted) setSuggestions([]);
+        if (isMounted) setSuggestions([{ name: 'Demasiadas búsquedas. Usa la lupa o Enter.' }]);
       }
     };
 
@@ -869,7 +871,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       {suggestions.map((city, idx) => (
                         <div 
                           key={idx}
-                          onClick={() => handleSelectSuggestion(city)}
+                          onClick={() => {
+                            if (!city.latitude) return;
+                            handleSelectSuggestion(city);
+                          }}
                           className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} ${idx !== suggestions.length - 1 ? (darkMode ? 'border-b border-gray-700' : 'border-b border-gray-100') : ''}`}
                         >
                           <MapPin size={16} className="text-indigo-500 opacity-70 flex-shrink-0" />
