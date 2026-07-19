@@ -83,44 +83,7 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
     console.error('Error uploading avatar:', error?.response?.data || error.message);
     res.status(500).json({ error: 'Error al subir la imagen.' });
   }
-});
 
-// Endpoint para generar imágenes con NVIDIA NIM (Flux.1 Schnell)
-router.get('/hf-token', authMiddleware, (req, res) => {
-  const token = process.env.HUGGINGFACE_API_KEY;
-  if (!token) return res.status(500).json({ error: 'HF Token not configured' });
-  res.json({ hfToken: token });
-});
-
-router.post('/generate-image', authMiddleware, async (req, res) => {
-  try {
-    const { prompt } = req.body;
-    if (!prompt) return res.status(400).json({ error: 'Se requiere un prompt' });
-
-    const apiKey = process.env.HUGGINGFACE_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'La API Key de Hugging Face no está configurada en el servidor.' });
-    }
-
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
-      { inputs: prompt },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        responseType: 'arraybuffer'
-      }
-    );
-
-    const base64 = Buffer.from(response.data, 'binary').toString('base64');
-    res.json({ imageBase64: `data:image/jpeg;base64,${base64}` });
-  } catch (error) {
-    console.error('Error en generación de imagen HF:', error?.response?.data ? error.response.data.toString() : error.message);
-    res.status(500).json({ error: 'Error al generar la imagen con IA' });
-  }
-});
 
 // Cache in-memory simple para el clima
 const weatherCache = new Map();
