@@ -97,7 +97,7 @@ router.post('/generate-image', authMiddleware, async (req, res) => {
     }
 
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
       { inputs: prompt },
       {
         headers: {

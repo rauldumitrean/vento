@@ -30,15 +30,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
 
-  const getFallbackImage = (categoria) => {
-    const t = (categoria || '').toLowerCase();
-    if (t.includes('camiseta') || t.includes('camisa') || t.includes('top')) return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=512&h=512&fit=crop';
-    if (t.includes('pantalón') || t.includes('pantalon') || t.includes('jeans') || t.includes('vaquero')) return 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=512&h=512&fit=crop';
-    if (t.includes('chaqueta') || t.includes('abrigo') || t.includes('sobrecamisa')) return 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=512&h=512&fit=crop';
-    if (t.includes('sudadera') || t.includes('jersey') || t.includes('suéter')) return 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=512&h=512&fit=crop';
-    if (t.includes('zapatilla') || t.includes('zapato') || t.includes('bota')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=512&h=512&fit=crop';
-    return 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=512&h=512&fit=crop'; // generic fashion
-  };
+
 
   useEffect(() => {
     let timeoutId;
@@ -51,14 +43,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       
       const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background, style ${Math.floor(Math.random() * 1000)}`;
       
-      // Strict 15-second timeout.
-      timeoutId = setTimeout(() => {
-        if (isMounted && imgStatus !== 'loaded') {
-          console.warn('AI timeout, falling back');
-          setImgSrc(getFallbackImage(prenda.categoria || ''));
-        }
-      }, 15000);
-
+      // Remove timeout completely so we wait for AI as long as it takes
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/generate-image`, {
           method: 'POST',
@@ -71,7 +56,10 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
 
         if (!isMounted) return;
 
-        if (!response.ok) throw new Error('API Error');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'API Error');
+        }
         
         const data = await response.json();
         if (data.imageBase64) {
@@ -81,8 +69,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
         }
       } catch (error) {
         if (isMounted) {
-          console.warn('AI Image generation failed, falling back', error);
-          setImgSrc(getFallbackImage(prenda.categoria || ''));
+          console.error('AI Image generation failed:', error);
+          setImgStatus('error');
         }
       }
     };
@@ -103,10 +91,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   };
 
   const handleError = () => {
-    if (imgSrc && !imgSrc.includes('unsplash')) {
-      console.warn('AI Image failed to load, triggering instant fallback');
-      setImgSrc(getFallbackImage(prenda.categoria || ''));
-    } else if (imgStatus !== 'error') {
+    if (imgStatus !== 'error') {
       setImgStatus('error');
       if (onLoadComplete) onLoadComplete();
     }
