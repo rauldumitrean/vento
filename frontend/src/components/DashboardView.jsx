@@ -44,49 +44,25 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       return 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=512&h=512&fit=crop'; // generic fashion
     };
 
-    const fetchImage = async () => {
+    const fetchImage = () => {
       if (!canLoad || imgStatus !== 'waiting') return;
       
       setImgStatus('loading');
       
-      const controller = new AbortController();
+      const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background`;
+      // Use Pollinations AI (FLUX) by assigning the URL directly to the image src
+      // This allows the browser to handle the connection, avoiding fetch timeouts and CORS issues.
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?nologo=true&width=512&height=512&seed=${Math.floor(Math.random() * 1000000)}`;
+      
+      setImgSrc(url);
+      
+      // Set a 25-second timeout in case Pollinations is completely down
       timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 10000); // 10 second strict timeout for AI
-
-      try {
-        const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background`;
-        
-        const res = await fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: simplePrompt }),
-          signal: controller.signal
-        });
-        
-        if (!res.ok) {
-          throw new Error(`AI error: ${res.status}`);
-        }
-        
-        const blob = await res.blob();
-        if (isMounted) {
-          setImgSrc(URL.createObjectURL(blob));
-          clearTimeout(timeoutId);
-          // Fallback timeout in case the blob fails to load in the img tag
-          timeoutId = setTimeout(() => {
-            if (isMounted) setImgStatus(prev => prev !== 'loaded' ? 'error' : prev);
-          }, 15000);
-        }
-      } catch (err) {
-        console.warn('AI Image failed, using instant fallback:', err);
-        if (isMounted) {
+        if (isMounted && imgStatus !== 'loaded') {
+          console.warn('Pollinations timeout, falling back');
           setImgSrc(getFallbackImage(prenda.tipo));
-          clearTimeout(timeoutId);
-          timeoutId = setTimeout(() => {
-             if (isMounted) setImgStatus(prev => prev !== 'loaded' ? 'error' : prev);
-          }, 15000);
         }
-      }
+      }, 25000);
     };
 
     fetchImage();
