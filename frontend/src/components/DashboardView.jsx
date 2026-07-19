@@ -43,36 +43,55 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       
       const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background, style ${Math.floor(Math.random() * 1000)}`;
       
-      // Remove timeout completely so we wait for AI as long as it takes
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/generate-image`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ prompt: simplePrompt })
-        });
+      const callHuggingFace = async (retries = 0) => {
+        try {
+          const tokenResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/hf-token`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const { hfToken } = await tokenResponse.json();
 
-        if (!isMounted) return;
+          if (!hfToken) throw new Error('HF token missing');
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || 'API Error');
+          const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${hfToken}`
+            },
+            body: JSON.stringify({ inputs: simplePrompt })
+          });
+
+          if (!isMounted) return;
+
+          if (response.status === 503) {
+            const errData = await response.json().catch(() => ({}));
+            const estimatedTime = errData.estimated_time || 20;
+            if (retries < 3) {
+              console.warn(`Model is loading. Waiting ${estimatedTime}s to retry...`);
+              setTimeout(() => {
+                if (isMounted) callHuggingFace(retries + 1);
+              }, Math.min(estimatedTime * 1000, 30000));
+              return;
+            }
+          }
+
+          if (!response.ok) {
+            throw new Error('API Error');
+          }
+          
+          const blob = await response.blob();
+          if (isMounted) {
+            setImgSrc(URL.createObjectURL(blob));
+          }
+        } catch (error) {
+          if (isMounted) {
+            console.error('AI Image generation failed:', error);
+            setImgStatus('error');
+          }
         }
-        
-        const data = await response.json();
-        if (data.imageBase64) {
-          setImgSrc(data.imageBase64);
-        } else {
-          throw new Error('No image returned');
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error('AI Image generation failed:', error);
-          setImgStatus('error');
-        }
-      }
+      };
+
+      callHuggingFace();
     };
 
     fetchImage();

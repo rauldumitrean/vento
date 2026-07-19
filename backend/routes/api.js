@@ -86,6 +86,12 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
 });
 
 // Endpoint para generar imágenes con NVIDIA NIM (Flux.1 Schnell)
+router.get('/hf-token', authMiddleware, (req, res) => {
+  const token = process.env.HUGGINGFACE_API_KEY;
+  if (!token) return res.status(500).json({ error: 'HF Token not configured' });
+  res.json({ hfToken: token });
+});
+
 router.post('/generate-image', authMiddleware, async (req, res) => {
   try {
     const { prompt } = req.body;
