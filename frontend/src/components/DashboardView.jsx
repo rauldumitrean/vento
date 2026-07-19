@@ -42,7 +42,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
       setImgStatus('loading');
       
       const seed = Math.floor(Math.random() * 1000000);
-      const simplePrompt = `Product photography of ${prenda.descripcion}, floating on plain white background, isolated, ghost mannequin, no people, no body, no models`;
+      const queryText = prenda.nombre_corto || prenda.descripcion.substring(0, 60);
+      const simplePrompt = `Product photography of ${queryText}, plain white background, isolated, ghost mannequin, no people`;
       const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
       
       setImgSrc(url);
@@ -432,12 +433,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         }
       } catch (e) {
         console.error("Error al obtener sugerencias");
+        setSuggestions([]);
       }
     };
 
     const timeoutId = setTimeout(() => {
       fetchSuggestions();
-    }, 300); // 300ms de debounce para balancear velocidad y no saturar la API
+    }, 100); // 100ms debounce para maxima velocidad
 
     return () => clearTimeout(timeoutId);
   }, [location]);
