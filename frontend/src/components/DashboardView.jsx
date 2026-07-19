@@ -51,7 +51,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
     if (delayIdx > 0 && loadAttempt === 0) {
       timeoutId = setTimeout(() => {
         if (isMounted) fetchImage();
-      }, delayIdx * 2000);
+      }, delayIdx * 3500);
     } else {
       fetchImage();
     }
@@ -437,7 +437,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     const timeoutId = setTimeout(() => {
       fetchSuggestions();
-    }, 500); // 500ms de debounce para no saturar la API al teclear
+    }, 300); // 300ms de debounce para balancear velocidad y no saturar la API
 
     return () => clearTimeout(timeoutId);
   }, [location]);
