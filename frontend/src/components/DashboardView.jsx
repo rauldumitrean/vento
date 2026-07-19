@@ -14,6 +14,16 @@ import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 import VerticalAd from './VerticalAd';
 
+const loadingSteps = [
+  "Analizando la temperatura local...",
+  "Consultando al Personal Shopper de IA...",
+  "Buscando combinaciones perfectas...",
+  "Diseñando el outfit pieza a pieza...",
+  "Generando imágenes de alta resolución...",
+  "Añadiendo últimos detalles...",
+  "A punto de terminar..."
+];
+
 const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   if (!prenda) return null;
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
@@ -251,6 +261,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setLoadingStepIndex(0);
+      interval = setInterval(() => {
+        setLoadingStepIndex(prev => Math.min(prev + 1, loadingSteps.length - 1));
+      }, 1500);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(null);
@@ -843,19 +865,23 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </button>
             </motion.div>
 
-            {/* Si no hay clima todavía y estamos cargando, mostrar SOLO el esqueleto del clima */}
             {loading && !weather && (
-              <div className="flex flex-col gap-6 w-full animate-pulse mt-4">
-                {/* Weather Skeleton */}
-                <div className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
-                  <div className={`h-4 w-48 rounded mb-6 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  <div className="flex items-end gap-4">
-                    <div className={`h-16 w-32 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    <div className="flex flex-col gap-2 mb-2">
-                      <div className={`h-3 w-40 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                      <div className={`h-3 w-64 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    </div>
-                  </div>
+              <div className="flex flex-col gap-6 w-full mt-12 mb-12 items-center justify-center space-y-6">
+                <div className="relative w-20 h-20">
+                  <div className={`absolute inset-0 border-4 rounded-full ${darkMode ? 'border-gray-700' : 'border-indigo-100'}`}></div>
+                  <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <div className="h-8 overflow-hidden">
+                  <motion.p
+                    key={loadingStepIndex}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className={`text-xl font-medium text-center ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}
+                  >
+                    {loadingSteps[loadingStepIndex]}
+                  </motion.p>
                 </div>
               </div>
             )}
@@ -879,23 +905,23 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </motion.div>
             )}
 
-            {/* Si ya cargó el clima pero seguimos esperando el outfit, mostrar solo el esqueleto del outfit */}
             {loading && weather && (
-              <div className="flex flex-col gap-6 w-full animate-pulse mt-4">
-                <div className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={`h-4 w-40 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    <div className={`h-10 w-10 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  </div>
-                  
-                  <div className={`h-4 w-full rounded mb-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  <div className={`h-4 w-5/6 rounded mb-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className={`rounded-xl aspect-square ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    ))}
-                  </div>
+              <div className="flex flex-col gap-6 w-full mt-12 mb-12 items-center justify-center space-y-6">
+                <div className="relative w-20 h-20">
+                  <div className={`absolute inset-0 border-4 rounded-full ${darkMode ? 'border-gray-700' : 'border-indigo-100'}`}></div>
+                  <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <div className="h-8 overflow-hidden">
+                  <motion.p
+                    key={loadingStepIndex}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className={`text-xl font-medium text-center ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}
+                  >
+                    {loadingSteps[loadingStepIndex]}
+                  </motion.p>
                 </div>
               </div>
             )}
