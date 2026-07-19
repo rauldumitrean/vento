@@ -29,38 +29,30 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       
       setImgStatus('loading');
       
-      // 30 second timeout for NVIDIA NIM API 
+      // 30 second timeout
       timeoutId = setTimeout(() => {
         if (isMounted) {
           setImgStatus('error');
-          if (onLoadComplete) onLoadComplete();
         }
       }, 30000);
 
       try {
-        // Ultra-mejora del prompt visual para aprovechar al máximo Flux.1 Schnell
+        // Ultra-mejora del prompt visual
         const simplePrompt = `A single standalone piece of clothing: ${prenda.descripcion}. High-end fashion editorial photography, cinematic studio lighting, 8k resolution, photorealistic, trendy streetwear catalog style, clean modern minimalist textured background, highly detailed fabric textures, premium look, no humans, no text, no mannequins`.trim();
         
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-        const res = await axios.post(
-          `${apiUrl}/api/generate-image`,
-          { prompt: simplePrompt },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (isMounted && res.data && res.data.imageBase64) {
-          clearTimeout(timeoutId);
-          setImgSrc(res.data.imageBase64);
-          // Wait for <img onLoad> to set 'loaded'
-        } else {
-          throw new Error('No image returned');
+        // Usar Pollinations AI directamente desde el frontend evita los timeouts de 10s de Vercel 
+        // y nos permite cargar todas las imágenes en paralelo directamente desde el navegador del cliente.
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?nologo=true&model=flux&width=512&height=512&seed=${Math.floor(Math.random() * 1000000)}`;
+        
+        if (isMounted) {
+          setImgSrc(url);
+          // Wait for <img onLoad> to set 'loaded' and clearTimeout
         }
       } catch (err) {
         console.error('Error fetching image:', err);
         if (isMounted) {
           clearTimeout(timeoutId);
           setImgStatus('error');
-          if (onLoadComplete) onLoadComplete();
         }
       }
     };
