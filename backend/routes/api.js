@@ -249,46 +249,56 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
     
     let nameText = "";
     if (dbUser.name) {
-      nameText = `IMPORTANTE: El usuario se llama ${dbUser.name}. Hazle un guiño personal mencionando su nombre de forma natural en el resumen o consejo extra.`;
+      nameText = `- Nombre: ${dbUser.name} (Dirígete a esta persona por su nombre en el resumen)`;
     }
 
     let weatherExtraText = "";
     if (daily && daily.temperature_2m_max && daily.temperature_2m_min) {
-      weatherExtraText = `CRÍTICO: La temperatura máxima prevista para hoy es de ${daily.temperature_2m_max[0]}°C y la mínima de ${daily.temperature_2m_min[0]}°C. Basa tu recomendación en esta variación térmica para todo el día, no solo en la actual.`;
+      const maxTemp = daily.temperature_2m_max[0];
+      const minTemp = daily.temperature_2m_min[0];
+      const diff = maxTemp - minTemp;
+      let layeringTip = "";
+      if (diff >= 10) {
+        layeringTip = " Hay una gran amplitud térmica hoy. Es OBLIGATORIO recomendar vestirse en capas (layering) para que el usuario pueda adaptarse a medida que cambie la temperatura.";
+      }
+      weatherExtraText = `\n- Temperatura Máxima: ${maxTemp}°C\n- Temperatura Mínima: ${minTemp}°C\n${layeringTip}`;
     }
 
-    const prompt = `Eres un asesor de moda experto y personal. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
-${weatherExtraText}
+    const prompt = `Actúas como un Personal Shopper y Asesor de Imagen de altísimo nivel, reconocido por tu impecable gusto, conocimiento de tendencias y capacidad para crear "looks" de revista.
+
+[PERFIL DEL CLIENTE]
 ${nameText}
 ${genderText}
 ${ageText}
 ${styleText}
 ${armarioText}
 
-Genera un outfit de altísimo nivel, elegante, moderno y estéticamente superior, combinando prendas adecuadamente.
-CRÍTICO para la generación de imágenes: La "descripcion" de cada prenda DEBE ser extremadamente detallada, visual y específica. Incluye el tipo de tejido, corte, color exacto y estilo (ej. no digas "Camiseta blanca", di "Camiseta oversize de algodón pesado premium en color blanco roto con corte urbano").
-Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin texto markdown ni explicaciones adicionales fuera del JSON:
+[CONDICIONES METEOROLÓGICAS - ${ubicacion}]
+- Clima Actual: ${clima.temperature_2m}°C (Sensación: ${clima.apparent_temperature}°C)
+- Humedad: ${clima.relative_humidity_2m}%
+- Viento: ${clima.wind_speed_10m} km/h${weatherExtraText}
+IMPORTANTE: Basa el outfit en las condiciones de TODO el día, no solo en la actual.
+
+[INSTRUCCIONES DE DISEÑO]
+1. Diseña un outfit impecable, moderno y estéticamente superior que resuelva perfectamente el clima y encaje con el perfil del usuario.
+2. El "resumen" debe sonar experto, cálido y persuasivo.
+3. El "consejo_extra" debe ser un "pro-tip" de estilismo útil y avanzado aplicable al outfit recomendado.
+4. CRÍTICO PARA LA IA DE IMÁGENES: La "descripcion" de cada prenda DEBE ser extremadamente detallada, altamente visual y fotográfica. Especifica el tejido, el corte (fit), el tono exacto del color, y detalles de diseño (ej. "Jersey oversize de punto grueso en lana merino color verde musgo con cuello perkins" en lugar de "Jersey verde").
+
+Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloques de código markdown ni explicaciones adicionales:
 {
-  "resumen": "Un resumen corto del por qué elegiste esto",
+  "resumen": "Resumen experto y persuasivo del look y por qué funciona para hoy",
   "prendas": [
     { 
       "categoria": "top", 
-      "descripcion": "ej. Sobrecamisa de pana gruesa en tono terracota con botones vintage y corte relajado", 
-      "razon": "ej. Aporta textura y abrigo ligero perfecto para la transición climática",
+      "descripcion": "Descripción ultra-detallada y fotográfica de la prenda", 
+      "razon": "Justificación técnica o estilística para incluir esta prenda",
       "tienda_recomendada": "Amazon",
-      "enlace_compra": "https://www.amazon.es/s?k=camiseta+basica+blanca+algodon&tag=${amazonTag}"
-    },
-    { 
-      "categoria": "bottom", 
-      "descripcion": "ej. Pantalón chino oscuro", 
-      "razon": "ej. Cómodo y versátil",
-      "tienda_recomendada": "Amazon",
-      "enlace_compra": "https://www.amazon.es/s?k=pantalon+chino+oscuro&tag=${amazonTag}"
+      "enlace_compra": "https://www.amazon.es/s?k=busqueda+de+la+prenda&tag=${amazonTag}"
     }
-    // ... OBLIGATORIO: La tienda siempre debe ser "Amazon". El enlace debe ser de búsqueda de amazon.es y debe contener EXACTAMENTE la etiqueta &tag=${amazonTag} al final.
   ],
-  "consejo_extra": "Un consejo de estilo corto",
-  "infraccion": null // Pon null si todo es correcto. SI detectas lenguaje ofensivo, sexual, o malicioso en el nombre o estilo del usuario, devuelve { "es_infraccion": true, "razon": "Motivo", "nivel_severidad": "bajo|medio|alto" }
+  "consejo_extra": "Pro-tip de estilismo avanzado aplicable a este look",
+  "infraccion": null
 }`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
