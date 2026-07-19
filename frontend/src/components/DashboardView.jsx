@@ -30,19 +30,19 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
 
+  const getFallbackImage = (tipo) => {
+    const t = tipo.toLowerCase();
+    if (t.includes('camiseta') || t.includes('camisa') || t.includes('top')) return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=512&h=512&fit=crop';
+    if (t.includes('pantalón') || t.includes('pantalon') || t.includes('jeans') || t.includes('vaquero')) return 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=512&h=512&fit=crop';
+    if (t.includes('chaqueta') || t.includes('abrigo') || t.includes('sobrecamisa')) return 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=512&h=512&fit=crop';
+    if (t.includes('sudadera') || t.includes('jersey') || t.includes('suéter')) return 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=512&h=512&fit=crop';
+    if (t.includes('zapatilla') || t.includes('zapato') || t.includes('bota')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=512&h=512&fit=crop';
+    return 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=512&h=512&fit=crop'; // generic fashion
+  };
+
   useEffect(() => {
     let timeoutId;
     let isMounted = true;
-
-    const getFallbackImage = (tipo) => {
-      const t = tipo.toLowerCase();
-      if (t.includes('camiseta') || t.includes('camisa') || t.includes('top')) return 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=512&h=512&fit=crop';
-      if (t.includes('pantalón') || t.includes('pantalon') || t.includes('jeans') || t.includes('vaquero')) return 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=512&h=512&fit=crop';
-      if (t.includes('chaqueta') || t.includes('abrigo') || t.includes('sobrecamisa')) return 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=512&h=512&fit=crop';
-      if (t.includes('sudadera') || t.includes('jersey') || t.includes('suéter')) return 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=512&h=512&fit=crop';
-      if (t.includes('zapatilla') || t.includes('zapato') || t.includes('bota')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=512&h=512&fit=crop';
-      return 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=512&h=512&fit=crop'; // generic fashion
-    };
 
     const fetchImage = () => {
       if (!canLoad || imgStatus !== 'waiting') return;
@@ -81,7 +81,10 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   };
 
   const handleError = () => {
-    if (imgStatus !== 'error') {
+    if (imgSrc && !imgSrc.includes('unsplash')) {
+      console.warn('AI Image failed to load, triggering instant fallback');
+      setImgSrc(getFallbackImage(prenda.tipo));
+    } else if (imgStatus !== 'error') {
       setImgStatus('error');
       if (onLoadComplete) onLoadComplete();
     }
