@@ -49,20 +49,21 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       
       setImgStatus('loading');
       
-      const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background`;
-      // Use Pollinations AI (FLUX) by assigning the URL directly to the image src
-      // This allows the browser to handle the connection, avoiding fetch timeouts and CORS issues.
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?nologo=true&width=512&height=512&seed=${Math.floor(Math.random() * 1000000)}`;
+      // Random string in prompt ensures a fresh image on retry without using query params that crash the API
+      const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background, style ${Math.floor(Math.random() * 1000)}`;
+      
+      // Use clean URL without any query parameters to avoid Pollinations 500 errors/hangs
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}`;
       
       setImgSrc(url);
       
-      // Set a 25-second timeout in case Pollinations is completely down
+      // Strict 10-second timeout. If it hangs, we fall back.
       timeoutId = setTimeout(() => {
         if (isMounted && imgStatus !== 'loaded') {
           console.warn('Pollinations timeout, falling back');
           setImgSrc(getFallbackImage(prenda.tipo));
         }
-      }, 25000);
+      }, 10000);
     };
 
     fetchImage();
