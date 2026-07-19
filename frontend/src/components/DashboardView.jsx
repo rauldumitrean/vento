@@ -37,16 +37,15 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
       }, 30000);
 
       try {
-        // Ultra-mejora del prompt visual
-        const simplePrompt = `A single standalone piece of clothing: ${prenda.descripcion}. High-end fashion editorial photography, cinematic studio lighting, 8k resolution, photorealistic, trendy streetwear catalog style, clean modern minimalist textured background, highly detailed fabric textures, premium look, no humans, no text, no mannequins`.trim();
+        // Prompt simplificado para que la IA genere mucho más rápido sin sobrecargar
+        const simplePrompt = `Standalone piece of clothing: ${prenda.descripcion}. High-end fashion editorial photography, clean minimalist background, premium look, no text`.trim();
         
-        // Usar Pollinations AI directamente desde el frontend evita los timeouts de 10s de Vercel 
-        // y nos permite cargar todas las imágenes en paralelo directamente desde el navegador del cliente.
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?nologo=true&model=flux&width=512&height=512&seed=${Math.floor(Math.random() * 1000000)}`;
+        // Usar Pollinations AI por defecto (Turbo) para máxima velocidad (1-2s) en paralelo
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?nologo=true&width=512&height=512&seed=${Math.floor(Math.random() * 1000000)}`;
         
         if (isMounted) {
           setImgSrc(url);
-          // Wait for <img onLoad> to set 'loaded' and clearTimeout
+          // Wait for <img onLoad> to set 'loaded'
         }
       } catch (err) {
         console.error('Error fetching image:', err);
