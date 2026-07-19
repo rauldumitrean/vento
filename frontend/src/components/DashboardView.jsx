@@ -44,26 +44,47 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
     let timeoutId;
     let isMounted = true;
 
-    const fetchImage = () => {
+    const fetchImage = async () => {
       if (!canLoad || imgStatus !== 'waiting') return;
       
       setImgStatus('loading');
       
-      // Random string in prompt ensures a fresh image on retry without using query params that crash the API
       const simplePrompt = `Catalog photo: ${prenda.descripcion}, minimal background, style ${Math.floor(Math.random() * 1000)}`;
       
-      // Use clean URL without any query parameters to avoid Pollinations 500 errors/hangs
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}`;
-      
-      setImgSrc(url);
-      
-      // Strict 10-second timeout. If it hangs, we fall back.
+      // Strict 15-second timeout.
       timeoutId = setTimeout(() => {
         if (isMounted && imgStatus !== 'loaded') {
-          console.warn('Pollinations timeout, falling back');
+          console.warn('AI timeout, falling back');
           setImgSrc(getFallbackImage(prenda.categoria || ''));
         }
-      }, 10000);
+      }, 15000);
+
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/generate-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ prompt: simplePrompt })
+        });
+
+        if (!isMounted) return;
+
+        if (!response.ok) throw new Error('API Error');
+        
+        const data = await response.json();
+        if (data.imageBase64) {
+          setImgSrc(data.imageBase64);
+        } else {
+          throw new Error('No image returned');
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.warn('AI Image generation failed, falling back', error);
+          setImgSrc(getFallbackImage(prenda.categoria || ''));
+        }
+      }
     };
 
     fetchImage();
