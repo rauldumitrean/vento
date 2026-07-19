@@ -175,11 +175,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token }) => {
   );
 };
 
-// Manages sequential image loading: card 0 first, then card 1, then card 2...
+// Loads all images in parallel for maximum speed
 const OutfitGrid = ({ prendas = [], darkMode, token }) => {
-  const [loadIndex, setLoadIndex] = useState(0);
-  const handleLoadComplete = () => setLoadIndex(prev => prev + 1);
-
   if (!prendas || !Array.isArray(prendas)) return null;
 
   return (
@@ -189,8 +186,7 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
           key={idx}
           prenda={prenda}
           darkMode={darkMode}
-          canLoad={idx <= loadIndex}
-          onLoadComplete={idx === loadIndex ? handleLoadComplete : undefined}
+          canLoad={true}
           token={token}
         />
       ))}
