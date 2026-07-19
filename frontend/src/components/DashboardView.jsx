@@ -526,7 +526,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         lat: wRes.data.lat,
         lon: wRes.data.lon,
         ubicacion: wRes.data.location,
-        clima: wRes.data.current
+        clima: wRes.data.current,
+        daily: wRes.data.daily
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       setOutfit(oRes.data.recomendacion);
@@ -877,11 +878,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-4">
-                  {/* FIX: Added °C unit so users know the temperature scale */}
                   <span className="text-6xl font-light">{weather.current.temperature_2m}°C</span>
                   <div className="opacity-70 mb-2">
-                    <p>Sensación térmica: {weather.current.apparent_temperature}°</p>
+                    <p>Sensación térmica: {weather.current.apparent_temperature}°C</p>
                     <p>Viento: {weather.current.wind_speed_10m} km/h • Humedad: {weather.current.relative_humidity_2m}%</p>
+                    {weather.daily && (
+                      <p className="mt-1 font-medium text-indigo-400 dark:text-indigo-300">
+                        Máxima: {weather.daily.temperature_2m_max[0]}°C • Mínima: {weather.daily.temperature_2m_min[0]}°C
+                      </p>
+                    )}
                   </div>
                 </div>
               </motion.div>

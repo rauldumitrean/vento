@@ -166,13 +166,14 @@ router.get('/weather', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas' });
     }
 
-    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=auto`);
+    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
     
     const responseData = {
       location: city || `${latitude}, ${longitude}`,
       lat: latitude,
       lon: longitude,
-      current: weatherResponse.data.current
+      current: weatherResponse.data.current,
+      daily: weatherResponse.data.daily
     };
 
     weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
@@ -186,7 +187,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
 
 router.post('/recomendacion', authMiddleware, async (req, res) => {
   try {
-    const { lat, lon, ubicacion, clima } = req.body;
+    const { lat, lon, ubicacion, clima, daily } = req.body;
 
     if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'INSERT_YOUR_GEMINI_KEY_HERE') {
@@ -251,7 +252,13 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       nameText = `IMPORTANTE: El usuario se llama ${dbUser.name}. Hazle un guiño personal mencionando su nombre de forma natural en el resumen o consejo extra.`;
     }
 
+    let weatherExtraText = "";
+    if (daily && daily.temperature_2m_max && daily.temperature_2m_min) {
+      weatherExtraText = `CRÍTICO: La temperatura máxima prevista para hoy es de ${daily.temperature_2m_max[0]}°C y la mínima de ${daily.temperature_2m_min[0]}°C. Basa tu recomendación en esta variación térmica para todo el día, no solo en la actual.`;
+    }
+
     const prompt = `Eres un asesor de moda experto y personal. El clima actual en ${ubicacion} es de ${clima.temperature_2m}°C (sensación térmica de ${clima.apparent_temperature}°C) con una humedad del ${clima.relative_humidity_2m}% y velocidad del viento de ${clima.wind_speed_10m} km/h. 
+${weatherExtraText}
 ${nameText}
 ${genderText}
 ${ageText}
