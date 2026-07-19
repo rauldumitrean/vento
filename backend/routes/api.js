@@ -83,7 +83,7 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
     console.error('Error uploading avatar:', error?.response?.data || error.message);
     res.status(500).json({ error: 'Error al subir la imagen.' });
   }
-
+});
 
 // Cache in-memory simple para el clima
 const weatherCache = new Map();
