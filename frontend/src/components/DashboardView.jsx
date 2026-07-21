@@ -43,7 +43,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
       
       const seed = Math.floor(Math.random() * 1000000);
       const queryText = prenda.nombre_corto || prenda.descripcion.substring(0, 60);
-      const simplePrompt = `Product photography of ${queryText}, plain white background, isolated, ghost mannequin, no people`;
+      const simplePrompt = `Flat lay photography of ${queryText}, neatly folded on a clean pure white background, top-down view, strictly clothing only, NO humans, NO body parts, NO mannequins, NO faces, minimalist, isolated`;
       const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
       
       setImgSrc(url);
@@ -281,6 +281,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+  const [showWeatherModal, setShowWeatherModal] = useState(false);
 
   useEffect(() => {
     let interval;
@@ -922,9 +923,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               </div>
             )}
 
-            {/* Mostrar el clima tan pronto como exista, sin importar si el outfit sigue cargando */}
             {weather && (
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }} 
+                onClick={() => setShowWeatherModal(true)}
+                className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border cursor-pointer group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50 hover:bg-gray-800/60' : 'bg-white/70 border-white shadow-indigo-900/5 hover:bg-white/90'}`}
+              >
+                <div className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+                    Ver detalles del tiempo y mapa
+                  </span>
+                </div>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-4">
                   <span className="text-6xl font-light">{weather.current.temperature_2m}°C</span>
@@ -1000,6 +1010,125 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </div>
       </div>
+
+      {/* Weather Details Modal */}
+      <AnimatePresence>
+        {showWeatherModal && weather && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            onClick={() => setShowWeatherModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+            >
+              {/* Header */}
+              <div className={`sticky top-0 z-10 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Detalles del Tiempo - {weather.location}</h3>
+                <button onClick={() => setShowWeatherModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {/* Content */}
+              <div className="p-6 space-y-8">
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Temperatura</span>
+                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.temperature_2m}°C</span>
+                  </div>
+                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sensación Térmica</span>
+                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.apparent_temperature}°C</span>
+                  </div>
+                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Humedad</span>
+                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.relative_humidity_2m}%</span>
+                  </div>
+                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Viento</span>
+                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.wind_speed_10m} km/h</span>
+                  </div>
+                  
+                  {weather.current.uv_index !== undefined && (
+                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Índice UV</span>
+                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.uv_index}</span>
+                    </div>
+                  )}
+                  {weather.current.precipitation !== undefined && (
+                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Precipitación</span>
+                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.precipitation} mm</span>
+                    </div>
+                  )}
+                  {weather.current.cloud_cover !== undefined && (
+                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nubes</span>
+                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.cloud_cover}%</span>
+                    </div>
+                  )}
+                  {weather.current.surface_pressure !== undefined && (
+                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Presión</span>
+                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.surface_pressure} hPa</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 24-Hour Forecast */}
+                {weather.hourly && (
+                  <div>
+                    <h4 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Previsión 24 Horas</h4>
+                    <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+                      {weather.hourly.time.slice(0, 24).map((timeStr, idx) => {
+                        const date = new Date(timeStr);
+                        const hours = date.getHours().toString().padStart(2, '0') + ':00';
+                        return (
+                          <div key={idx} className={`flex flex-col items-center justify-center min-w-[80px] p-3 rounded-2xl shrink-0 snap-center ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                            <span className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{hours}</span>
+                            <span className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.hourly.temperature_2m[idx]}°</span>
+                            {weather.hourly.precipitation_probability && (
+                              <span className="text-[10px] text-blue-500 font-medium">{weather.hourly.precipitation_probability[idx]}% <span className="opacity-60 text-xs">💧</span></span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Map Embed */}
+                <div>
+                  <h4 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Mapa de la Zona</h4>
+                  <div className={`w-full h-[400px] rounded-2xl overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <iframe
+                      title="Weather Map"
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      scrolling="no"
+                      marginHeight="0"
+                      marginWidth="0"
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(weather.lon)-0.05},${parseFloat(weather.lat)-0.05},${parseFloat(weather.lon)+0.05},${parseFloat(weather.lat)+0.05}&layer=mapnik&marker=${weather.lat},${weather.lon}`}
+                      style={{ border: 0 }}
+                    ></iframe>
+                  </div>
+                  <div className="mt-2 text-right">
+                     <a href={`https://www.openstreetmap.org/?mlat=${weather.lat}&mlon=${weather.lon}#map=13/${weather.lat}/${weather.lon}`} target="_blank" rel="noopener noreferrer" className={`text-xs hover:underline ${darkMode ? 'text-indigo-400' : 'text-indigo-500'}`}>Ver mapa más grande</a>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Limit Warning Modal */}
       <AnimatePresence>

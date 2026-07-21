@@ -136,14 +136,15 @@ router.get('/weather', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas' });
     }
 
-    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
     
     const responseData = {
       location: city || `${latitude}, ${longitude}`,
       lat: latitude,
       lon: longitude,
       current: weatherResponse.data.current,
-      daily: weatherResponse.data.daily
+      daily: weatherResponse.data.daily,
+      hourly: weatherResponse.data.hourly
     };
 
     weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
