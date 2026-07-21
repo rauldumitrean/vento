@@ -2,7 +2,7 @@ import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw, Archive } from 'lucide-react';
+import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw, Archive, Thermometer, Droplets, Wind, Gauge, CloudRain, Sun, Cloud, Info } from 'lucide-react';
 import AdModal from './AdModal';
 import { lazy, Suspense } from 'react';
 const AdminView = lazy(() => import('./AdminView'));
@@ -29,6 +29,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
 
 
@@ -90,7 +91,17 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
   };
 
   return (
-    <motion.div whileHover={{ scale: 1.03, y: -5 }} className={`group overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}>
+    <>
+      <motion.div 
+        whileHover={{ scale: 1.03, y: -5 }} 
+        onClick={() => setShowModal(true)}
+        className={`group cursor-pointer relative overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}
+      >
+        <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+          <span className={`p-1.5 rounded-full inline-flex ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+            <Info size={16} />
+          </span>
+        </div>
       <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
@@ -180,6 +191,73 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
         </div>
       </div>
     </motion.div>
+
+    <AnimatePresence>
+      {showModal && (
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+          onClick={() => setShowModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            onClick={(e) => e.stopPropagation()}
+            className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col sm:flex-row hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+          >
+            <button onClick={() => setShowModal(false)} className={`absolute top-4 right-4 z-50 p-2 rounded-full transition-colors ${darkMode ? 'bg-black/50 hover:bg-gray-800 text-gray-300' : 'bg-white/50 hover:bg-gray-100 text-gray-600'} backdrop-blur-md`}>
+              <X size={20} />
+            </button>
+            
+            {/* Modal Image */}
+            <div className={`w-full sm:w-2/5 shrink-0 min-h-[250px] relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+              {imgSrc ? (
+                <img src={imgSrc} alt={prenda.descripcion} className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50">
+                  <Sparkles size={32} className="animate-pulse mb-2" />
+                  <span className="text-sm">Generando...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 sm:p-8 flex-1 flex flex-col">
+              <span className="text-xs font-bold uppercase tracking-widest text-indigo-500 mb-2">
+                {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
+              </span>
+              <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion}</h3>
+              
+              <div className="space-y-4 flex-1">
+                <div>
+                  <h4 className={`text-sm font-semibold uppercase tracking-wider mb-1 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h4>
+                  <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{prenda.descripcion}</p>
+                </div>
+                <div>
+                  <h4 className={`text-sm font-semibold uppercase tracking-wider mb-1 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h4>
+                  <p className={`text-sm leading-relaxed italic ${darkMode ? 'text-indigo-200' : 'text-indigo-700'}`}>{prenda.razon}</p>
+                </div>
+              </div>
+
+              {(prenda.enlace_compra && prenda.tienda_recomendada) && (
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <a 
+                    href={prenda.enlace_compra} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl py-3 transition-colors shadow-md shadow-indigo-500/20"
+                  >
+                    <ShoppingCart size={18} /> Buscar en {prenda.tienda_recomendada}
+                  </a>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 
@@ -1038,44 +1116,68 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               <div className="p-6 space-y-8">
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Temperatura</span>
+                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Thermometer size={16} className={darkMode ? 'text-indigo-400' : 'text-indigo-500'} />
+                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Temperatura</span>
+                    </div>
                     <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.temperature_2m}°C</span>
                   </div>
-                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sensación Térmica</span>
+                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Thermometer size={16} className={darkMode ? 'text-orange-400' : 'text-orange-500'} />
+                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sensación</span>
+                    </div>
                     <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.apparent_temperature}°C</span>
                   </div>
-                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Humedad</span>
+                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Droplets size={16} className={darkMode ? 'text-blue-400' : 'text-blue-500'} />
+                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Humedad</span>
+                    </div>
                     <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.relative_humidity_2m}%</span>
                   </div>
-                  <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Viento</span>
+                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Wind size={16} className={darkMode ? 'text-teal-400' : 'text-teal-500'} />
+                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Viento</span>
+                    </div>
                     <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.wind_speed_10m} km/h</span>
                   </div>
                   
                   {weather.current.uv_index !== undefined && (
-                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Índice UV</span>
+                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sun size={16} className={darkMode ? 'text-yellow-400' : 'text-yellow-500'} />
+                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Índice UV</span>
+                      </div>
                       <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.uv_index}</span>
                     </div>
                   )}
                   {weather.current.precipitation !== undefined && (
-                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Precipitación</span>
+                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <CloudRain size={16} className={darkMode ? 'text-blue-400' : 'text-blue-500'} />
+                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Precipitación</span>
+                      </div>
                       <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.precipitation} mm</span>
                     </div>
                   )}
                   {weather.current.cloud_cover !== undefined && (
-                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nubes</span>
+                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Cloud size={16} className={darkMode ? 'text-gray-400' : 'text-gray-400'} />
+                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nubes</span>
+                      </div>
                       <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.cloud_cover}%</span>
                     </div>
                   )}
                   {weather.current.surface_pressure !== undefined && (
-                    <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <span className={`block text-xs uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Presión</span>
+                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Gauge size={16} className={darkMode ? 'text-purple-400' : 'text-purple-500'} />
+                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Presión</span>
+                      </div>
                       <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.surface_pressure} hPa</span>
                     </div>
                   )}
@@ -1094,7 +1196,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                             <span className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{hours}</span>
                             <span className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.hourly.temperature_2m[idx]}°</span>
                             {weather.hourly.precipitation_probability && (
-                              <span className="text-[10px] text-blue-500 font-medium">{weather.hourly.precipitation_probability[idx]}% <span className="opacity-60 text-xs">💧</span></span>
+                              <span className="text-[10px] text-blue-500 font-medium flex items-center justify-center gap-0.5 mt-1">
+                                {weather.hourly.precipitation_probability[idx]}% <Droplets size={10} className="opacity-80" />
+                              </span>
                             )}
                           </div>
                         );
