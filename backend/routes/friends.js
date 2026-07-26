@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../prismaClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const crypto = require('crypto');
 
@@ -15,15 +14,21 @@ router.get('/code', authMiddleware, async (req, res) => {
   try {
     let user = await prisma.user.findUnique({ where: { id: req.user.id } });
     
+    // FIX B-M18: null check
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
     if (!user.friendCode) {
       // Generar uno nuevo y asegurar que sea único
       let isUnique = false;
       let newCode = '';
-      while (!isUnique) {
+      let attempts = 0;
+      while (!isUnique && attempts < 10) {
         newCode = generateFriendCode();
         const exists = await prisma.user.findUnique({ where: { friendCode: newCode } });
         if (!exists) isUnique = true;
+        attempts++;
       }
+      if (!isUnique) return res.status(500).json({ error: 'No se pudo generar un código único' });
       
       user = await prisma.user.update({
         where: { id: req.user.id },
@@ -98,7 +103,9 @@ router.get('/requests', authMiddleware, async (req, res) => {
 
 // Aceptar o rechazar solicitud
 router.post('/accept', authMiddleware, async (req, res) => {
-  const { friendshipId, accept } = req.body;
+  const friendshipId = parseInt(req.body.friendshipId);
+  const { accept } = req.body;
+  if (isNaN(friendshipId)) return res.status(400).json({ error: 'ID inválido' });
   
   try {
     const friendship = await prisma.friendship.findUnique({ where: { id: friendshipId } });
@@ -194,9 +201,11 @@ router.get('/:friendId/messages', authMiddleware, async (req, res) => {
 // Enviar un mensaje de texto
 router.post('/:friendId/messages', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido' });
   const { content } = req.body;
   
-  if (!content) return res.status(400).json({ error: 'El contenido no puede estar vacío' });
+  if (!content || !content.trim()) return res.status(400).json({ error: 'El mensaje no puede estar vacío' });
+  if (content.length > 2000) return res.status(400).json({ error: 'El mensaje es demasiado largo (máximo 2000 caracteres)' });
 
   try {
     // Validar amistad
@@ -230,6 +239,7 @@ router.post('/:friendId/messages', authMiddleware, async (req, res) => {
 // Compartir un outfit
 router.post('/:friendId/share', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido' });
   const { consultaId } = req.body;
 
   if (!consultaId) return res.status(400).json({ error: 'Falta el ID del outfit' });
@@ -277,6 +287,7 @@ router.post('/:friendId/share', authMiddleware, async (req, res) => {
 // Reportar a un usuario
 router.post('/:friendId/report', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido' });
   const { reason, description } = req.body;
 
   if (!reason) return res.status(400).json({ error: 'El motivo es obligatorio' });

@@ -2,21 +2,30 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const authMiddleware = require('../middleware/authMiddleware');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../prismaClient');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 // FIX: Moved bcrypt require to top level instead of inside route handlers
 const bcrypt = require('bcryptjs');
 const { sendBanNotificationEmail, sendNewTicketEmail } = require('../services/emailService');
 
-const prisma = new PrismaClient();
-// Fallback if no key is provided during prototype to prevent hard crashes on boot, though it will fail on use
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
+if (!process.env.GEMINI_API_KEY) {
+  console.error("FATAL ERROR: GEMINI_API_KEY is not defined in environment variables.");
+  process.exit(1);
+}
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// FIX A-4: In-memory lock to prevent concurrent request race conditions on daily limits
+const activeRequests = new Map();
+// FIX B-M2: LRUCache for weather
+const weatherCacheKeys = [];
 
 // Admin Middleware
 const adminMiddleware = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de Administrador.' });
+    if (!user || user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de Administrador.' });
+    }
     next();
   } catch (error) {
     res.status(500).json({ error: 'Error verificando rol de administrador' });
@@ -103,21 +112,12 @@ router.get('/autocomplete', authMiddleware, async (req, res) => {
 router.get('/weather', authMiddleware, async (req, res) => {
   try {
     const { lat, lon, city } = req.query;
-    const cacheKey = city ? `city_${city.toLowerCase()}` : `coord_${lat}_${lon}`;
-    
-    // Check cache (10 min TTL)
-    if (weatherCache.has(cacheKey)) {
-      const cached = weatherCache.get(cacheKey);
-      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
-        return res.json(cached.data);
-      }
-      weatherCache.delete(cacheKey);
-    }
-
     let latitude = lat;
     let longitude = lon;
     
-    if (city && (!lat || !lon)) {
+    // FIX B-M3: use normalized coordinates for cache key if city is used
+    // Wait, first we need to get the coordinates before caching!
+    if (city && (latitude == null || longitude == null)) {
       const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
       if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
         return res.status(404).json({ error: 'Ciudad no encontrada' });
@@ -126,7 +126,8 @@ router.get('/weather', authMiddleware, async (req, res) => {
       longitude = geoResponse.data.results[0].longitude;
     }
 
-    if (!latitude || !longitude) {
+    // FIX B-M4: allow 0
+    if (latitude == null || longitude == null) {
       return res.status(400).json({ error: 'Se requiere latitud y longitud o nombre de ciudad' });
     }
 
@@ -134,6 +135,20 @@ router.get('/weather', authMiddleware, async (req, res) => {
     const lonNum = parseFloat(longitude);
     if (isNaN(latNum) || isNaN(lonNum) || latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
       return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas' });
+    }
+    
+    // Normalised cache key based on coordinates only (fixes B-M3)
+    const cacheKey = `coord_${latNum.toFixed(2)}_${lonNum.toFixed(2)}`;
+    
+    // Check cache (10 min TTL)
+    if (weatherCache.has(cacheKey)) {
+      const cached = weatherCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
+        return res.json(cached.data);
+      }
+      weatherCache.delete(cacheKey);
+      const index = weatherCacheKeys.indexOf(cacheKey);
+      if (index > -1) weatherCacheKeys.splice(index, 1);
     }
 
     const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
@@ -147,7 +162,13 @@ router.get('/weather', authMiddleware, async (req, res) => {
       hourly: weatherResponse.data.hourly
     };
 
+    // FIX B-M2: enforce size limit on cache
+    if (weatherCache.size >= 500) {
+      const oldestKey = weatherCacheKeys.shift();
+      if (oldestKey) weatherCache.delete(oldestKey);
+    }
     weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+    weatherCacheKeys.push(cacheKey);
 
     res.json(responseData);
   } catch (error) {
@@ -157,6 +178,12 @@ router.get('/weather', authMiddleware, async (req, res) => {
 });
 
 router.post('/recomendacion', authMiddleware, async (req, res) => {
+  if (activeRequests.has(req.user.id)) {
+    return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
+  }
+  
+  activeRequests.set(req.user.id, true);
+
   try {
     const { lat, lon, ubicacion, clima, daily } = req.body;
 
@@ -182,13 +209,15 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
 
     // --- SISTEMA FREEMIUM: Límite de 5 outfits al día ---
     if (!dbUser.isPremium && dbUser.role !== 'ADMIN') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const now = new Date();
+      // FIX B-M5: use UTC timezone for daily limits
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
       const consultasHoy = await prisma.consulta.count({
           where: { userId: req.user.id, createdAt: { gte: today } }
       });
   
       if (consultasHoy >= 5) {
+          activeRequests.delete(req.user.id);
           return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
       }
     }
@@ -324,12 +353,12 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       }
     });
 
-    // (La lógica de limpieza automática se ha eliminado porque ahora bloqueamos la generación si superan el límite)
-
     res.json({ consultaId: consulta.id, recomendacion: recomendacionJSON });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al generar la recomendación' });
+  } finally {
+    activeRequests.delete(req.user.id);
   }
 });
 
@@ -338,9 +367,24 @@ router.post('/chat', authMiddleware, async (req, res) => {
     const { consultaId, mensaje, imageBase64, imageMimeType } = req.body;
     if (!consultaId || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
 
-    const consulta = await prisma.consulta.findUnique({ where: { id: consultaId }, include: { mensajes: true } });
+    // FIX B-M6: MIME type validation for image uploads
+    if (imageBase64 && imageMimeType) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(imageMimeType)) {
+        return res.status(400).json({ error: 'Tipo de imagen no soportado. Usa JPEG, PNG o WebP.' });
+      }
+    }
+
+    // FIX B-M7: Pagination limit for chat history to prevent unbounded memory growth
+    const consulta = await prisma.consulta.findUnique({ 
+      where: { id: consultaId }, 
+      include: { mensajes: { take: 50, orderBy: { createdAt: 'desc' } } } 
+    });
     if (!consulta) return res.status(404).json({ error: 'Consulta no encontrada' });
     if (consulta.userId !== req.user.id) return res.status(403).json({ error: 'No autorizado' });
+
+    // Ensure they are in chronological order for the model
+    consulta.mensajes.reverse();
 
     await prisma.mensajeChat.create({
       data: { consultaId, rol: 'user', contenido: mensaje }
@@ -471,6 +515,7 @@ router.post('/armario', authMiddleware, async (req, res) => {
   try {
     const { categoria, descripcion, color } = req.body;
     if (!categoria || !descripcion) return res.status(400).json({ error: 'Faltan datos' });
+    if (descripcion.length > 500) return res.status(400).json({ error: 'La descripción no puede superar los 500 caracteres' });
     const nuevaPrenda = await prisma.prendaArmario.create({
       data: { userId: req.user.id, categoria, descripcion, color }
     });
@@ -513,7 +558,10 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    // FIX B-M10: type validation
     const { isFavorite } = req.body;
+    if (typeof isFavorite !== 'boolean') return res.status(400).json({ error: 'isFavorite debe ser un booleano' });
+    
     const consulta = await prisma.consulta.update({
       where: { id, userId: req.user.id },
       data: { isFavorite }
@@ -777,12 +825,14 @@ router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (r
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
-    const { isPremium } = req.body;
+    const { isPremium, premiumPlan } = req.body;
+    // FIX B-M12: Validate boolean and include premiumPlan
+    if (typeof isPremium !== 'boolean') return res.status(400).json({ error: 'isPremium debe ser booleano' });
     const user = await prisma.user.update({
       where: { id },
-      data: { isPremium }
+      data: { isPremium, premiumPlan: isPremium ? premiumPlan || 'pro' : null }
     });
-    res.json({ id: user.id, isPremium: user.isPremium });
+    res.json({ id: user.id, isPremium: user.isPremium, premiumPlan: user.premiumPlan });
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar estado premium' });
   }
@@ -838,6 +888,7 @@ router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res)
     });
     res.json({ id: user.id, email: user.email, name: user.name, gender: user.gender, role: user.role });
   } catch (error) {
+    if (error.code === 'P2002') return res.status(409).json({ error: 'El email ya está en uso por otro usuario' });
     res.status(500).json({ error: 'Error al editar usuario' });
   }
 });

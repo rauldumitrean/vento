@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../prismaClient');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
@@ -253,7 +252,15 @@ router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const { name, gender, age, estiloPersonal, estiloDetalles } = req.body;
     const updateData = { name, gender, estiloPersonal, estiloDetalles };
-    if (age !== undefined) updateData.age = age === '' || age === null ? null : parseInt(age);
+    if (age !== undefined && age !== null && age !== '') {
+      const parsedAge = parseInt(age);
+      if (isNaN(parsedAge) || parsedAge < 13 || parsedAge > 120) {
+        return res.status(400).json({ error: 'La edad debe estar entre 13 y 120' });
+      }
+      updateData.age = parsedAge;
+    } else if (age === '' || age === null) {
+      updateData.age = null;
+    }
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);

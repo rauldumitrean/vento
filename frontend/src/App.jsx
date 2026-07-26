@@ -165,8 +165,8 @@ function App() {
             <Route 
               path="/app" 
               element={token 
-                ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /></ErrorBoundary> 
-                : <Navigate to="/login" />} 
+                ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => { setToken(null); window.location.href = '/'; }} /></ErrorBoundary> 
+                : <Navigate to="/" />} 
             />
             <Route 
               path="/support" 

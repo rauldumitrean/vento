@@ -1,25 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../prismaClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const emailService = require('../services/emailService');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 router.post('/create-checkout-session', authMiddleware, async (req, res) => {
-  const { plan } = req.body; // 'monthly' o 'lifetime'
-  
-  if (!plan || (plan !== 'monthly' && plan !== 'lifetime')) {
-    return res.status(400).json({ error: 'Plan inválido' });
-  }
-
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return res.status(500).json({ error: 'Stripe no está configurado en el servidor' });
-  }
-
   try {
+    const { plan } = req.body; // 'monthly' o 'lifetime'
+    
+    if (!plan || (plan !== 'monthly' && plan !== 'lifetime')) {
+      return res.status(400).json({ error: 'Plan inválido' });
+    }
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ error: 'Stripe no está configurado en el servidor' });
+    }
+
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     
     let priceId;
     let mode;
@@ -131,6 +131,15 @@ router.post('/webhook', async (req, res) => {
       const plan = session.metadata?.plan;
 
       if (userId && !isNaN(userId)) {
+        const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+        if (!currentUser) {
+          console.error(`Webhook: userId no existe en DB: ${userId}`);
+          return res.status(404).send('User not found');
+        }
+
+        // FIX B-M24: Webhook idempotency for emails
+        const alreadyProcessed = currentUser.isPremium && currentUser.stripeSubscriptionId === (session.subscription || null) && currentUser.premiumPlan === plan;
+
         const updatedUser = await prisma.user.update({
           where: { id: userId },
           data: {
@@ -142,8 +151,10 @@ router.post('/webhook', async (req, res) => {
         });
         console.log(`Usuario ${userId} actualizado a plan ${plan} correctamente.`);
         
-        // Send async payment success email (must await in Vercel serverless)
-        await emailService.sendPaymentSuccessEmail(updatedUser, plan).catch(console.error);
+        // Send async payment success email only once
+        if (!alreadyProcessed) {
+          await emailService.sendPaymentSuccessEmail(updatedUser, plan).catch(console.error);
+        }
         
       } else {
         console.error(`Webhook: userId inválido recibido: ${session.client_reference_id}`);

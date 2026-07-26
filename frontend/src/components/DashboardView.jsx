@@ -276,7 +276,7 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {prendas.map((prenda, idx) => (
         <PrendaCard
-          key={idx}
+          key={`${prenda.nombre_corto || 'prenda'}-${idx}`}
           prenda={prenda}
           darkMode={darkMode}
           canLoad={idx <= currentIdx}
@@ -504,7 +504,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         window.location.href = res.data.url;
       }
     } catch (err) {
-      alert('Error al iniciar el pago: ' + (err.response?.data?.error || err.message));
+      showToast('Error al iniciar el pago: ' + (err.response?.data?.error || err.message), 'error');
     }
   };
 
@@ -555,12 +555,19 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   }, [location, token]);
 
   useEffect(() => {
-    Cookies.set('darkMode', darkMode, { expires: 365 });
+    Cookies.set('darkMode', String(darkMode), { expires: 365 });
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', darkMode ? '#030712' : '#f9fafb');
   }, [darkMode]);
 
   // Heartbeat: ping the server every 30s so the admin dashboard knows this user has the tab open
@@ -633,7 +640,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   };
 
+  const requestCountRef = useRef(0);
+
   const fetchWeatherAndOutfit = async (lat, lon, city) => {
+    const currentRequestId = ++requestCountRef.current;
     setLoading(true);
     setIsFavorite(false);
     setOutfit(null); // Clear previous outfit so it doesn't linger on error
@@ -644,6 +654,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       else url += `city=${city}`;
 
       const wRes = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (currentRequestId !== requestCountRef.current) return;
       setWeather(wRes.data);
 
       const oRes = await axios.post(`${API_URL}/api/recomendacion`, {
@@ -654,6 +665,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         daily: wRes.data.daily
       }, { headers: { Authorization: `Bearer ${token}` } });
 
+      if (currentRequestId !== requestCountRef.current) return;
+
       setOutfit(oRes.data.recomendacion);
       setConsultaId(oRes.data.consultaId);
       setChat([]);
@@ -661,9 +674,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       // Update local history count if we generated successfully and aren't at the limit yet
       setHistoryCount(prev => Math.min(prev + 1, historyLimit));
     } catch (error) {
+      if (currentRequestId !== requestCountRef.current) return;
       showToast(error.response?.data?.error || 'Error al obtener los datos');
     } finally {
-      setLoading(false);
+      if (currentRequestId === requestCountRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -736,16 +752,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   };
 
   // Sync browser/Safari theme-color with dark mode
-  useEffect(() => {
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', darkMode ? '#030712' : '#f9fafb');
-    Cookies.set('darkMode', String(darkMode, { expires: 365 }));
-  }, [darkMode]);
 
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
@@ -763,7 +769,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         ) : (
           <>
             {chat.map((msg, idx) => (
-              <ChatMessage key={idx} msg={msg} darkMode={darkMode} token={token} />
+              <ChatMessage key={`${idx}-${msg.content?.substring(0,10)}`} msg={msg} darkMode={darkMode} token={token} />
             ))}
             {isChatLoading && (
               <div className="flex justify-start">
@@ -956,7 +962,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     >
                       {suggestions.map((city, idx) => (
                         <div 
-                          key={idx}
+                          key={`${city.name || 'sugg'}-${idx}`}
                           onClick={() => {
                             if (!city.latitude) return;
                             handleSelectSuggestion(city);
@@ -1330,8 +1336,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
       <AnimatePresence>
         {showAgePrompt && (
-          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAgePrompt(false)}>
             <motion.div 
+              onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.9, y: 20, opacity: 0 }} 
               animate={{ scale: 1, y: 0, opacity: 1 }} 
               exit={{ scale: 0.9, y: 20, opacity: 0 }}

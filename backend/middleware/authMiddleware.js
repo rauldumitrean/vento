@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../prismaClient');
 // lastActive is already handled by /api/ping heartbeat endpoint
 
 const authMiddleware = async (req, res, next) => {
