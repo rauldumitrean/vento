@@ -30,24 +30,26 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  // FIX A-2: Store timer ID in a ref so we can clear it on unmount
+  const retryTimerRef = React.useRef(null);
 
 
 
   useEffect(() => {
-    let timeoutId;
     let isMounted = true;
 
     const fetchImage = () => {
       if (!canLoad || imgStatus !== 'waiting') return;
       
-      setImgStatus('loading');
+      // FIX A-1: Guard all state updates with isMounted check
+      if (isMounted) setImgStatus('loading');
       
       const seed = Math.floor(Math.random() * 1000000);
-      const queryText = prenda.nombre_corto || prenda.descripcion.substring(0, 60);
-      const simplePrompt = `Flat lay photography of ${queryText}, neatly folded on a clean pure white background, top-down view, strictly clothing only, NO humans, NO body parts, NO mannequins, NO faces, minimalist, isolated`;
+      const queryText = prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
+      const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
       const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
       
-      setImgSrc(url);
+      if (isMounted) setImgSrc(url);
     };
 
     if (canLoad && loadAttempt === 0) {
@@ -58,6 +60,8 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
 
     return () => {
       isMounted = false;
+      // FIX A-2: Clear any pending retry timer when component unmounts
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
   }, [canLoad, loadAttempt, prenda.descripcion, token]);
 
@@ -69,12 +73,13 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
   };
 
   const handleError = () => {
-    if (loadAttempt < 3) {
-      setTimeout(() => {
+    if (loadAttempt < 2) {
+      // FIX A-2: Store timer ID so we can cancel it on unmount
+      retryTimerRef.current = setTimeout(() => {
         setImgStatus('waiting');
         setImgSrc(null);
         setLoadAttempt(prev => prev + 1);
-      }, 1500);
+      }, 3000);
     } else {
       if (imgStatus !== 'error') {
         setImgStatus('error');
@@ -284,6 +289,9 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
 };
 
 const ChatMessage = ({ msg, darkMode, token }) => {
+  // FIX C-1: Hook must be called unconditionally BEFORE any conditional return
+  const [currentChatIdx, setCurrentChatIdx] = useState(0);
+
   if (msg.role === 'user') {
     return (
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col items-end gap-2 max-w-[85%] self-end">
@@ -314,8 +322,6 @@ const ChatMessage = ({ msg, darkMode, token }) => {
   } catch (e) {
     // Es texto normal o falló el parseo
   }
-
-  const [currentChatIdx, setCurrentChatIdx] = useState(0);
 
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-2 max-w-[95%] self-start">
@@ -546,7 +552,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [location]);
+  }, [location, token]);
 
   useEffect(() => {
     Cookies.set('darkMode', darkMode, { expires: 365 });
@@ -877,7 +883,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             <ArmarioHistorial token={token} darkMode={darkMode} />
           ) : view === 'admin' ? (
             // FIX: Only render AdminView if user actually has ADMIN role
-            userData?.role === 'ADMIN' 
+            // FIX C-2: userData was never defined in this scope — read role from cookie (set on login)
+            Cookies.get('userRole') === 'ADMIN' 
               ? <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>}><AdminView token={token} darkMode={darkMode} /></Suspense>
               : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
           ) : view === 'profile' ? (
@@ -923,7 +930,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
                 />
                 {location && (
                   <button 
@@ -1009,18 +1016,23 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border cursor-pointer group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50 hover:bg-gray-800/60' : 'bg-white/70 border-white shadow-indigo-900/5 hover:bg-white/90'}`}
               >
                 <div className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
-                    Ver detalles del tiempo y mapa
+                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-2 ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+                    <MapPin size={14} /> Ver detalles y mapa
                   </span>
                 </div>
-                <h2 className="text-sm tracking-widest uppercase mb-4 opacity-50">Clima Actual en {weather.location}</h2>
-                <div className="flex items-end gap-4">
-                  <span className="text-6xl font-light">{weather.current.temperature_2m}°C</span>
-                  <div className="opacity-70 mb-2">
-                    <p>Sensación térmica: {weather.current.apparent_temperature}°C</p>
-                    <p>Viento: {weather.current.wind_speed_10m} km/h • Humedad: {weather.current.relative_humidity_2m}%</p>
+                <div className="absolute right-8 bottom-8 opacity-20 pointer-events-none">
+                  {weather.current.temperature_2m > 25 ? <Sun size={120} /> : weather.current.temperature_2m < 10 ? <CloudRain size={120} /> : <Cloud size={120} />}
+                </div>
+                <h2 className="text-sm tracking-widest uppercase mb-4 opacity-70 font-semibold">Clima Actual en {weather.location}</h2>
+                <div className="flex items-end gap-6 relative z-10">
+                  <span className="text-6xl sm:text-7xl font-light tracking-tighter">{weather.current.temperature_2m}°C</span>
+                  <div className="opacity-90 mb-2">
+                    <p className="font-medium text-lg">Sensación térmica: {weather.current.apparent_temperature}°C</p>
+                    <p className="opacity-80 mt-1 flex items-center gap-2">
+                      <Wind size={16} /> {weather.current.wind_speed_10m} km/h <span className="opacity-50">|</span> <Droplets size={16} /> {weather.current.relative_humidity_2m}%
+                    </p>
                     {weather.daily && (
-                      <p className="mt-1 font-medium text-indigo-400 dark:text-indigo-300">
+                      <p className={`mt-2 font-semibold ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>
                         Máxima: {weather.daily.temperature_2m_max[0]}°C • Mínima: {weather.daily.temperature_2m_min[0]}°C
                       </p>
                     )}
@@ -1182,6 +1194,27 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     </div>
                   )}
                 </div>
+
+                {weather.latitude && weather.longitude && (
+                  <div className={`mt-8 p-1 rounded-2xl overflow-hidden shadow-inner ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                    <div className="p-4">
+                      <h4 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <MapPin size={16} className="text-indigo-500"/> Ubicación Interactiva
+                      </h4>
+                    </div>
+                    <div className="w-full h-80 rounded-b-xl overflow-hidden border-t border-gray-200 dark:border-gray-700">
+                      <iframe 
+                        width="100%" 
+                        height="100%" 
+                        frameBorder="0" 
+                        scrolling="no" 
+                        marginHeight="0" 
+                        marginWidth="0" 
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${weather.longitude-0.1}%2C${weather.latitude-0.1}%2C${weather.longitude+0.1}%2C${weather.latitude+0.1}&layer=mapnik&marker=${weather.latitude}%2C${weather.longitude}`}
+                      ></iframe>
+                    </div>
+                  </div>
+                )}
 
                 {/* 24-Hour Forecast */}
                 {weather.hourly && (

@@ -43,162 +43,6 @@ export default function AuthView({ setToken }) {
     }
   }, []);
 
-  const handleAuth = async (e, endpoint) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
-      Cookies.set('userRole', res.data.user?.role || 'USER', { expires: 365 });
-      if (res.data.user?.name) Cookies.set('userName', res.data.user.name, { expires: 365 });
-      if (res.data.user?.gender) Cookies.set('userGender', res.data.user.gender, { expires: 365 });
-      if (res.data.user?.age) Cookies.set('userAge', res.data.user.age, { expires: 365 });
-      if (res.data.user?.isPremium !== undefined) Cookies.set('isPremium', res.data.user.isPremium, { expires: 365 });
-      if (res.data.user?.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
-      
-      if (location.state?.plan && location.state.plan !== 'free') {
-        try {
-          const checkoutRes = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan: location.state.plan }, {
-            headers: { Authorization: `Bearer ${res.data.token}` }
-          });
-          if (checkoutRes.data.url) {
-            Cookies.set('token', res.data.token, { expires: 365 });
-            window.location.href = checkoutRes.data.url;
-            return;
-          }
-        } catch (e) {
-          console.error(e);
-          setError('Error iniciando el pago. Puedes intentarlo desde los ajustes de perfil.');
-        }
-      }
-      
-      if (!isLogin && (!location.state?.plan || location.state?.plan === 'free')) {
-        setPendingAuth({ token: res.data.token });
-        setShowPlans(true);
-        return;
-      }
-      
-      setToken(res.data.token);
-    } catch (err) {
-      if (err.response?.data?.error === 'BANNED') {
-        setIsBannedError(true);
-        setBanDetails(err.response.data);
-      } else {
-        setError(err.response?.data?.error || 'Error de conexión');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setError('');
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API_URL}/api/auth/google`, { token: credentialResponse.credential });
-      Cookies.set('userRole', res.data.user?.role || 'USER', { expires: 365 });
-      if (res.data.user?.name) Cookies.set('userName', res.data.user.name, { expires: 365 });
-      if (res.data.user?.isPremium !== undefined) Cookies.set('isPremium', res.data.user.isPremium, { expires: 365 });
-      if (res.data.user?.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
-      
-      setToken(res.data.token);
-    } catch (err) {
-      if (err.response?.data?.error === 'BANNED') {
-        setIsBannedError(true);
-        setBanDetails(err.response.data);
-      } else {
-        setError(err.response?.data?.error || 'Error con Google');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDirectCheckout = async (plan) => {
-    setCheckoutLoading(true);
-    try {
-      const res = await axios.post(`${API_URL}/api/payments/create-checkout-session`, { plan }, {
-        headers: { Authorization: `Bearer ${pendingAuth.token}` }
-      });
-      if (res.data.url) {
-        Cookies.set('token', pendingAuth.token, { expires: 365 });
-        window.location.href = res.data.url;
-      }
-    } catch (err) {
-      alert('Error iniciando el pago.');
-      setCheckoutLoading(false);
-    }
-  };
-
-  const switchMode = (toLogin) => {
-    setError('');
-    setPassword('');
-    setRegisterStep(1);
-    setIsLogin(toLogin);
-  };
-
-  // ─── Plans screen ──────────────────────────────────────────────────────────
-  if (showPlans && pendingAuth) {
-    return (
-      <div className="min-h-[100dvh] bg-black font-sans flex items-center justify-center p-4">
-        <div className="max-w-5xl w-full">
-          <button
-            onClick={() => { setShowPlans(false); setPendingAuth(null); }}
-            className="text-gray-400 hover:text-white text-sm flex items-center gap-2 mb-8 transition-colors"
-          >
-            ← Volver al registro
-          </button>
-          <h2 className="text-4xl md:text-5xl font-black text-white text-center mb-12">¡Cuenta creada! Elige tu plan</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Básico */}
-            <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 flex flex-col hover:border-gray-700 transition-all">
-              <h3 className="text-xl font-bold mb-2 text-white">Básico</h3>
-              <div className="text-4xl font-black mb-6 text-white">Gratis</div>
-              <p className="text-gray-400 mb-8 border-b border-gray-800 pb-8 text-sm flex-1">Perfecto para empezar a probar Ventoo. <br/><span className="text-gray-500 mt-2 block font-medium">Contiene anuncios obligatorios.</span></p>
-              <button onClick={() => setToken(pendingAuth.token)} className="w-full py-3 rounded-xl border border-gray-700 hover:bg-gray-800 text-white font-bold transition-colors">
-                Empezar gratis
-              </button>
-            </div>
-            {/* Mensual */}
-            <div className="bg-indigo-900/40 border border-indigo-500/50 rounded-3xl p-8 flex flex-col relative shadow-[0_0_50px_rgba(99,102,241,0.15)]">
-              <h3 className="text-xl font-bold mb-2 text-indigo-100">Premium Mensual</h3>
-              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
-                1,99€ <span className="text-base text-indigo-300 font-normal">/mes</span>
-              </div>
-              <p className="text-indigo-200/70 mb-8 border-b border-indigo-500/20 pb-8 text-sm flex-1">Outfits ilimitados, IA de visión y chat sin límites. <br/><strong className="text-indigo-300 mt-2 block">100% Sin anuncios.</strong></p>
-              <button 
-                disabled={checkoutLoading}
-                onClick={() => handleDirectCheckout('monthly')} 
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition-colors shadow-lg shadow-indigo-900/50 disabled:opacity-50"
-              >
-                {checkoutLoading ? 'Procesando...' : 'Suscribirse por 1,99€'}
-              </button>
-            </div>
-            {/* Lifetime */}
-            <div className="bg-purple-900/40 border border-purple-500/50 rounded-3xl p-8 flex flex-col relative shadow-[0_0_50px_rgba(168,85,247,0.15)]">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg whitespace-nowrap">
-                <Crown size={14} /> MEJOR VALOR
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-purple-100">Premium Lifetime</h3>
-              <div className="text-4xl font-black mb-6 text-white flex items-baseline gap-2">
-                20€ <span className="text-base text-purple-300 font-normal">pago único</span>
-              </div>
-              <p className="text-purple-200/70 mb-8 border-b border-purple-500/20 pb-8 text-sm flex-1">Todo premium para siempre. Sin cuotas recurrentes. <br/><strong className="text-purple-300 mt-2 block">100% Sin anuncios.</strong></p>
-              <button 
-                disabled={checkoutLoading}
-                onClick={() => handleDirectCheckout('lifetime')} 
-                className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-white transition-colors shadow-lg shadow-purple-900/50 disabled:opacity-50"
-              >
-                {checkoutLoading ? 'Procesando...' : 'Comprar por 20€'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Banned screen ─────────────────────────────────────────────────────────
   if (isBannedError) {
     return (
       <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans">
@@ -248,6 +92,59 @@ export default function AuthView({ setToken }) {
       </div>
     );
   }
+
+  const handleAuth = async (e, endpoint) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
+      if (res.data.token) {
+        setToken(res.data.token);
+      }
+    } catch (err) {
+      if (err.response?.status === 403 && err.response?.data?.banReason) {
+         setIsBannedError(true);
+         setBanDetails(err.response.data);
+      } else {
+         setError(err.response?.data?.message || 'Error de autenticación');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const switchMode = (toLogin) => {
+    setIsLogin(toLogin);
+    setError('');
+    setEmail('');
+    setPassword('');
+    setName('');
+    setRegisterStep(1);
+    setAge('');
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/api/auth/google`, {
+        token: credentialResponse.credential
+      });
+      if (res.data.token) {
+        setToken(res.data.token);
+      }
+    } catch (err) {
+      if (err.response?.status === 403 && err.response?.data?.banReason) {
+         setIsBannedError(true);
+         setBanDetails(err.response.data);
+      } else {
+         setError(err.response?.data?.message || 'Error al autenticar con Google');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ─── Accent side panel content ─────────────────────────────────────────────
   const PanelContent = ({ isLoginPanel }) => (

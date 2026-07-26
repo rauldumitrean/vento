@@ -556,6 +556,11 @@ router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
     const sharedConsulta = await prisma.consulta.findUnique({ where: { id } });
     if (!sharedConsulta) return res.status(404).json({ error: 'Consulta no encontrada' });
 
+    // FIX A-6: IDOR prevention — only allow saving outfits that were explicitly shared
+    if (!sharedConsulta.isShared) {
+      return res.status(403).json({ error: 'Este outfit no ha sido compartido.' });
+    }
+
     // Verificar si ya la tiene guardada (para no duplicar innecesariamente)
     const existing = await prisma.consulta.findFirst({
       where: {
@@ -637,6 +642,10 @@ router.delete('/admin/outfits/:id', authMiddleware, adminMiddleware, async (req,
 });
 
 router.delete('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) => {
+  // FIX C-7: Require explicit confirmation to prevent accidental data wipe
+  if (req.body.confirmDelete !== 'DELETE_ALL_OUTFITS') {
+    return res.status(400).json({ error: 'Se requiere confirmación. Envia confirmDelete: "DELETE_ALL_OUTFITS" en el body.' });
+  }
   try {
     // Delete all chat messages first
     await prisma.mensajeChat.deleteMany();
@@ -950,6 +959,10 @@ router.put('/admin/reports/:id/resolve', authMiddleware, adminMiddleware, async 
 });
 
 router.delete('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) => {
+  // FIX C-8: Require explicit confirmation to prevent accidental data wipe
+  if (req.body.confirmDelete !== 'DELETE_ALL_TICKETS') {
+    return res.status(400).json({ error: 'Se requiere confirmación. Envia confirmDelete: "DELETE_ALL_TICKETS" en el body.' });
+  }
   try {
     await prisma.ticket.deleteMany({});
     res.json({ success: true });

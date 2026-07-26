@@ -157,7 +157,21 @@ router.get('/', authMiddleware, async (req, res) => {
 // Obtener mensajes del chat
 router.get('/:friendId/messages', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
+  // FIX A-11: isNaN guard
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID inv\u00e1lido' });
   try {
+    // FIX A-11: IDOR \u2014 verify the requesting user is actually friends with friendId before returning messages
+    const friendship = await prisma.friendship.findFirst({
+      where: {
+        status: 'accepted',
+        OR: [
+          { requesterId: req.user.id, receiverId: friendId },
+          { requesterId: friendId, receiverId: req.user.id }
+        ]
+      }
+    });
+    if (!friendship) return res.status(403).json({ error: 'No tienes permiso para ver estos mensajes.' });
+
     const messages = await prisma.directMessage.findMany({
       where: {
         OR: [

@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import axios from 'axios';
 import LandingView from './components/LandingView';
 import BanView from './components/BanView';
@@ -15,6 +15,38 @@ import TermsView from './components/TermsView';
 import PrivacyView from './components/PrivacyView';
 import SupportView from './components/SupportView';
 import CookieBanner from './components/CookieBanner';
+
+// FIX C-5: React Error Boundary — prevents a single render error from crashing the entire app
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('ErrorBoundary caught:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white gap-4 p-8">
+          <div className="text-5xl">😵</div>
+          <h1 className="text-2xl font-bold">Algo salió mal</h1>
+          <p className="text-gray-400 text-center max-w-md">Se produjo un error inesperado. Por favor recarga la página.</p>
+          <button
+            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            className="px-6 py-3 bg-indigo-600 rounded-xl font-semibold hover:bg-indigo-500 transition-colors"
+          >
+            Recargar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const LoginRedirect = () => {
   const location = useLocation();
@@ -45,7 +77,8 @@ function App() {
   const [adminToken, setAdminToken] = useState(Cookies.get('adminToken'));
   const [bannedData, setBannedData] = useState(() => {
     const data = Cookies.get('bannedData');
-    return data ? JSON.parse(data) : null;
+    // FIX C-3: Wrap in try/catch — malformed cookie must not crash the whole app
+    try { return data ? JSON.parse(data) : null; } catch { return null; }
   });
   
   useEffect(() => {
@@ -64,7 +97,8 @@ function App() {
               bannedUntil: error.response.data.bannedUntil,
               banReason: error.response.data.banReason
             };
-            Cookies.set('bannedData', JSON.stringify(banInfo, { expires: 365 }));
+            // FIX C-4: Options must be 3rd arg of Cookies.set, NOT 2nd arg of JSON.stringify
+            Cookies.set('bannedData', JSON.stringify(banInfo), { expires: 365 });
             setBannedData(banInfo);
             // Do NOT setToken(null) here so we can refresh the token status later
           }
@@ -83,6 +117,8 @@ function App() {
       Cookies.remove('userRole');
       Cookies.remove('userName');
       Cookies.remove('userGender');
+      Cookies.remove('userAge');         // FIX M-34: clear age on logout
+      Cookies.remove('userProfilePicture'); // FIX M-34: clear profile picture on logout
       Cookies.remove('isPremium');
       Cookies.remove('premiumPlan');
       Cookies.remove('pendingCheckout');
@@ -123,7 +159,9 @@ function App() {
             />
             <Route 
               path="/app" 
-              element={token ? <DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /> : <Navigate to="/login" />} 
+              element={token 
+                ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => setToken(null)} /></ErrorBoundary> 
+                : <Navigate to="/login" />} 
             />
             <Route 
               path="/support" 
@@ -140,7 +178,8 @@ function App() {
             <Route path="/terms" element={<TermsView />} />
             <Route path="/privacy" element={<PrivacyView />} />
           </Routes>
-        <IosInstallPrompt />
+        {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
+        {token && <IosInstallPrompt />}
         <CookieBanner />
       </div>
     </BrowserRouter>

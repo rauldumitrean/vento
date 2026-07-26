@@ -35,24 +35,32 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
   const [savingOutfitId, setSavingOutfitId] = useState(null);
   const [viewingOutfit, setViewingOutfit] = useState(null);
 
+  // FIX A-15: Use refs so the interval always reads the CURRENT values (not stale closures)
+  const activeChatFriendRef = useRef(null);
+  const activeTabRef = useRef('friends');
+
+  // Keep refs in sync with state
+  useEffect(() => { activeChatFriendRef.current = activeChatFriend; }, [activeChatFriend]);
+  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+
   useEffect(() => {
     fetchFriendCode();
     fetchFriends();
     fetchRequests();
     
-    // Simple polling para chat y solicitudes (MVP)
+    // FIX A-15: Single long-lived interval that reads from refs to avoid stale closure
     const interval = setInterval(() => {
       fetchRequests(false);
-      if (activeTab === 'friends') {
+      if (activeTabRef.current === 'friends') {
         fetchFriends(false);
       }
-      if (activeTab === 'chat' && activeChatFriend) {
-        fetchMessages(activeChatFriend.id, false);
+      if (activeTabRef.current === 'chat' && activeChatFriendRef.current) {
+        fetchMessages(activeChatFriendRef.current.id, false);
       }
     }, 5000);
     
     return () => clearInterval(interval);
-  }, [activeTab, activeChatFriend]);
+  }, []); // Empty deps: interval created ONCE for the component lifetime
 
   // Hacer scroll abajo cuando llegan mensajes nuevos
   useEffect(() => {

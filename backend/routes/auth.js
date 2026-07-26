@@ -6,10 +6,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
 
+// FIX C-6: Fail fast if JWT_SECRET is not configured — never sign tokens with undefined secret
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set. Server cannot start.');
+}
+
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, gender, age } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Faltan datos.' });
+    // FIX A-8: Basic input validation
+    if (typeof email !== 'string' || !email.includes('@')) return res.status(400).json({ error: 'Email inválido.' });
+    if (typeof password !== 'string' || password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
+    if (age !== undefined && age !== null && age !== '') {
+      const ageNum = parseInt(age);
+      if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) return res.status(400).json({ error: 'La edad debe estar entre 1 y 120.' });
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: 'El email ya está registrado.' });
@@ -83,6 +95,8 @@ const appleSignin = require('apple-signin-auth');
 router.post('/google', async (req, res) => {
   try {
     const { token } = req.body;
+    // FIX A-9: Validate token presence before calling Google
+    if (!token) return res.status(400).json({ error: 'Token de Google requerido.' });
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -116,7 +130,8 @@ router.post('/google', async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
 
-    res.json({ token: jwtToken, user });
+    // FIX A-10: Never return raw Prisma object — whitelist safe fields only
+    res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture } });
   } catch (error) {
     console.error('Google Auth Error:', error);
     res.status(401).json({ error: 'Token de Google inválido o caducado.' });
@@ -126,9 +141,11 @@ router.post('/google', async (req, res) => {
 router.post('/apple', async (req, res) => {
   try {
     const { token, name: appleName } = req.body;
+    // FIX A-9: Validate token presence
+    if (!token) return res.status(400).json({ error: 'Token de Apple requerido.' });
     const { sub: providerId, email } = await appleSignin.verifyIdToken(token, {
       audience: process.env.APPLE_CLIENT_ID,
-      ignoreExpiration: true,
+      // FIX C-9: REMOVED ignoreExpiration:true — accepting expired Apple tokens is a security vulnerability
     });
 
     let user;
@@ -156,7 +173,8 @@ router.post('/apple', async (req, res) => {
     }
 
     const jwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token: jwtToken, user });
+    // FIX A-10: Never return raw Prisma object — whitelist safe fields only
+    res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture } });
   } catch (error) {
     console.error('Apple Auth Error:', error);
     res.status(401).json({ error: 'Token de Apple inválido.' });
@@ -183,6 +201,9 @@ router.get('/me', authMiddleware, async (req, res) => {
       }
     });
 
+    // FIX B-M15: Null check BEFORE the dependent query, not after
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
     const consultasHoyCount = await prisma.consulta.count({
       where: {
         userId: req.user.id,
@@ -190,7 +211,6 @@ router.get('/me', authMiddleware, async (req, res) => {
       }
     });
 
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount } });
   } catch (error) {
     console.error(error);
