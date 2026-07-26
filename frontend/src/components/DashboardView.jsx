@@ -2,7 +2,7 @@ import Cookies from 'js-cookie';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Search, ArrowRight, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info } from 'lucide-react';
+import { Cloud, Search, ArrowRight, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart } from 'lucide-react';
 import AdModal from './AdModal';
 import { lazy, Suspense } from 'react';
 const AdminView = lazy(() => import('./AdminView'));
