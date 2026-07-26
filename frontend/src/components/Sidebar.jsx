@@ -17,7 +17,7 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
   </button>
 );
 
-const Sidebar = ({ view, setView, handleLogout, userName, isPremium }) => {
+const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsulta }) => {
   return (
     <div className="hidden lg:flex flex-col w-[280px] h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden shrink-0 z-20">
       {/* Decorative top glow */}
@@ -33,7 +33,7 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium }) => {
 
       {/* Create New Action */}
       <button 
-        onClick={() => setView('dashboard')}
+        onClick={() => onNewConsulta ? onNewConsulta() : setView('dashboard')}
         className="w-full mb-8 flex items-center gap-3 px-4 py-3.5 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-white font-medium transition-all duration-300 shadow-md group relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/10 to-purple-500/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />

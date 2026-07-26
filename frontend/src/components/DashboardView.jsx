@@ -670,6 +670,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [location, setLocation] = useState('');
   const [weather, setWeather] = useState(null);
   const [outfit, setOutfit] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [consultaId, setConsultaId] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [chat, setChat] = useState([]);
@@ -1203,7 +1204,19 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
       <div className="relative z-10 flex w-full h-[100dvh] p-2 sm:p-4 gap-4">
         {/* Sidebar */}
-        <Sidebar view={view} setView={setView} handleLogout={onLogout} userName={userName} isPremium={isPremium} />
+        <Sidebar 
+          view={view} 
+          setView={setView} 
+          handleLogout={onLogout} 
+          userName={userName} 
+          isPremium={isPremium} 
+          onNewConsulta={() => {
+            setView('dashboard');
+            setWeather(null);
+            setOutfit(null);
+            setLocation('');
+          }}
+        />
 
         {/* Main Content */}
         <div className="flex-1 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/20 backdrop-blur-2xl">
@@ -1395,10 +1408,27 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                           )}
                        </div>
                        
-                       {/* Chat Side Panel in Dashboard */}
+                       {/* Floating Chat Widget for Desktop */}
                        {outfit && (
-                         <div className="w-full xl:w-[420px] shrink-0 h-[600px] xl:h-[calc(100vh-6rem)] xl:sticky top-4">
-                           {chatWidget}
+                         <div className="hidden lg:block fixed bottom-6 right-6 z-[100]">
+                           <AnimatePresence>
+                             {isChatOpen && (
+                               <motion.div
+                                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                 className="absolute bottom-16 right-0 w-[400px] h-[600px] mb-4 origin-bottom-right"
+                               >
+                                 {chatWidget}
+                               </motion.div>
+                             )}
+                           </AnimatePresence>
+                           <button
+                             onClick={() => setIsChatOpen(!isChatOpen)}
+                             className="w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/40 flex items-center justify-center transition-transform hover:scale-110"
+                           >
+                             {isChatOpen ? <X size={24} /> : <MessageSquare size={24} />}
+                           </button>
                          </div>
                        )}
                     </div>
