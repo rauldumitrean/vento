@@ -169,6 +169,15 @@ export default function AuthView({ setToken }) {
     try {
       const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
       if (res.data.token) {
+        if (res.data.user) {
+          Cookies.set('isPremium', res.data.user.isPremium ? 'true' : 'false', { expires: 365 });
+          if (res.data.user.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
+          Cookies.set('userRole', res.data.user.role || 'USER', { expires: 365 });
+          Cookies.set('userName', res.data.user.name || '', { expires: 365 });
+          Cookies.set('userGender', res.data.user.gender || '', { expires: 365 });
+          if (res.data.user.age) Cookies.set('userAge', res.data.user.age, { expires: 365 });
+          if (res.data.user.profilePicture) Cookies.set('userProfilePicture', res.data.user.profilePicture, { expires: 365 });
+        }
         setToken(res.data.token);
       }
     } catch (err) {
@@ -208,6 +217,15 @@ export default function AuthView({ setToken }) {
       if (res.status === 202 && res.data.needsOnboarding) {
         setPendingAuth(res.data);
       } else if (res.data.token) {
+        if (res.data.user) {
+          Cookies.set('isPremium', res.data.user.isPremium ? 'true' : 'false', { expires: 365 });
+          if (res.data.user.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
+          Cookies.set('userRole', res.data.user.role || 'USER', { expires: 365 });
+          Cookies.set('userName', res.data.user.name || '', { expires: 365 });
+          Cookies.set('userGender', res.data.user.gender || '', { expires: 365 });
+          if (res.data.user.age) Cookies.set('userAge', res.data.user.age, { expires: 365 });
+          if (res.data.user.profilePicture) Cookies.set('userProfilePicture', res.data.user.profilePicture, { expires: 365 });
+        }
         setToken(res.data.token);
       }
     } catch (err) {
@@ -234,6 +252,15 @@ export default function AuthView({ setToken }) {
       };
       const res = await axios.post(`${API_URL}/api/auth/google`, payload);
       if (res.data.token) {
+        if (res.data.user) {
+          Cookies.set('isPremium', res.data.user.isPremium ? 'true' : 'false', { expires: 365 });
+          if (res.data.user.premiumPlan) Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
+          Cookies.set('userRole', res.data.user.role || 'USER', { expires: 365 });
+          Cookies.set('userName', res.data.user.name || '', { expires: 365 });
+          Cookies.set('userGender', res.data.user.gender || '', { expires: 365 });
+          if (res.data.user.age) Cookies.set('userAge', res.data.user.age, { expires: 365 });
+          if (res.data.user.profilePicture) Cookies.set('userProfilePicture', res.data.user.profilePicture, { expires: 365 });
+        }
         setToken(res.data.token);
       }
     } catch (err) {
