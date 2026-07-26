@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie';
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, Search, ArrowRight, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge } from 'lucide-react';
@@ -197,79 +198,82 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
       </div>
     </motion.div>
 
-    <AnimatePresence>
-      {showModal && (
-        <motion.div 
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-          onClick={() => setShowModal(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            onClick={(e) => e.stopPropagation()}
-            className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+    {typeof document !== 'undefined' && createPortal(
+      <AnimatePresence>
+        {showModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+            onClick={() => setShowModal(false)}
           >
-            {/* Modal Header */}
-            <div className={`sticky top-0 z-20 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
-              <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
-              <button onClick={() => setShowModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
-                <X size={20} />
-              </button>
-            </div>
-            
-            {/* Modal Content */}
-            <div className="p-6 sm:p-8 flex-1 flex flex-col sm:flex-row gap-8">
-              {/* Modal Image */}
-              <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                {imgSrc ? (
-                  <img src={imgSrc} alt={prenda.descripcion} className="w-full h-auto object-cover" />
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50 py-20">
-                    <Sparkles size={32} className="animate-pulse mb-2" />
-                    <span className="text-sm">Generando...</span>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+            >
+              {/* Modal Header */}
+              <div className={`sticky top-0 z-20 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
+                <button onClick={() => setShowModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {/* Modal Content */}
+              <div className="p-6 sm:p-8 flex-1 flex flex-col sm:flex-row gap-8">
+                {/* Modal Image */}
+                <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+                  {imgSrc ? (
+                    <img src={imgSrc} alt={prenda.nombre_corto || "Prenda"} className="w-full h-auto max-h-[60vh] object-contain rounded-xl" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50 py-20">
+                      <Sparkles size={32} className="animate-pulse mb-2" />
+                      <span className="text-sm">Generando...</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Text Info */}
+                <div className="w-full sm:w-1/2 flex flex-col justify-between">
+                  <div>
+                    <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-full mb-4">
+                      {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
+                    </span>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h4>
+                        <p className={`text-base leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{prenda.descripcion}</p>
+                      </div>
+                      <div>
+                        <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h4>
+                        <p className={`text-base leading-relaxed italic border-l-4 pl-4 ${darkMode ? 'text-indigo-200 border-indigo-500/50' : 'text-indigo-700 border-indigo-200'}`}>{prenda.razon}</p>
+                      </div>
+                    </div>
+                  </div>
+                {(prenda.enlace_compra && prenda.tienda_recomendada) && (
+                  <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <a 
+                      href={prenda.enlace_compra} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25"
+                    >
+                      <ShoppingCart size={18} />
+                      Buscar en Amazon
+                    </a>
                   </div>
                 )}
-              </div>
-
-              {/* Text Info */}
-              <div className="w-full sm:w-1/2 flex flex-col justify-between">
-                <div>
-                  <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-full mb-4">
-                    {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
-                  </span>
-                  
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h4>
-                      <p className={`text-base leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{prenda.descripcion}</p>
-                    </div>
-                    <div>
-                      <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h4>
-                      <p className={`text-base leading-relaxed italic border-l-4 pl-4 ${darkMode ? 'text-indigo-200 border-indigo-500/50' : 'text-indigo-700 border-indigo-200'}`}>{prenda.razon}</p>
-                    </div>
-                  </div>
                 </div>
-              {(prenda.enlace_compra && prenda.tienda_recomendada) && (
-                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <a 
-                    href={prenda.enlace_compra} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25"
-                  >
-                    <ShoppingCart size={18} />
-                    Buscar en Amazon
-                  </a>
-                </div>
-              )}
               </div>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>,
+      document.body
+    )}
     </>
   );
 };
@@ -678,13 +682,21 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      pos => {
+      async pos => {
+        let cityName = 'Tu Ubicación';
+        try {
+          const res = await axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=es`);
+          cityName = res.data.city || res.data.locality || 'Tu Ubicación';
+        } catch (e) {
+          console.error('Error al obtener la ciudad:', e);
+        }
+
         if (historyCount === historyLimit - 1) {
-          setLimitWarning({ type: 'close', params: { lat: pos.coords.latitude, lon: pos.coords.longitude, city: null } });
+          setLimitWarning({ type: 'close', params: { lat: pos.coords.latitude, lon: pos.coords.longitude, city: cityName } });
         } else if (historyCount >= historyLimit) {
-          setLimitWarning({ type: 'reached', params: { lat: pos.coords.latitude, lon: pos.coords.longitude, city: null } });
+          setLimitWarning({ type: 'reached', params: { lat: pos.coords.latitude, lon: pos.coords.longitude, city: cityName } });
         } else {
-          fetchWeatherAndOutfit(pos.coords.latitude, pos.coords.longitude, null);
+          fetchWeatherAndOutfit(pos.coords.latitude, pos.coords.longitude, cityName);
         }
       },
       err => showToast('No se pudo obtener la ubicación. Asegúrate de que tienes los permisos activados.')
@@ -815,7 +827,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   const chatWidget = (
-    <div className={`rounded-3xl shadow-xl flex flex-col h-[500px] lg:h-auto lg:max-h-[calc(100vh-8rem)] border relative overflow-hidden ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'} ${view === 'chat' ? 'h-[calc(100vh-140px)] flex-1' : 'hidden lg:flex'}`}>
+    <div className={`rounded-3xl shadow-xl flex flex-col h-[500px] lg:min-h-[400px] lg:max-h-[calc(100vh-8rem)] border relative overflow-hidden ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'} ${view === 'chat' ? 'h-[calc(100vh-140px)] flex-1' : 'hidden lg:flex'}`}>
       
       {/* Contenido del Chat con desenfoque opcional */}
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-md opacity-40 pointer-events-none' : 'backdrop-blur-xl'}`}>
@@ -902,13 +914,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-xs mx-auto`}>
             El Asistente de Estilo impulsado por IA está disponible únicamente para usuarios Premium.
           </p>
-          <a 
-            href="/settings"
+          <button 
+            onClick={(e) => { e.preventDefault(); setView('profile'); }}
             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
           >
             <Star size={18} />
             Desbloquear Premium
-          </a>
+          </button>
         </div>
       )}
     </div>
