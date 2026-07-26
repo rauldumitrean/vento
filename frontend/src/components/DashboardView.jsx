@@ -2,7 +2,7 @@ import Cookies from 'js-cookie';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw, Archive, Thermometer, Droplets, Wind, Gauge, CloudRain, Sun, Cloud, Info } from 'lucide-react';
+import { Cloud, Search, ArrowRight, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info } from 'lucide-react';
 import AdModal from './AdModal';
 import { lazy, Suspense } from 'react';
 const AdminView = lazy(() => import('./AdminView'));
@@ -205,58 +205,66 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
           onClick={() => setShowModal(false)}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col sm:flex-row hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+            className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
           >
-            <button onClick={() => setShowModal(false)} className={`absolute top-4 right-4 z-50 p-2 rounded-full transition-colors ${darkMode ? 'bg-black/50 hover:bg-gray-800 text-gray-300' : 'bg-white/50 hover:bg-gray-100 text-gray-600'} backdrop-blur-md`}>
-              <X size={20} />
-            </button>
-            
-            {/* Modal Image */}
-            <div className={`w-full sm:w-2/5 shrink-0 min-h-[250px] relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-              {imgSrc ? (
-                <img src={imgSrc} alt={prenda.descripcion} className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50">
-                  <Sparkles size={32} className="animate-pulse mb-2" />
-                  <span className="text-sm">Generando...</span>
-                </div>
-              )}
+            {/* Modal Header */}
+            <div className={`sticky top-0 z-20 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
+              <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
+              <button onClick={() => setShowModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                <X size={20} />
+              </button>
             </div>
-
+            
             {/* Modal Content */}
-            <div className="p-6 sm:p-8 flex-1 flex flex-col">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-500 mb-2">
-                {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
-              </span>
-              <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion}</h3>
-              
-              <div className="space-y-4 flex-1">
-                <div>
-                  <h4 className={`text-sm font-semibold uppercase tracking-wider mb-1 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h4>
-                  <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{prenda.descripcion}</p>
-                </div>
-                <div>
-                  <h4 className={`text-sm font-semibold uppercase tracking-wider mb-1 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h4>
-                  <p className={`text-sm leading-relaxed italic ${darkMode ? 'text-indigo-200' : 'text-indigo-700'}`}>{prenda.razon}</p>
-                </div>
+            <div className="p-6 sm:p-8 flex-1 flex flex-col sm:flex-row gap-8">
+              {/* Modal Image */}
+              <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+                {imgSrc ? (
+                  <img src={imgSrc} alt={prenda.descripcion} className="w-full h-auto object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50 py-20">
+                    <Sparkles size={32} className="animate-pulse mb-2" />
+                    <span className="text-sm">Generando...</span>
+                  </div>
+                )}
               </div>
 
+              {/* Text Info */}
+              <div className="w-full sm:w-1/2 flex flex-col justify-between">
+                <div>
+                  <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-full mb-4">
+                    {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
+                  </span>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h4>
+                      <p className={`text-base leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{prenda.descripcion}</p>
+                    </div>
+                    <div>
+                      <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h4>
+                      <p className={`text-base leading-relaxed italic border-l-4 pl-4 ${darkMode ? 'text-indigo-200 border-indigo-500/50' : 'text-indigo-700 border-indigo-200'}`}>{prenda.razon}</p>
+                    </div>
+                  </div>
+                </div>
               {(prenda.enlace_compra && prenda.tienda_recomendada) && (
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <a 
                     href={prenda.enlace_compra} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl py-3 transition-colors shadow-md shadow-indigo-500/20"
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25"
                   >
-                    <ShoppingCart size={18} /> Buscar en {prenda.tienda_recomendada}
+                    <ShoppingCart size={18} />
+                    Buscar en Amazon
                   </a>
                 </div>
               )}
+              </div>
             </div>
           </motion.div>
         </motion.div>
@@ -286,6 +294,57 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
       ))}
     </div>
   );
+};
+
+const AnimatedWeatherIcon = ({ temperature, size = 120 }) => {
+  if (temperature > 25) {
+    return (
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]"
+      >
+        <Sun size={size} strokeWidth={1.5} />
+      </motion.div>
+    );
+  } else if (temperature > 15) {
+    return (
+      <motion.div
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="text-gray-400 drop-shadow-[0_0_15px_rgba(156,163,175,0.4)] relative"
+      >
+        <Cloud size={size} strokeWidth={1.5} />
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-4 -right-4 text-yellow-500 -z-10"
+        >
+          <Sun size={size * 0.5} strokeWidth={2} />
+        </motion.div>
+      </motion.div>
+    );
+  } else if (temperature > 5) {
+    return (
+      <motion.div
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="text-blue-300 drop-shadow-[0_0_15px_rgba(147,197,253,0.5)]"
+      >
+        <CloudRain size={size} strokeWidth={1.5} />
+      </motion.div>
+    );
+  } else {
+    return (
+      <motion.div
+        animate={{ y: [0, -8, 0], scale: [1, 1.05, 1] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="text-blue-100 drop-shadow-[0_0_20px_rgba(219,234,254,0.6)]"
+      >
+        <CloudSnow size={size} strokeWidth={1.5} />
+      </motion.div>
+    );
+  }
 };
 
 const ChatMessage = ({ msg, darkMode, token }) => {
@@ -756,76 +815,102 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   const chatWidget = (
-    <div className={`rounded-3xl shadow-xl flex flex-col h-[500px] lg:h-auto lg:max-h-[calc(100vh-8rem)] backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'} ${view === 'chat' ? 'h-[calc(100vh-140px)] flex-1' : 'hidden lg:flex'}`}>
-      <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
-        <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold">Asistente de Estilo</h2>
-      </div>
+    <div className={`rounded-3xl shadow-xl flex flex-col h-[500px] lg:h-auto lg:max-h-[calc(100vh-8rem)] border relative overflow-hidden ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'} ${view === 'chat' ? 'h-[calc(100vh-140px)] flex-1' : 'hidden lg:flex'}`}>
       
-      <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
-        {!outfit ? (
-          <p className="text-sm text-center mt-10 opacity-50">Busca una ubicación para comenzar a chatear.</p>
-        ) : chat.length === 0 ? (
-          <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
-        ) : (
-          <>
-            {chat.map((msg, idx) => (
-              <ChatMessage key={`${idx}-${msg.content?.substring(0,10)}`} msg={msg} darkMode={darkMode} token={token} />
-            ))}
-            {isChatLoading && (
-              <div className="flex justify-start">
-                <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-2 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                  <div className={`h-3 w-48 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-                  <div className={`h-3 w-64 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-                  <div className={`h-3 w-32 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+      {/* Contenido del Chat con desenfoque opcional */}
+      <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-md opacity-40 pointer-events-none' : 'backdrop-blur-xl'}`}>
+        <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
+          <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">
+            <Sparkles size={14} className="text-indigo-500" /> Asistente de Estilo
+          </h2>
+        </div>
+        
+        <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
+          {!outfit ? (
+            <p className="text-sm text-center mt-10 opacity-50">Busca una ubicación para comenzar a chatear.</p>
+          ) : chat.length === 0 ? (
+            <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
+          ) : (
+            <>
+              {chat.map((msg, idx) => (
+                <ChatMessage key={`${idx}-${msg.content?.substring(0,10)}`} msg={msg} darkMode={darkMode} token={token} />
+              ))}
+              {isChatLoading && (
+                <div className="flex justify-start">
+                  <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-2 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                    <div className={`h-3 w-48 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                    <div className={`h-3 w-64 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                    <div className={`h-3 w-32 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              )}
+            </>
+          )}
+        </div>
 
-      <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
-        {selectedImage && (
-          <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
-            <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
-            <button type="button" onClick={() => { setSelectedImage(null); setImageBase64(''); setImageMimeType(''); }} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
-              <X size={12} />
+        <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
+          {selectedImage && (
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
+              <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => { setSelectedImage(null); setImageBase64(''); setImageMimeType(''); }} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
+                <X size={12} />
+              </button>
+            </div>
+          )}
+          <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              id="cameraInput" 
+              className="hidden" 
+              onChange={handleImageChange}
+            />
+            <label 
+              htmlFor="cameraInput" 
+              className={`p-3 rounded-xl cursor-pointer transition-colors shadow-sm ${darkMode ? 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700' : 'bg-white text-gray-500 hover:text-indigo-600 hover:bg-gray-50 border border-gray-100'}`}
+            >
+              <Camera className="w-5 h-5" />
+            </label>
+
+            <input 
+              type="text"
+              placeholder="Escribe tu mensaje..."
+              className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors ${darkMode ? 'bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-500' : 'bg-white/50 border-neutral-200/50'}`}
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              disabled={!outfit}
+            />
+            <button 
+              type="submit" 
+              disabled={!outfit || (!message && !selectedImage)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 px-5 rounded-xl disabled:opacity-50 transition-all shadow-md shadow-indigo-600/20"
+            >
+              <Send className="w-5 h-5" />
             </button>
-          </div>
-        )}
-        <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
-          <input 
-            type="file" 
-            accept="image/*" 
-            capture="environment" 
-            id="cameraInput" 
-            className="hidden" 
-            onChange={handleImageChange}
-          />
-          <label 
-            htmlFor="cameraInput" 
-            className={`p-3 rounded-xl cursor-pointer transition-colors shadow-sm ${darkMode ? 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700' : 'bg-white text-gray-500 hover:text-indigo-600 hover:bg-gray-50 border border-gray-100'}`}
-          >
-            <Camera className="w-5 h-5" />
-          </label>
-
-          <input 
-            type="text"
-            placeholder="Escribe tu mensaje..."
-            className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors ${darkMode ? 'bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-500' : 'bg-white/50 border-neutral-200/50'}`}
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            disabled={!outfit}
-          />
-          <button 
-            type="submit" 
-            disabled={!outfit || (!message && !selectedImage)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 px-5 rounded-xl disabled:opacity-50 transition-all shadow-md shadow-indigo-600/20"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </form>
+          </form>
+        </div>
       </div>
+
+      {/* Overlay Premium Bloqueado */}
+      {!isPremium && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-black/20 dark:bg-black/40 backdrop-blur-[2px]">
+          <div className={`p-4 rounded-full mb-4 ${darkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-600'} shadow-lg backdrop-blur-md`}>
+            <Lock size={32} />
+          </div>
+          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Asistente IA Exclusivo</h3>
+          <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-xs mx-auto`}>
+            El Asistente de Estilo impulsado por IA está disponible únicamente para usuarios Premium.
+          </p>
+          <a 
+            href="/settings"
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
+          >
+            <Star size={18} />
+            Desbloquear Premium
+          </a>
+        </div>
+      )}
     </div>
   );
 
@@ -1027,7 +1112,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                   </span>
                 </div>
                 <div className="absolute right-8 bottom-8 opacity-20 pointer-events-none">
-                  {weather.current.temperature_2m > 25 ? <Sun size={120} /> : weather.current.temperature_2m < 10 ? <CloudRain size={120} /> : <Cloud size={120} />}
+                  <AnimatedWeatherIcon temperature={weather.current.temperature_2m} />
                 </div>
                 <h2 className="text-sm tracking-widest uppercase mb-4 opacity-70 font-semibold">Clima Actual en {weather.location}</h2>
                 <div className="flex items-end gap-6 relative z-10">
