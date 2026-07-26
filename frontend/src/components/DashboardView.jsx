@@ -11,6 +11,7 @@ import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import FriendsView from './FriendsView';
 import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 import VerticalAd from './VerticalAd';
@@ -1179,305 +1180,28 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   );
 
   return (
-    <div className={`flex flex-col min-h-[100dvh] transition-colors duration-500 ${darkMode ? 'bg-gray-950 text-white' : 'bg-[#f8f9fa] text-gray-900'} font-sans overflow-x-hidden`}>
-      {/* Background blobs for glassmorphism effect */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full mix-blend-multiply filter blur-[120px] opacity-30 ${darkMode ? 'bg-indigo-900' : 'bg-indigo-200'}`}></div>
-        <div className={`absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full mix-blend-multiply filter blur-[150px] opacity-30 ${darkMode ? 'bg-purple-900' : 'bg-purple-200'}`}></div>
+    <div className="flex min-h-[100dvh] font-sans overflow-hidden text-white bg-black">
+      {/* Immersive Glassmorphism Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop')]" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[60px]" />
+        {/* Subtle glowing orbs */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/20 rounded-full filter blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-indigo-600/20 rounded-full filter blur-[150px]" />
       </div>
 
-      {/* FIX: Non-blocking toast notification replacing all alert() calls */}
       <AnimatePresence>
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-[calc(1.5rem+env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium max-w-sm text-center ${
-              toast.type === 'success' ? 'bg-green-600 text-white' :
-              toast.type === 'info' ? 'bg-indigo-600 text-white' :
-              'bg-red-600 text-white'
-            }`}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium max-w-sm text-center bg-indigo-600/90 backdrop-blur-md text-white border border-white/10"
           >
             {toast.msg}
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div className="relative z-10 pb-24 md:pb-0">
-        {/* Desktop nav */}
-        <Navbar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
-        {/* Mobile sticky top bar */}
-        <div
-          className={`md:hidden flex items-center justify-between px-5 py-3 sticky top-0 z-50 border-b backdrop-blur-md ${darkMode ? 'bg-gray-950/80 border-white/10' : 'bg-white/80 border-gray-100'}`}
-          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center border ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white'}`}>
-              <img src="/favicon.svg" alt="Ventoo" className="w-full h-full object-cover p-0.5" />
-            </div>
-            <span className="text-base font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Ventoo</span>
-          </div>
-          <div className={`text-xs px-2 py-0.5 rounded-full font-medium ${Cookies.get('isPremium') === 'true' ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}`}>
-            {Cookies.get('isPremium') === 'true' ? '✦ Premium' : 'Básico'}
-          </div>
-        </div>
-        {/* Mobile bottom pill nav */}
-        <MobileNavBar view={view} setView={setView} darkMode={darkMode} setDarkMode={setDarkMode} handleLogout={onLogout} />
-
-      <div className="flex w-full max-w-[1600px] mx-auto px-2 sm:px-4">
-        {/* Left Ad - Solo si no es premium */}
-        {Cookies.get('isPremium') !== 'true' && (
-          <div className="hidden xl:flex w-[200px] shrink-0 sticky top-24 h-[calc(100vh-120px)] mr-4 pt-8">
-            <VerticalAd className="w-full h-full" />
-          </div>
-        )}
-
-        <div className="flex-1 w-full max-w-7xl mx-auto">
-          {view === 'armario' ? (
-            <ArmarioHistorial token={token} darkMode={darkMode} />
-          ) : view === 'admin' ? (
-            // FIX: Only render AdminView if user actually has ADMIN role
-            // FIX C-2: userData was never defined in this scope — read role from cookie (set on login)
-            Cookies.get('userRole') === 'ADMIN' 
-              ? <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>}><AdminView token={token} darkMode={darkMode} /></Suspense>
-              : <div className="flex items-center justify-center h-64"><p className="text-red-500">Acceso denegado</p></div>
-          ) : view === 'profile' ? (
-            <main className="flex-1 pb-8 w-full pt-8">
-              <ProfileSettings token={token} darkMode={darkMode} onLogout={onLogout} />
-            </main>
-          ) : view === 'friends' ? (
-            <main className="flex-1 pb-8 w-full pt-8">
-              <FriendsView token={token} darkMode={darkMode} onNavigate={setView} />
-            </main>
-      ) : view === 'chat' ? (
-        <main className="flex-1 px-4 sm:px-8 pb-[100px] max-w-7xl mx-auto w-full pt-8 flex flex-col h-[calc(100vh-80px)]">
-          {chatWidget}
-        </main>
-      ) : (
-        <main className="flex-1 px-4 sm:px-8 pb-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-            <div className="mb-2 flex items-center gap-4">
-              {Cookies.get('userProfilePicture') && (
-                <img src={Cookies.get('userProfilePicture')} alt="Avatar" className={`w-12 h-12 rounded-full object-cover border-2 ${darkMode ? 'border-indigo-500/30' : 'border-indigo-200'}`} />
-              )}
-              <div>
-                <h2 className="text-3xl font-extrabold tracking-tight flex items-center flex-wrap">
-                  Hola de nuevo, {userName || 'aventurero'}
-                  <Sparkles className="ml-3 w-7 h-7 text-yellow-500 animate-[pulse_3s_ease-in-out_infinite]" />
-                </h2>
-                <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{randomGreeting}</p>
-              </div>
-            </div>
-            <motion.div 
-              initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className={`relative z-50 p-4 sm:p-6 rounded-3xl shadow-xl flex gap-3 sm:gap-4 flex-col sm:flex-row transition-colors backdrop-blur-xl border ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}
-            >
-              <form onSubmit={handleSearch} className={`flex-1 flex items-center px-5 py-2 rounded-2xl relative transition-all duration-300 shadow-sm border ${darkMode ? 'bg-gray-800/80 border-gray-700/50 focus-within:border-indigo-500/50 focus-within:bg-gray-800' : 'bg-gray-100/50 border-gray-200/50 focus-within:border-indigo-400/30 focus-within:bg-white'}`}>
-                <Search className={`w-5 h-5 mr-3 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
-                <input 
-                  type="text" 
-                  placeholder="¿Dónde vas a ir hoy? (Ej: Madrid, Tokio...)" 
-                  className={`w-full py-2 bg-transparent focus:outline-none ${darkMode ? 'text-white placeholder-gray-500' : 'text-gray-700 placeholder-gray-400'}`}
-                  value={location}
-                  onChange={e => {
-                    setLocation(e.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
-                />
-                {location && (
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      setLocation('');
-                      setSuggestions([]);
-                    }}
-                    className={`ml-2 p-1.5 rounded-full transition-colors ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-200'}`}
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-
-                {/* Dropdown de Autocompletado */}
-                <AnimatePresence>
-                  {showSuggestions && suggestions.length > 0 && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`absolute top-[120%] left-0 right-0 rounded-lg shadow-xl border overflow-hidden z-[100] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
-                    >
-                      {suggestions.map((city, idx) => (
-                        <div 
-                          key={`${city.name || 'sugg'}-${idx}`}
-                          onClick={() => {
-                            if (!city.latitude) return;
-                            handleSelectSuggestion(city);
-                          }}
-                          className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} ${idx !== suggestions.length - 1 ? (darkMode ? 'border-b border-gray-700' : 'border-b border-gray-100') : ''}`}
-                        >
-                          <MapPin size={16} className="text-indigo-500 opacity-70 flex-shrink-0" />
-                          <div className="flex flex-col">
-                            <span className={`font-medium text-sm leading-tight ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{city.name}</span>
-                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                              {city.admin1 ? city.admin1 + ', ' : ''}{city.country}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </form>
-              <button 
-                onClick={handleGeolocation}
-                className={`flex items-center justify-center gap-2 px-6 py-3 sm:py-2 rounded-xl text-sm transition-all shadow-md w-full sm:w-auto font-medium ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white shadow-black/50 border border-white/10' : 'bg-white hover:bg-neutral-50 text-neutral-800 shadow-indigo-900/10 border border-white'}`}
-              >
-                <MapPin className="w-4 h-4" /> Mi Ubicación
-              </button>
-            </motion.div>
-
-            {loading && !weather && (
-              <div className="flex flex-col gap-6 w-full mt-12 mb-12 items-center justify-center space-y-6">
-                <motion.div 
-                  animate={{ y: [0, -15, 0], scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className={`p-6 rounded-3xl shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-indigo-900/30 border border-indigo-500/30' : 'bg-indigo-50 border border-indigo-200'}`}
-                >
-                  <Sparkles className={`w-16 h-16 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
-                </motion.div>
-                <div className="h-8 overflow-hidden">
-                  <motion.p
-                    key={loadingStepIndex}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.3 }}
-                    className={`text-xl font-medium text-center ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}
-                  >
-                    {loadingSteps[loadingStepIndex]}
-                  </motion.p>
-                </div>
-              </div>
-            )}
-
-            {weather && (
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }} 
-                animate={{ scale: 1, opacity: 1 }} 
-                onClick={() => setShowWeatherModal(true)}
-                className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border cursor-pointer group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50 hover:bg-gray-800/60' : 'bg-white/70 border-white shadow-indigo-900/5 hover:bg-white/90'}`}
-              >
-                <div className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-2 ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
-                    <MapPin size={14} /> Ver detalles y mapa
-                  </span>
-                </div>
-                <h2 className="text-sm tracking-widest uppercase mb-4 opacity-70 font-semibold">Clima Actual en {weather.location}</h2>
-                <div className="flex items-center justify-between gap-4 relative z-10">
-                  {/* Temp + stats */}
-                  <div className="flex items-end gap-4 sm:gap-6 flex-1 min-w-0">
-                    <span className="text-5xl sm:text-7xl font-light tracking-tighter shrink-0">{weather.current.temperature_2m}°C</span>
-                    <div className="opacity-90 mb-1 min-w-0">
-                      <p className="font-medium text-base sm:text-lg">Sensación térmica: {weather.current.apparent_temperature}°C</p>
-                      <p className="opacity-80 mt-1 flex items-center gap-2 flex-wrap text-sm">
-                        <motion.span
-                          animate={{ x: [0, 4, -2, 4, 0], rotate: [0, 8, -8, 0] }}
-                          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                          className="inline-flex"
-                        >
-                          <Wind size={14} />
-                        </motion.span>
-                        {weather.current.wind_speed_10m} km/h
-                        <span className="opacity-50">|</span>
-                        <motion.span
-                          animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-                          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                          className="inline-flex"
-                        >
-                          <Droplets size={14} />
-                        </motion.span>
-                        {weather.current.relative_humidity_2m}%
-                      </p>
-                      {weather.daily && (
-                        <p className={`mt-1 text-sm font-semibold ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>
-                          Máx: {weather.daily.temperature_2m_max[0]}°C • Mín: {weather.daily.temperature_2m_min[0]}°C
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {/* Animated weather icon */}
-                  <div className="opacity-30 pointer-events-none shrink-0 hidden sm:block">
-                    <AnimatedWeatherIcon temperature={weather.current.temperature_2m} size={80} />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {loading && weather && (
-              <div className="flex flex-col gap-6 w-full mt-12 mb-12 items-center justify-center space-y-6">
-                <motion.div 
-                  animate={{ y: [0, -15, 0], scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className={`p-6 rounded-3xl shadow-2xl backdrop-blur-xl ${darkMode ? 'bg-indigo-900/30 border border-indigo-500/30' : 'bg-indigo-50 border border-indigo-200'}`}
-                >
-                  <Sparkles className={`w-16 h-16 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
-                </motion.div>
-                <div className="h-8 overflow-hidden">
-                  <motion.p
-                    key={loadingStepIndex}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.3 }}
-                    className={`text-xl font-medium text-center ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}
-                  >
-                    {loadingSteps[loadingStepIndex]}
-                  </motion.p>
-                </div>
-              </div>
-            )}
-
-            {outfit && !loading && (
-              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`p-6 sm:p-8 rounded-3xl shadow-xl backdrop-blur-xl border relative ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'}`}>
-                <div className="flex justify-between items-start mb-2">
-                  <h2 className="text-sm tracking-widest uppercase opacity-50">Outfit Recomendado</h2>
-                  <button onClick={handleToggleFavorite} className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-gray-400 hover:bg-gray-500/10'}`}>
-                    <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                  </button>
-                </div>
-                
-                <p className="mb-6 italic opacity-80">"{outfit.resumen}"</p>
-                
-                <OutfitGrid prendas={outfit.prendas} darkMode={darkMode} token={token} />
-                
-                {outfit.consejo_extra && (
-                  <div className={`mt-6 p-4 rounded-lg text-sm border ${darkMode ? 'bg-indigo-900/20 border-indigo-500/20 text-indigo-200' : 'bg-neutral-50 border-neutral-200 text-neutral-700'}`}>
-                    <span className="font-semibold mr-2">Consejo:</span> {outfit.consejo_extra}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Right column: AI chat — sticky, fills viewport height */}
-          <div className="hidden lg:flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-6rem)]">
-            {chatWidget}
-          </div>
-        </main>
-      )}
-        </div>
-
-        {/* Right Ad - Solo si no es premium */}
-        {Cookies.get('isPremium') !== 'true' && (
-          <div className="hidden xl:flex w-[200px] shrink-0 sticky top-24 h-[calc(100vh-120px)] ml-4 pt-8">
-            <VerticalAd className="w-full h-full" />
-          </div>
-        )}
-      </div>
-      </div>
 
       {/* Weather Details Modal */}
       <AnimatePresence>
