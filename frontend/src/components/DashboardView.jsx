@@ -47,7 +47,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchImage = () => {
+    const fetchImage = async () => {
       if (!canLoad || imgStatus !== 'waiting') return;
       
       // FIX A-1: Guard all state updates with isMounted check
@@ -55,11 +55,20 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
       
       let url = prenda.imgUrl;
       if (!url || loadAttempt > 0) {
-        const seed = Math.floor(Math.random() * 1000000);
         const queryText = prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
         const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
-        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
-        prenda.imgUrl = url;
+        
+        try {
+          const res = await axios.get(`${API_URL}/api/images/generate?prompt=${encodeURIComponent(simplePrompt)}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          url = res.data.imageUrl;
+          prenda.imgUrl = url;
+        } catch (error) {
+          console.error("Error fetching image:", error);
+          if (isMounted) setImgStatus('error');
+          return;
+        }
       }
       
       if (isMounted) setImgSrc(url);
@@ -147,11 +156,13 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
         onClick={onOpen}
         className={`group cursor-pointer relative rounded-2xl flex flex-col shadow-lg transition-shadow duration-300 overflow-hidden ${darkMode ? 'bg-gray-800 border border-gray-700/80 shadow-black/40' : 'bg-white border border-gray-100 shadow-gray-200/60'}`}
       >
-        <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
-          <span className={`p-1.5 rounded-full inline-flex ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
-            <Info size={16} />
-          </span>
-        </div>
+        {imgStatus !== 'loaded' && (
+          <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+            <span className={`p-1.5 rounded-full inline-flex ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+              <Info size={16} />
+            </span>
+          </div>
+        )}
       <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
@@ -206,9 +217,9 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
 
         {imgStatus === 'loaded' && (
           <button
-            onClick={handleRefresh}
-            title="Recargar imagen"
-            className="absolute top-2 right-2 z-20 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all"
+            onClick={(e) => { e.stopPropagation(); handleRefresh(e); }}
+            title="Generar otra imagen"
+            className="absolute top-2 left-2 z-20 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all"
           >
             <RefreshCw size={12} />
           </button>
@@ -1078,10 +1089,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   const chatWidget = (
-    <div className={`rounded-3xl shadow-xl flex flex-col h-[500px] lg:min-h-[400px] lg:max-h-[calc(100vh-8rem)] border relative overflow-hidden ${darkMode ? 'bg-gray-900/50 border-white/10 shadow-black/50' : 'bg-white/70 border-white shadow-indigo-900/5'} ${view === 'chat' ? 'h-[calc(100vh-140px)] flex-1' : 'hidden lg:flex'}`}>
+    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 ${darkMode ? 'bg-gray-900 border-gray-800 shadow-black/50' : 'bg-white border-gray-100 shadow-gray-100'} ${view === 'chat' ? 'flex-1 h-[calc(100vh-140px)]' : 'hidden lg:flex'}`}>
       
-      {/* Contenido del Chat con desenfoque opcional */}
-      <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-md opacity-40 pointer-events-none' : 'backdrop-blur-xl'}`}>
+      {/* Chat content — blurred + locked when not premium */}
+      <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
         <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
           <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">
             <Sparkles size={14} className="text-indigo-500" /> Asistente de Estilo
@@ -1461,7 +1472,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             )}
           </div>
 
-          {chatWidget}
+          {/* Right column: AI chat — sticky, fills viewport height */}
+          <div className="hidden lg:flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-6rem)]">
+            {chatWidget}
+          </div>
         </main>
       )}
         </div>

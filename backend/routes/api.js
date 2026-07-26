@@ -1041,4 +1041,46 @@ router.get('/admin/chats', authMiddleware, adminMiddleware, async (req, res) => 
   }
 });
 
+// IMAGE GENERATION & CACHING
+router.get('/images/generate', authMiddleware, async (req, res) => {
+  try {
+    const { prompt } = req.query;
+    if (!prompt) return res.status(400).json({ error: 'Falta prompt' });
+
+    const promptKey = prompt.trim().toLowerCase();
+
+    // Check cache
+    let cached = await prisma.imageCache.findUnique({
+      where: { promptKey }
+    });
+
+    if (cached) {
+      // update hitCount in background
+      prisma.imageCache.update({
+        where: { id: cached.id },
+        data: { hitCount: { increment: 1 } }
+      }).catch(console.error);
+      
+      return res.json({ imageUrl: cached.imageUrl, cached: true });
+    }
+
+    // Generate new image if not found
+    const seed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+
+    // Save to cache
+    await prisma.imageCache.create({
+      data: {
+        promptKey,
+        imageUrl
+      }
+    });
+
+    return res.json({ imageUrl, cached: false });
+  } catch (error) {
+    console.error('Error in /images/generate:', error);
+    res.status(500).json({ error: 'Error generando imagen' });
+  }
+});
+
 module.exports = router;
