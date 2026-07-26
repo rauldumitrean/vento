@@ -110,6 +110,38 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
 
   return (
     <>
+      {/* ── STRIP / HORIZONTAL layout (mobile list view) ── */}
+      {viewMode === 'strip' && (
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          onClick={onOpen}
+          className={`cursor-pointer flex flex-row items-center gap-4 rounded-2xl overflow-hidden shadow-md p-3 transition-all duration-200 ${darkMode ? 'bg-gray-800/50 border border-white/10' : 'bg-white/90 border border-gray-100 shadow-gray-100'}`}
+        >
+          {/* Thumbnail */}
+          <div className={`w-20 h-20 shrink-0 rounded-xl overflow-hidden flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-100'}`}>
+            {imgSrc && imgStatus === 'loaded' ? (
+              <img src={imgSrc} alt={prenda.nombre_corto} className="w-full h-full object-cover" />
+            ) : (
+              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <Sparkles size={22} className="text-indigo-400" />
+              </motion.div>
+            )}
+          </div>
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <span className={`text-[9px] font-bold uppercase tracking-widest ${darkMode ? 'text-indigo-400' : 'text-indigo-500'}`}>
+              {prenda.categoria === 'TOP' ? 'SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'INFERIOR' : prenda.categoria}
+            </span>
+            <p className="font-bold text-sm leading-tight truncate">{prenda.nombre_corto || prenda.descripcion}</p>
+            <p className="text-xs opacity-60 line-clamp-2 mt-0.5 leading-relaxed">{prenda.descripcion}</p>
+          </div>
+          {/* Arrow */}
+          <ChevronRight size={18} className={`shrink-0 ${darkMode ? 'text-gray-500' : 'text-gray-300'}`} />
+        </motion.div>
+      )}
+
+      {/* ── GRID / CARD layout (default) ── */}
+      {viewMode !== 'strip' && (
       <motion.div 
         whileHover={{ scale: 1.02, y: -4 }} 
         onClick={onOpen}
@@ -193,25 +225,23 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
         {prenda.nombre_corto && (
           <p className="text-xs opacity-50 mb-3 leading-relaxed italic line-clamp-2">{prenda.razon}</p>
         )}
-        <div className="mt-auto flex justify-center pt-3 border-t border-gray-200/20">
+        <div className="mt-auto pt-3 border-t border-gray-200/20 flex justify-center">
           {(prenda.enlace_compra && prenda.tienda_recomendada) && (
             <a 
               href={prenda.enlace_compra} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group relative flex items-center bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-full transition-all duration-300 shadow-md shadow-indigo-500/20 overflow-hidden h-10 w-10 hover:w-[200px]"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-full transition-all duration-200 shadow-md shadow-indigo-500/20"
             >
-              <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 text-sm absolute left-5">
-                Buscar en {prenda.tienda_recomendada}
-              </span>
-              <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center absolute right-0">
-                <ShoppingCart size={18} />
-              </div>
+              <ShoppingCart size={14} />
+              <span>Buscar en {prenda.tienda_recomendada}</span>
             </a>
           )}
         </div>
       </div>
     </motion.div>
+      )}
 
     {typeof document !== 'undefined' && createPortal(
       <>
@@ -253,7 +283,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
               <div className="p-6 sm:p-8 flex-1 flex flex-col sm:flex-row gap-8">
                 {/* Modal Image */}
                 <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
-                  {imgSrc ? (
+                  {imgSrc && imgStatus === 'loaded' ? (
                     <img 
                       src={imgSrc} 
                       alt={prenda.nombre_corto || "Prenda"} 
@@ -261,10 +291,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
                       onClick={(e) => { e.stopPropagation(); setFullScreenImage(true); }}
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50 py-20">
-                      <Sparkles size={32} className="animate-pulse mb-2" />
-                      <span className="text-sm">Generando...</span>
-                    </div>
+                    <SkeletonImageLoader darkMode={darkMode} />
                   )}
                 </div>
 
@@ -327,12 +354,73 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
 };
 
 // Loads all images in parallel for maximum speed
+// Real-time skeleton loader for clothing image in modal
+const skeletonMessages = [
+  '🎨 Creando paleta de colores...',
+  '✂️ Trazando la silueta...',
+  '🧵 Añadiendo texturas...',
+  '💡 Aplicando iluminación...',
+  '🔍 Definiendo detalles...',
+  '✨ Casi lista...',
+];
+const SkeletonImageLoader = ({ darkMode }) => {
+  const [msgIdx, setMsgIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setMsgIdx(prev => (prev + 1) % skeletonMessages.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className={`w-full h-72 sm:h-80 rounded-xl overflow-hidden relative flex flex-col items-center justify-end pb-6 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+      {/* Shimmer rows */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[1,2,3,4,5].map(i => (
+          <div key={i}
+            className={`absolute left-0 right-0 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
+            style={{ top: `${12 + (i-1)*18}%`, height: '10%', animationDelay: `${i*0.15}s` }}
+          >
+            <div
+              className="absolute inset-0 -translate-x-full animate-[shimmer_1.8s_infinite]"
+              style={{ background: darkMode
+                ? 'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)'
+                : 'linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent)' }}
+            />
+          </div>
+        ))}
+        {/* big square block */}
+        <div className={`absolute inset-4 rounded-xl ${darkMode ? 'bg-gray-700/60' : 'bg-gray-200/60'}`}>
+          <div
+            className="absolute inset-0 -translate-x-full animate-[shimmer_1.8s_0.4s_infinite]"
+            style={{ background: darkMode
+              ? 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)'
+              : 'linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)' }}
+          />
+        </div>
+      </div>
+      {/* Status message */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={msgIdx}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.35 }}
+          className={`relative z-10 text-xs font-semibold px-4 py-2 rounded-full backdrop-blur-md border ${
+            darkMode ? 'bg-gray-900/70 border-gray-700 text-indigo-300' : 'bg-white/80 border-gray-200 text-indigo-600'
+          }`}
+        >
+          {skeletonMessages[msgIdx]}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [openIdx, setOpenIdx] = useState(null);
-  
   const scrollPosRef = useRef(0);
   const isModalOpen = openIdx !== null;
+
   useEffect(() => {
     if (isModalOpen) {
       scrollPosRef.current = window.scrollY;
@@ -355,25 +443,74 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
     };
   }, [isModalOpen]);
 
+  // 'grid' | 'strip' toggle state for mobile
+  const [mobileView, setMobileView] = useState('grid');
+
   if (!prendas || !Array.isArray(prendas)) return null;
 
+  const cardProps = (prenda, idx) => ({
+    prenda,
+    darkMode,
+    canLoad: idx <= currentIdx,
+    onLoadComplete: () => setCurrentIdx(prev => Math.max(prev, idx + 1)),
+    token,
+    isOpen: openIdx === idx,
+    onOpen: () => setOpenIdx(idx),
+    onClose: () => setOpenIdx(null),
+    onPrev: idx > 0 ? () => setOpenIdx(idx - 1) : null,
+    onNext: idx < prendas.length - 1 ? () => setOpenIdx(idx + 1) : null,
+  });
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {prendas.map((prenda, idx) => (
-        <PrendaCard
-          key={`${prenda.nombre_corto || 'prenda'}-${idx}`}
-          prenda={prenda}
-          darkMode={darkMode}
-          canLoad={idx <= currentIdx}
-          onLoadComplete={() => setCurrentIdx(prev => Math.max(prev, idx + 1))}
-          token={token}
-          isOpen={openIdx === idx}
-          onOpen={() => setOpenIdx(idx)}
-          onClose={() => setOpenIdx(null)}
-          onPrev={idx > 0 ? () => setOpenIdx(idx - 1) : null}
-          onNext={idx < prendas.length - 1 ? () => setOpenIdx(idx + 1) : null}
-        />
-      ))}
+    <div>
+      {/* Mobile view toggle — only visible on small screens */}
+      <div className="flex items-center justify-end mb-3 gap-2 sm:hidden">
+        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Vista:</span>
+        <button
+          onClick={() => setMobileView('grid')}
+          className={`p-1.5 rounded-lg transition-colors ${
+            mobileView === 'grid'
+              ? 'bg-indigo-600 text-white'
+              : darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
+          }`}
+          title="Vista cuadrícula"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+            <path d="M3 3h8v8H3zm0 10h8v8H3zm10-10h8v8h-8zm0 10h8v8h-8z"/>
+          </svg>
+        </button>
+        <button
+          onClick={() => setMobileView('strip')}
+          className={`p-1.5 rounded-lg transition-colors ${
+            mobileView === 'strip'
+              ? 'bg-indigo-600 text-white'
+              : darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
+          }`}
+          title="Vista lista"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+            <path d="M3 4h18v3H3zm0 7h18v2H3zm0 6h18v3H3z"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Strip layout — mobile only */}
+      {mobileView === 'strip' && (
+        <div className="flex flex-col gap-3 sm:hidden">
+          {prendas.map((prenda, idx) => (
+            <PrendaCard key={`strip-${prenda.nombre_corto || 'prenda'}-${idx}`} {...cardProps(prenda, idx)} viewMode="strip" />
+          ))}
+        </div>
+      )}
+
+      {/* Grid layout — always on desktop, on mobile when mobileView === 'grid' */}
+      <div className={`grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${
+        mobileView === 'strip' ? 'hidden sm:grid' : ''
+      }`}>
+        {prendas.map((prenda, idx) => (
+          <PrendaCard key={`grid-${prenda.nombre_corto || 'prenda'}-${idx}`} {...cardProps(prenda, idx)} viewMode="grid" />
+        ))}
+      </div>
     </div>
   );
 };
