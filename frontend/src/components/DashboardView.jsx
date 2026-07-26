@@ -614,7 +614,7 @@ const ChatMessage = ({ msg, darkMode, token }) => {
           />
         )}
         {msg.content && (
-          <div className="p-3 rounded-lg text-sm bg-indigo-600 text-white">
+          <div className="p-4 rounded-2xl rounded-tr-sm text-sm bg-indigo-600/80 backdrop-blur-md border border-indigo-500/20 text-white shadow-lg shadow-indigo-600/20">
             {msg.content}
           </div>
         )}
@@ -636,7 +636,7 @@ const ChatMessage = ({ msg, darkMode, token }) => {
 
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-2 max-w-[95%] self-start">
-      <div className={`p-3 rounded-lg text-sm ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-neutral-100 text-neutral-900'}`}>
+      <div className={`p-4 rounded-2xl rounded-tl-sm text-sm bg-white/10 backdrop-blur-md border border-white/10 text-white shadow-lg`}>
         {textContent}
       </div>
       {nuevasPrendas.length > 0 && (
@@ -1100,10 +1100,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               ))}
               {isChatLoading && (
                 <div className="flex justify-start">
-                  <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-2 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                    <div className={`h-3 w-48 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-                    <div className={`h-3 w-64 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-                    <div className={`h-3 w-32 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                  <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-3 bg-white/10 backdrop-blur-md border border-white/10 shadow-lg`}>
+                    <div className={`h-2.5 w-48 rounded-full bg-white/20`}></div>
+                    <div className={`h-2.5 w-64 rounded-full bg-white/20`}></div>
+                    <div className={`h-2.5 w-32 rounded-full bg-white/20`}></div>
                   </div>
                 </div>
               )}
@@ -1238,8 +1238,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-8 flex items-center justify-center shadow-lg shadow-indigo-500/50 animate-[pulse_3s_ease-in-out_infinite]">
                          <CloudSnow className="text-white w-12 h-12" />
                       </div>
-                      <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-10 text-center text-white drop-shadow-lg">
-                        Ready to Create Something New?
+                      <h1 className="text-4xl sm:text-5xl font-black text-white text-center mb-10 tracking-tight">
+                        ¿Listo para crear algo nuevo?
                       </h1>
                       
                       <div className="w-full relative z-50">
@@ -1276,7 +1276,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-[110%] left-0 right-0 rounded-2xl shadow-2xl border overflow-hidden z-[100] bg-gray-900 border-gray-700 backdrop-blur-2xl"
+                                className="absolute top-[110%] left-0 right-0 rounded-2xl shadow-2xl border overflow-hidden z-[100] bg-black/40 border-white/10 backdrop-blur-2xl"
                               >
                                 {suggestions.map((city, idx) => (
                                   <div 
@@ -1285,7 +1285,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                       if (!city.latitude) return;
                                       handleSelectSuggestion(city);
                                     }}
-                                    className={`px-5 py-4 cursor-pointer flex items-center gap-4 transition-colors hover:bg-gray-800 ${idx !== suggestions.length - 1 ? 'border-b border-gray-800' : ''}`}
+                                    className={`px-5 py-4 cursor-pointer flex items-center gap-4 transition-colors hover:bg-white/10 ${idx !== suggestions.length - 1 ? 'border-b border-white/10' : ''}`}
                                   >
                                     <MapPin size={18} className="text-indigo-400 opacity-70 flex-shrink-0" />
                                     <div className="flex flex-col">
@@ -1303,21 +1303,21 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mt-10">
-                        <button onClick={handleGeolocation} className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left flex flex-col gap-3 group">
+                        <button onClick={handleGeolocation} className="p-5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-col gap-3 group">
                           <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
                             <MapPin size={20} />
                           </div>
                           <span className="font-bold text-sm text-white">Mi Ubicación Actual</span>
                           <span className="text-xs text-gray-400">Descubre outfits para tu ciudad al instante.</span>
                         </button>
-                        <button onClick={() => {setLocation('Madrid'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left flex flex-col gap-3 group">
+                        <button onClick={() => {setLocation('Madrid'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-col gap-3 group">
                           <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
                             <Sun size={20} />
                           </div>
                           <span className="font-bold text-sm text-white">Escapada de Verano</span>
                           <span className="text-xs text-gray-400">Playa, sol y looks frescos.</span>
                         </button>
-                        <button onClick={() => {setLocation('Londres'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left flex flex-col gap-3 group">
+                        <button onClick={() => {setLocation('Londres'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-col gap-3 group">
                           <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                             <CloudRain size={20} />
                           </div>
