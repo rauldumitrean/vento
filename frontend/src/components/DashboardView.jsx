@@ -1203,6 +1203,209 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
+      <div className="relative z-10 flex w-full h-[100dvh] p-2 sm:p-4 gap-4">
+        {/* Sidebar */}
+        <Sidebar view={view} setView={setView} handleLogout={onLogout} userName={userName} isPremium={isPremium} />
+
+        {/* Main Content */}
+        <div className="flex-1 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/20 backdrop-blur-2xl">
+          {/* Mobile Top Bar */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
+             <span className="text-xl font-bold tracking-widest text-white">Ventoo</span>
+             <div className="flex gap-2">
+               <button onClick={() => setView('profile')} className="p-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10">
+                 <User size={18} />
+               </button>
+             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col relative">
+            <main className="flex-1 p-6 sm:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full">
+              {view === 'armario' ? (
+                <ArmarioHistorial token={token} darkMode={true} />
+              ) : view === 'admin' && Cookies.get('userRole') === 'ADMIN' ? (
+                <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>}><AdminView token={token} darkMode={true} /></Suspense>
+              ) : view === 'profile' ? (
+                <ProfileSettings token={token} darkMode={true} onLogout={onLogout} />
+              ) : view === 'friends' ? (
+                <FriendsView token={token} darkMode={true} onNavigate={setView} />
+              ) : view === 'chat' ? (
+                <div className="h-full flex flex-col pt-8 pb-[100px] lg:pb-0">{chatWidget}</div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh]">
+                  {/* Dashboard - Zyricon style centralized search */}
+                  
+                  {!weather && !loading ? (
+                    <div className="flex flex-col items-center w-full max-w-3xl justify-center mt-[-10vh]">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-8 flex items-center justify-center shadow-lg shadow-indigo-500/50 animate-[pulse_3s_ease-in-out_infinite]">
+                         <CloudSnow className="text-white w-12 h-12" />
+                      </div>
+                      <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-10 text-center text-white drop-shadow-lg">
+                        Ready to Create Something New?
+                      </h1>
+                      
+                      <div className="w-full relative z-50">
+                        <form onSubmit={handleSearch} className="flex-1 flex items-center px-6 py-4 rounded-3xl relative transition-all duration-300 shadow-2xl border bg-black/40 border-white/20 focus-within:border-indigo-500/50 focus-within:bg-black/60 backdrop-blur-xl">
+                          <Search className="w-6 h-6 mr-4 text-gray-400" />
+                          <input 
+                            type="text" 
+                            placeholder="¿Para qué ciudad quieres un outfit hoy?" 
+                            className="w-full py-2 bg-transparent focus:outline-none text-white placeholder-gray-500 text-lg"
+                            value={location}
+                            onChange={e => {
+                              setLocation(e.target.value);
+                              setShowSuggestions(true);
+                            }}
+                            onFocus={() => setShowSuggestions(true)}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 300)}
+                          />
+                          {location && (
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                setLocation('');
+                                setSuggestions([]);
+                              }}
+                              className="ml-3 p-2 rounded-full transition-colors text-gray-400 hover:text-white hover:bg-white/10"
+                            >
+                              <X size={20} />
+                            </button>
+                          )}
+
+                          <AnimatePresence>
+                            {showSuggestions && suggestions.length > 0 && (
+                              <motion.div 
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute top-[110%] left-0 right-0 rounded-2xl shadow-2xl border overflow-hidden z-[100] bg-gray-900 border-gray-700 backdrop-blur-2xl"
+                              >
+                                {suggestions.map((city, idx) => (
+                                  <div 
+                                    key={`${city.name || 'sugg'}-${idx}`}
+                                    onClick={() => {
+                                      if (!city.latitude) return;
+                                      handleSelectSuggestion(city);
+                                    }}
+                                    className={`px-5 py-4 cursor-pointer flex items-center gap-4 transition-colors hover:bg-gray-800 ${idx !== suggestions.length - 1 ? 'border-b border-gray-800' : ''}`}
+                                  >
+                                    <MapPin size={18} className="text-indigo-400 opacity-70 flex-shrink-0" />
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-base text-gray-200">{city.name}</span>
+                                      <span className="text-sm text-gray-500">
+                                        {city.admin1 ? city.admin1 + ', ' : ''}{city.country}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </form>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mt-10">
+                        <button onClick={handleGeolocation} className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left flex flex-col gap-3 group">
+                          <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                            <MapPin size={20} />
+                          </div>
+                          <span className="font-bold text-sm text-white">Mi Ubicación Actual</span>
+                          <span className="text-xs text-gray-400">Descubre outfits para tu ciudad al instante.</span>
+                        </button>
+                        <button onClick={() => {setLocation('Madrid'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left flex flex-col gap-3 group">
+                          <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                            <Sun size={20} />
+                          </div>
+                          <span className="font-bold text-sm text-white">Escapada de Verano</span>
+                          <span className="text-xs text-gray-400">Playa, sol y looks frescos.</span>
+                        </button>
+                        <button onClick={() => {setLocation('Londres'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left flex flex-col gap-3 group">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                            <CloudRain size={20} />
+                          </div>
+                          <span className="font-bold text-sm text-white">City Break Lluvioso</span>
+                          <span className="text-xs text-gray-400">Estilo urbano para la lluvia.</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Result state
+                    <div className="w-full flex flex-col xl:flex-row gap-8">
+                       <div className="flex-1 flex flex-col space-y-8 min-w-0">
+                          {/* Top pill for weather */}
+                          <div className="flex justify-between items-center w-full">
+                            <button onClick={() => {setWeather(null); setOutfit(null);}} className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                               <ArrowLeft size={16} /> Volver
+                            </button>
+                          </div>
+                          
+                          {loading && (
+                            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                              <Sparkles className="w-12 h-12 text-indigo-400 animate-pulse" />
+                              <p className="text-lg font-medium text-indigo-300">{loadingSteps[loadingStepIndex]}</p>
+                            </div>
+                          )}
+
+                          {weather && !loading && (
+                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden">
+                               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full filter blur-[60px]" />
+                               <div className="relative z-10">
+                                  <h2 className="text-sm tracking-widest uppercase opacity-50 mb-2 font-bold text-indigo-400">Clima Actual</h2>
+                                  <div className="flex flex-wrap items-end gap-4">
+                                     <span className="text-6xl sm:text-7xl font-light text-white">{weather.current.temperature_2m}°</span>
+                                     <div className="pb-1 sm:pb-2">
+                                        <h3 className="text-xl font-bold text-white mb-1">{weather.location}</h3>
+                                        <p className="text-gray-400 text-sm">{weather.current.wind_speed_10m} km/h • {weather.current.relative_humidity_2m}% humedad</p>
+                                     </div>
+                                  </div>
+                               </div>
+                               <div className="relative z-10 opacity-70 hidden sm:block">
+                                  <AnimatedWeatherIcon temperature={weather.current.temperature_2m} size={80} />
+                               </div>
+                             </motion.div>
+                          )}
+
+                          {outfit && !loading && (
+                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl relative">
+                               <div className="flex justify-between items-start mb-6">
+                                 <div>
+                                   <h2 className="text-sm tracking-widest uppercase font-bold text-purple-400 mb-2">Generado por IA</h2>
+                                   <p className="text-lg italic text-gray-300 max-w-2xl">"{outfit.resumen}"</p>
+                                 </div>
+                                 <button onClick={handleToggleFavorite} className={`p-3 rounded-full transition-colors ${isFavorite ? 'text-red-400 bg-red-500/20' : 'text-gray-400 bg-black/20 hover:bg-white/10'}`}>
+                                   <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                                 </button>
+                               </div>
+
+                               {/* Using the standard OutfitGrid */}
+                               <OutfitGrid prendas={outfit.prendas} darkMode={true} token={token} />
+
+                               {outfit.consejo_extra && (
+                                  <div className="mt-8 p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-sm relative overflow-hidden">
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
+                                    <span className="font-bold block mb-1">Consejo:</span>
+                                    {outfit.consejo_extra}
+                                  </div>
+                               )}
+                             </motion.div>
+                          )}
+                       </div>
+                       
+                       {/* Chat Side Panel in Dashboard */}
+                       {outfit && (
+                         <div className="w-full xl:w-[420px] shrink-0 h-[600px] xl:h-[calc(100vh-6rem)] xl:sticky top-4">
+                           {chatWidget}
+                         </div>
+                       )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
+      </div>
+
       {/* Weather Details Modal */}
       <AnimatePresence>
         {showWeatherModal && weather && (
