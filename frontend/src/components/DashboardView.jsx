@@ -25,7 +25,7 @@ const loadingSteps = [
   "A punto de terminar..."
 ];
 
-const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, onOpen, onClose, onPrev, onNext, delayIdx = 0 }) => {
+const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, onOpen, onClose, onPrev, onNext, viewMode = 'grid', delayIdx = 0 }) => {
   if (!prenda) return null;
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
