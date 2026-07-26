@@ -133,19 +133,19 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       {loading ? (
         activeTab === 'armario' ? (
           <div>
-            <div className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
-              <div className={`h-10 w-full sm:w-48 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-              <div className={`h-10 flex-1 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-              <div className={`h-10 w-full sm:w-32 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-              <div className={`h-10 w-full sm:w-24 rounded animate-pulse ${darkMode ? 'bg-indigo-900/30' : 'bg-indigo-100'}`}></div>
+            <div className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
+              <div className={`h-10 w-full sm:w-48 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+              <div className={`h-10 flex-1 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+              <div className={`h-10 w-full sm:w-32 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+              <div className={`h-10 w-full sm:w-24 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-indigo-100'}`}></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className={`p-4 rounded-lg flex justify-between items-start border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                <div key={i} className={`p-4 rounded-lg flex justify-between items-start border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
                   <div className="w-full">
-                    <div className={`h-5 w-16 rounded mb-3 animate-pulse ${darkMode ? 'bg-indigo-900/30' : 'bg-indigo-50'}`}></div>
-                    <div className={`h-4 w-3/4 rounded mb-2 animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    <div className={`h-3 w-1/2 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                    <div className={`h-5 w-16 rounded mb-3 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-indigo-50'}`}></div>
+                    <div className={`h-4 w-3/4 rounded mb-2 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                    <div className={`h-3 w-1/2 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
                   </div>
                 </div>
               ))}
@@ -154,20 +154,20 @@ const ArmarioHistorial = ({ token, darkMode }) => {
         ) : (
           <div className="space-y-6">
             {[1, 2, 3].map(i => (
-              <div key={i} className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+              <div key={i} className={`p-6 rounded-xl border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
                 <div className="flex justify-between items-start mb-4">
-                  <div className={`h-4 w-48 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  <div className={`h-4 w-48 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
                   <div className="flex gap-2">
-                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
                   </div>
                 </div>
-                <div className={`h-4 w-full rounded mb-2 animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                <div className={`h-4 w-5/6 rounded mb-6 animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                <div className={`h-4 w-full rounded mb-2 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                <div className={`h-4 w-5/6 rounded mb-6 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
                 <div className="flex flex-wrap gap-2">
-                  <div className={`h-6 w-24 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  <div className={`h-6 w-32 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                  <div className={`h-6 w-20 rounded animate-pulse ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                  <div className={`h-6 w-24 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                  <div className={`h-6 w-32 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                  <div className={`h-6 w-20 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
                 </div>
               </div>
             ))}
@@ -175,11 +175,11 @@ const ArmarioHistorial = ({ token, darkMode }) => {
         )
       ) : activeTab === 'armario' ? (
         <div>
-          <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+          <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
             <select 
               value={nuevaPrenda.categoria} 
               onChange={e => setNuevaPrenda({...nuevaPrenda, categoria: e.target.value})}
-              className={`p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+              className={`p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${'bg-black/40 border-white/10 text-white'}`}
             >
               <option value="top">Parte superior (Top)</option>
               <option value="bottom">Parte inferior (Bottom)</option>
@@ -192,7 +192,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               placeholder="Descripción (ej. Camiseta básica)" 
               value={nuevaPrenda.descripcion}
               onChange={e => setNuevaPrenda({...nuevaPrenda, descripcion: e.target.value})}
-              className={`flex-1 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+              className={`flex-1 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${'bg-black/40 border-white/10 text-white placeholder-gray-500'}`}
               required
             />
             <input 
@@ -200,7 +200,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               placeholder="Color (opcional)" 
               value={nuevaPrenda.color}
               onChange={e => setNuevaPrenda({...nuevaPrenda, color: e.target.value})}
-              className={`w-full sm:w-32 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+              className={`w-full sm:w-32 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${'bg-black/40 border-white/10 text-white placeholder-gray-500'}`}
             />
             <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded px-4 flex items-center justify-center gap-2 transition-colors w-full sm:w-auto">
               <Plus size={16} /> Añadir
@@ -212,9 +212,9 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                <p className="text-gray-500 col-span-full text-center py-8">Tu armario está vacío. Añade algunas prendas para que la IA las utilice en sus recomendaciones.</p>
             ) : (
               armario.map(prenda => (
-                <div key={prenda.id} className={`p-4 rounded-lg flex justify-between items-start border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                <div key={prenda.id} className={`p-4 rounded-lg flex justify-between items-start border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded">{prenda.categoria}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-white/10 px-2 py-1 rounded">{prenda.categoria}</span>
                     <h3 className="font-medium mt-2">{prenda.descripcion}</h3>
                     {prenda.color && <p className="text-sm text-gray-500">{prenda.color}</p>}
                   </div>
@@ -266,7 +266,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               try { outfit = JSON.parse(h.recomendacion_json); } catch (e) { console.error('Error parsing recomendacion_json', e); }
 
               return (
-                <div key={h.id} className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                <div key={h.id} className={`p-6 rounded-xl border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Clock size={16} /> {new Date(h.createdAt).toLocaleDateString()} - <MapPin size={16} className="ml-2"/> {h.ubicacion} {clima.temperature_2m != null ? `(${clima.temperature_2m}ºC)` : ''}
@@ -288,7 +288,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                       </button>
                       <button 
                         onClick={() => toggleFavorite(h.id, h.isFavorite)}
-                        className={`p-2 rounded-full transition-colors ${h.isFavorite ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                        className={`p-2 rounded-full transition-colors ${h.isFavorite ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'}`}
                         title="Marcar como favorito"
                       >
                         <Heart size={20} fill={h.isFavorite ? "currentColor" : "none"} />
@@ -298,7 +298,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                   {outfit.resumen && <p className={`font-medium mb-4 italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>"{outfit.resumen}"</p>}
                   <div className="flex flex-wrap gap-2">
                     {(outfit.prendas || []).map((p, i) => (
-                      <span key={i} className={`text-xs px-2 py-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'}`}>
+                      <span key={i} className={`text-xs px-2 py-1 rounded border ${darkMode ? 'bg-white/10 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'}`}>
                         {p.descripcion}
                       </span>
                     ))}
@@ -325,7 +325,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                   friends.map(f => (
                     <button key={f.friendshipId} onClick={() => handleShare(f.id)} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${darkMode ? 'bg-gray-800/50 border-gray-700 hover:bg-gray-800' : 'bg-gray-50 border-gray-200 hover:bg-indigo-50 hover:border-indigo-200'}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}>
                           {f.profilePicture ? <img src={f.profilePicture} className="w-full h-full object-cover" /> : <Users size={16} />}
                         </div>
                         <span className="font-bold">{f.name || 'Usuario'}</span>
@@ -337,7 +337,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               </div>
             )}
             
-            <button onClick={() => setShareModalOpen(false)} className={`mt-6 w-full py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}>
+            <button onClick={() => setShareModalOpen(false)} className={`mt-6 w-full py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
               Cerrar
             </button>
           </div>

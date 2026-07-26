@@ -24,12 +24,12 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium }) => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[50px] pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-10 relative z-10">
+      <a href="/" className="flex items-center gap-3 mb-10 relative z-10 cursor-pointer hover:opacity-80 transition-opacity">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 border border-white/20">
           <Cloud size={20} className="text-white" />
         </div>
         <span className="text-xl font-bold tracking-widest text-white">Ventoo</span>
-      </div>
+      </a>
 
       {/* Create New Action */}
       <button 
@@ -48,7 +48,7 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium }) => {
         <SidebarItem icon={Archive} label="Armario & Historial" isActive={view === 'armario'} onClick={() => setView('armario')} />
         <SidebarItem icon={Activity} label="Comunidad" isActive={view === 'friends'} onClick={() => setView('friends')} />
         {Cookies.get('userRole') === 'ADMIN' && (
-          <SidebarItem icon={Settings} label="Admin Panel" isActive={view === 'admin'} onClick={() => setView('admin')} />
+          <SidebarItem icon={Settings} label="Admin Panel" isActive={false} onClick={() => window.location.href = '/admin'} />
         )}
       </div>
 

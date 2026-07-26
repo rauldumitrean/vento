@@ -155,7 +155,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
       <motion.div 
         whileHover={{ scale: 1.02, y: -4 }} 
         onClick={onOpen}
-        className={`group cursor-pointer relative rounded-2xl flex flex-col shadow-lg transition-shadow duration-300 overflow-hidden ${darkMode ? 'bg-gray-800 border border-gray-700/80 shadow-black/40' : 'bg-white border border-gray-100 shadow-gray-200/60'}`}
+        className={`group cursor-pointer relative rounded-2xl flex flex-col shadow-lg transition-shadow duration-300 overflow-hidden bg-black/20 backdrop-blur-xl border border-white/10 shadow-black/40`}
       >
         {imgStatus !== 'loaded' && (
           <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
@@ -274,23 +274,23 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+              className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar bg-black/40 backdrop-blur-3xl border border-white/10`}
             >
               {/* Modal Header */}
-              <div className={`sticky top-0 z-20 flex items-center justify-between p-4 sm:p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
+              <div className={`sticky top-0 z-20 flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-black/20 backdrop-blur-md`}>
                 <h3 className={`text-lg sm:text-xl font-bold pr-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   {onPrev && (
-                    <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-indigo-400' : 'hover:bg-indigo-50 text-indigo-600'}`}>
+                    <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
                       <ArrowLeft size={20} />
                     </button>
                   )}
                   {onNext && (
-                    <button onClick={(e) => { e.stopPropagation(); onNext(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-indigo-400' : 'hover:bg-indigo-50 text-indigo-600'}`}>
+                    <button onClick={(e) => { e.stopPropagation(); onNext(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
                       <ArrowRight size={20} />
                     </button>
                   )}
-                  <button onClick={onClose} className={`ml-2 p-1.5 sm:p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                  <button onClick={onClose} className={`ml-2 p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-gray-300`}>
                     <X size={20} />
                   </button>
                 </div>
@@ -299,7 +299,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
               {/* Modal Content */}
               <div className="p-6 sm:p-8 flex-1 flex flex-col sm:flex-row gap-8">
                 {/* Modal Image */}
-                <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
+                <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center bg-black/30 border border-white/5`}>
                   {imgSrc && imgStatus === 'loaded' ? (
                     <img 
                       src={imgSrc} 
@@ -1080,7 +1080,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   const chatWidget = (
-    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 ${darkMode ? 'bg-gray-900 border-gray-800 shadow-black/50' : 'bg-white border-gray-100 shadow-gray-100'} ${view === 'chat' ? 'flex-1 h-[calc(100vh-140px)]' : 'hidden lg:flex'}`}>
+    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-xl border-white/10 shadow-black/50 ${view === 'chat' ? 'flex-1 h-[calc(100vh-140px)]' : 'hidden lg:flex'}`}>
       
       {/* Chat content — blurred + locked when not premium */}
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
@@ -1141,7 +1141,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             <input 
               type="text"
               placeholder="Escribe tu mensaje..."
-              className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors ${darkMode ? 'bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-500' : 'bg-white/50 border-neutral-200/50'}`}
+              className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors bg-white/5 border-white/10 text-white placeholder-gray-400`}
               value={message}
               onChange={e => setMessage(e.target.value)}
               disabled={!outfit}
