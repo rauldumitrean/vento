@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Send, Heart, Camera, X, ShoppingCart, Sparkles, RefreshCw, Archive, Thermometer, Droplets, Wind, Gauge, CloudRain, Sun, Cloud, Info } from 'lucide-react';
@@ -1233,7 +1233,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                         return (
                           <div key={idx} className={`flex flex-col items-center justify-center min-w-[80px] p-3 rounded-2xl shrink-0 snap-center ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
                             <span className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{hours}</span>
-                            <span className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.hourly.temperature_2m[idx]}°</span>
+                            <span className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.hourly.temperature_2m[idx] ?? '--'}°</span>
                             {weather.hourly.precipitation_probability && (
                               <span className="text-[10px] text-blue-500 font-medium flex items-center justify-center gap-0.5 mt-1">
                                 {weather.hourly.precipitation_probability[idx]}% <Droplets size={10} className="opacity-80" />
@@ -1326,13 +1326,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
-      {showStyleOnboarding && (
-        <StyleOnboardingModal 
-          token={token} 
-          darkMode={darkMode} 
-          onClose={() => setShowStyleOnboarding(false)} 
-        />
-      )}
+      <AnimatePresence>
+        {showStyleOnboarding && (
+          <StyleOnboardingModal 
+            token={token} 
+            darkMode={darkMode} 
+            onClose={() => setShowStyleOnboarding(false)} 
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showAgePrompt && (
