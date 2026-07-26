@@ -145,7 +145,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
       <motion.div 
         whileHover={{ scale: 1.02, y: -4 }} 
         onClick={onOpen}
-        className={`group cursor-pointer relative rounded-2xl flex flex-col shadow-lg transition-all duration-300 overflow-hidden ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}
+        className={`group cursor-pointer relative rounded-2xl flex flex-col shadow-lg transition-shadow duration-300 overflow-hidden ${darkMode ? 'bg-gray-800 border border-gray-700/80 shadow-black/40' : 'bg-white border border-gray-100 shadow-gray-200/60'}`}
       >
         <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
           <span className={`p-1.5 rounded-full inline-flex ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
@@ -353,84 +353,100 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
   );
 };
 
-// Real-time skeleton loader for clothing image in modal — clean, no bars
-const skeletonSteps = [
-  { icon: '🎨', label: 'Creando paleta de colores...' },
-  { icon: '✂️', label: 'Trazando la silueta...' },
-  { icon: '🧵', label: 'Tejiendo los detalles...' },
-  { icon: '💡', label: 'Aplicando iluminación...' },
-  { icon: '🔍', label: 'Definiendo bordes...' },
-  { icon: '✨', label: 'Casi lista...' },
+// Step icon components (SVG, no emoji)
+const StepIcons = [
+  // Palette
+  <svg key={0} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>,
+  // Scissors
+  <svg key={1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>,
+  // Layers / textures
+  <svg key={2} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
+  // Sun / lighting
+  <svg key={3} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>,
+  // Search / details
+  <svg key={4} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  // Sparkles
+  <svg key={5} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M12 3l1.88 5.76L20 10.5l-5.12 3.99L16.76 21 12 17.27 7.24 21l1.88-6.51L4 10.5l6.12-1.74z"/></svg>,
 ];
+const skeletonStepLabels = [
+  'Creando paleta de colores...',
+  'Trazando la silueta...',
+  'Tejiendo los detalles...',
+  'Aplicando iluminación...',
+  'Definiendo bordes...',
+  '\u00a1Casi lista!',
+];
+
 const SkeletonImageLoader = ({ darkMode }) => {
   const [step, setStep] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setStep(prev => (prev + 1) % skeletonSteps.length), 2000);
+    const t = setInterval(() => setStep(prev => (prev + 1) % skeletonStepLabels.length), 2000);
     return () => clearInterval(t);
   }, []);
-  const progress = Math.round(((step + 1) / skeletonSteps.length) * 100);
+  const progress = Math.round(((step + 1) / skeletonStepLabels.length) * 100);
+  const bg = darkMode ? 'bg-gray-800' : 'bg-gray-100';
+  const bar = darkMode ? 'bg-gray-700' : 'bg-gray-200';
+  const shimmer = darkMode
+    ? 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)'
+    : 'linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)';
+
   return (
-    <div className={`w-full h-72 sm:h-80 rounded-xl flex flex-col items-center justify-center gap-6 ${
-      darkMode ? 'bg-gray-800/60' : 'bg-gray-100'
-    }`}>
-      {/* Orbital spinner */}
-      <div className="relative w-20 h-20">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-          className="absolute inset-0"
-        >
-          <div className="w-full h-full rounded-full border-4 border-transparent"
-            style={{ borderTopColor: '#6366f1', borderRightColor: '#818cf8' }}
-          />
-        </motion.div>
-        <motion.div
-          animate={{ rotate: -360 }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
-          className="absolute inset-2"
-        >
-          <div className="w-full h-full rounded-full border-2 border-transparent"
-            style={{ borderBottomColor: '#a5b4fc' }}
-          />
-        </motion.div>
-        {/* Center pulse dot */}
-        <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <div className="w-3 h-3 rounded-full bg-indigo-500" />
-        </motion.div>
+    <div className={`w-full h-72 sm:h-80 rounded-xl overflow-hidden relative ${bg}`}>
+      {/* ─ Skeleton background shape (image placeholder) ─ */}
+      <div className="absolute inset-0 p-5 flex flex-col gap-3">
+        {/* Big image rectangle */}
+        <div className={`rounded-lg flex-1 relative overflow-hidden ${bar}`}>
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_ease-in-out_infinite]" style={{ background: shimmer }} />
+        </div>
+        {/* Text line stubs */}
+        <div className={`h-3 w-3/4 rounded-full relative overflow-hidden ${bar}`}>
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_0.15s_ease-in-out_infinite]" style={{ background: shimmer }} />
+        </div>
+        <div className={`h-3 w-1/2 rounded-full relative overflow-hidden ${bar}`}>
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_0.3s_ease-in-out_infinite]" style={{ background: shimmer }} />
+        </div>
       </div>
 
-      {/* Progress bar */}
-      <div className={`w-40 h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-        <motion.div
-          className="h-full bg-indigo-500 rounded-full"
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        />
-      </div>
+      {/* ─ Spinner overlay (CSS animations only — Safari-friendly) ─ */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/30 dark:bg-black/50">
+        {/* Dual ring */}
+        <div className="relative w-16 h-16 gpu-layer">
+          <div className="skeleton-spin-cw absolute inset-0 rounded-full border-4 border-transparent" style={{ borderTopColor: '#6366f1', borderRightColor: '#818cf8' }} />
+          <div className="skeleton-spin-ccw absolute inset-2 rounded-full border-2 border-transparent" style={{ borderBottomColor: '#a5b4fc' }} />
+          <div className="skeleton-pulse absolute inset-0 flex items-center justify-center">
+            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+          </div>
+        </div>
 
-      {/* Rotating step message */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3 }}
-          className={`text-sm font-medium text-center px-4 ${
-            darkMode ? 'text-indigo-300' : 'text-indigo-600'
-          }`}
-        >
-          <span className="mr-2">{skeletonSteps[step].icon}</span>
-          {skeletonSteps[step].label}
-        </motion.div>
-      </AnimatePresence>
+        {/* Progress bar */}
+        <div className={`w-32 h-1 rounded-full overflow-hidden ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+          <div
+            className="h-full bg-indigo-500 rounded-full transition-[width] duration-700 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Status message with SVG icon */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border ${
+              darkMode ? 'bg-gray-900/80 border-gray-700 text-indigo-300' : 'bg-white/90 border-gray-200 text-indigo-700'
+            }`}
+          >
+            <span className="flex items-center">{StepIcons[step]}</span>
+            {skeletonStepLabels[step]}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
+
 
 const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
