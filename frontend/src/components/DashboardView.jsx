@@ -164,10 +164,10 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
             </span>
           </div>
         )}
-      <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-black/20' : 'bg-gray-50/50'}`}>
+      <div className={`w-full h-56 flex items-center justify-center overflow-hidden relative bg-black/20`}>
         
         {(imgStatus === 'waiting' || imgStatus === 'loading') && (
-          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/5`}>
             {/* Shimmer sweep */}
             <div className="absolute inset-0 overflow-hidden">
               <div
@@ -433,11 +433,9 @@ const SkeletonProgressStatus = ({ darkMode }) => {
 };
 
 const SkeletonImageLoader = ({ darkMode }) => {
-  const bg = darkMode ? 'bg-gray-800' : 'bg-gray-100';
-  const bar = darkMode ? 'bg-gray-700' : 'bg-gray-200';
-  const shimmer = darkMode
-    ? 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)'
-    : 'linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)';
+  const bg = 'bg-white/5 border border-white/10';
+  const bar = 'bg-white/10';
+  const shimmer = 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)';
 
   return (
     <div className={`w-full h-72 sm:h-80 rounded-xl overflow-hidden relative flex items-center justify-center p-8 ${bg}`}>
@@ -1330,14 +1328,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     </div>
                   ) : (
                     // Result state
-                    <div className="w-full flex flex-col xl:flex-row gap-8">
+                    <div className="w-full flex flex-col xl:flex-row gap-8 relative pt-12 xl:pt-0">
+                       <button onClick={() => {setWeather(null); setOutfit(null);}} className="absolute top-0 left-0 xl:-top-12 z-50 text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-black/40 hover:bg-black/60 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
+                          <ArrowLeft size={16} /> Volver a buscar
+                       </button>
                        <div className="flex-1 flex flex-col space-y-8 min-w-0">
-                          {/* Top pill for weather */}
-                          <div className="flex justify-between items-center w-full">
-                            <button onClick={() => {setWeather(null); setOutfit(null);}} className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
-                               <ArrowLeft size={16} /> Volver
-                            </button>
-                          </div>
+                          {/* Weather pill and result state below */}
                           
                           {loading && (
                             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -1346,7 +1342,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                             </div>
                           )}
 
-                          {weather && !loading && (
+                          {weather && (
                              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden">
                                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full filter blur-[60px]" />
                                <div className="relative z-10">

@@ -47,9 +47,6 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium }) => {
         <SidebarItem icon={LayoutDashboard} label="Dashboard" isActive={view === 'dashboard'} onClick={() => setView('dashboard')} />
         <SidebarItem icon={Archive} label="Armario & Historial" isActive={view === 'armario'} onClick={() => setView('armario')} />
         <SidebarItem icon={Activity} label="Comunidad" isActive={view === 'friends'} onClick={() => setView('friends')} />
-        {Cookies.get('userRole') === 'ADMIN' && (
-          <SidebarItem icon={Settings} label="Admin Panel" isActive={false} onClick={() => window.location.href = '/admin'} />
-        )}
       </div>
 
       {/* Upgrade Banner (if not premium) */}
