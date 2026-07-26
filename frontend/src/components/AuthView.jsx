@@ -174,8 +174,6 @@ export default function AuthView({ setToken }) {
   };
 
   if (isBannedError) {
-
-  if (isBannedError) {
     return (
       <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans">
         <motion.div 
