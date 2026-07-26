@@ -35,6 +35,10 @@ class ErrorBoundary extends Component {
           <div className="text-5xl">😵</div>
           <h1 className="text-2xl font-bold">Algo salió mal</h1>
           <p className="text-gray-400 text-center max-w-md">Se produjo un error inesperado. Por favor recarga la página.</p>
+          <div className="bg-red-900/20 p-4 rounded-xl border border-red-900/50 my-4 max-w-2xl overflow-auto text-left">
+            <p className="text-red-400 font-mono text-xs">{this.state.error?.toString()}</p>
+            <p className="text-red-400/70 font-mono text-xs mt-2 whitespace-pre-wrap">{this.state.error?.stack}</p>
+          </div>
           <button
             onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
             className="px-6 py-3 bg-indigo-600 rounded-xl font-semibold hover:bg-indigo-500 transition-colors"
@@ -140,8 +144,9 @@ function App() {
   }, [adminToken]);
 
   return (
-    <BrowserRouter>
-      <GlobalBanOverlay 
+    <ErrorBoundary>
+      <BrowserRouter>
+        <GlobalBanOverlay 
         token={token} 
         bannedData={bannedData} 
         setBannedData={setBannedData} 
@@ -182,7 +187,8 @@ function App() {
         {token && <IosInstallPrompt />}
         <CookieBanner />
       </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

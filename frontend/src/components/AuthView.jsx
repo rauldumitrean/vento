@@ -424,14 +424,9 @@ export default function AuthView({ setToken }) {
                     </div>
                   </div>
                   <div className="mt-6 flex justify-center">
-                    <GoogleLogin
+                    <CustomGoogleButton
                       onSuccess={handleGoogleSuccess}
                       onError={() => setError('Error al conectar con Google')}
-                      useOneTap
-                      theme="outline"
-                      shape="rectangular"
-                      size="large"
-                      width="100%"
                     />
                   </div>
                 </div>
