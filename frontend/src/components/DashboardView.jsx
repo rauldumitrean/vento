@@ -50,7 +50,6 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
     const fetchImage = async () => {
       if (!canLoad || imgStatus !== 'waiting') return;
       
-      // FIX A-1: Guard all state updates with isMounted check
       if (isMounted) setImgStatus('loading');
       
       let url = prenda.imgUrl;
@@ -58,17 +57,18 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
         const queryText = prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
         const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
         
-        try {
-          const res = await axios.get(`${API_URL}/api/images/generate?prompt=${encodeURIComponent(simplePrompt)}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          url = res.data.imageUrl;
-          prenda.imgUrl = url;
-        } catch (error) {
-          console.error("Error fetching image:", error);
-          if (isMounted) setImgStatus('error');
-          return;
+        // Use deterministic seed based on prompt so Pollinations and CDNs cache the image automatically
+        let seed = 0;
+        for (let i = 0; i < simplePrompt.length; i++) {
+          seed = (seed << 5) - seed + simplePrompt.charCodeAt(i);
+          seed |= 0;
         }
+        seed = Math.abs(seed);
+        // If it's a retry, we change the seed slightly to get a new image
+        if (loadAttempt > 0) seed += loadAttempt;
+
+        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+        prenda.imgUrl = url;
       }
       
       if (isMounted) setImgSrc(url);
@@ -215,6 +215,22 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
           />
         )}
 
+        {/* Amazon Button - Circular expandable */}
+        {(prenda.enlace_compra && prenda.tienda_recomendada) && (
+          <a
+            href={prenda.enlace_compra}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="group/amazon absolute bottom-3 right-3 z-30 flex items-center justify-center bg-indigo-600 text-white rounded-full h-10 w-10 hover:w-auto hover:px-4 transition-all duration-300 shadow-lg shadow-indigo-500/30 overflow-hidden"
+          >
+            <ShoppingCart size={18} className="shrink-0" />
+            <span className="w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover/amazon:w-auto group-hover/amazon:opacity-100 group-hover/amazon:ml-2 font-semibold text-sm transition-all duration-300">
+              Buscar en {prenda.tienda_recomendada}
+            </span>
+          </a>
+        )}
+
         {imgStatus === 'loaded' && (
           <button
             onClick={(e) => { e.stopPropagation(); handleRefresh(e); }}
@@ -237,18 +253,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
           <p className="text-xs opacity-50 mb-3 leading-relaxed italic line-clamp-2">{prenda.razon}</p>
         )}
         <div className="mt-auto pt-3 border-t border-gray-200/20 flex justify-center">
-          {(prenda.enlace_compra && prenda.tienda_recomendada) && (
-            <a 
-              href={prenda.enlace_compra} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-full transition-all duration-200 shadow-md shadow-indigo-500/20"
-            >
-              <ShoppingCart size={14} />
-              <span>Buscar en {prenda.tienda_recomendada}</span>
-            </a>
-          )}
+          {/* Espacio reservado si se necesita otro elemento, el botón de compra ahora flota */}
         </div>
       </div>
     </motion.div>
@@ -309,9 +314,12 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
                 {/* Text Info */}
                 <div className="w-full sm:w-1/2 flex flex-col justify-between">
                   <div>
-                    <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-full mb-4">
-                      {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
-                    </span>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest rounded-full">
+                        {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
+                      </span>
+                      {imgStatus !== 'loaded' && <SkeletonProgressStatus darkMode={darkMode} />}
+                    </div>
                     
                     <div className="space-y-6">
                       <div>
@@ -388,13 +396,42 @@ const skeletonStepLabels = [
   '\u00a1Casi lista!',
 ];
 
-const SkeletonImageLoader = ({ darkMode }) => {
+const SkeletonProgressStatus = ({ darkMode }) => {
   const [step, setStep] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setStep(prev => (prev + 1) % skeletonStepLabels.length), 2000);
     return () => clearInterval(t);
   }, []);
   const progress = Math.round(((step + 1) / skeletonStepLabels.length) * 100);
+
+  return (
+    <div className="flex flex-col items-end gap-2 shrink-0 max-w-[50%]">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 6 }}
+          transition={{ duration: 0.25 }}
+          className={`flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border ${
+            darkMode ? 'bg-gray-800/80 border-gray-700 text-indigo-300' : 'bg-white border-gray-200 text-indigo-600'
+          }`}
+        >
+          <span className="flex items-center w-3 h-3">{StepIcons[step]}</span>
+          <span className="truncate">{skeletonStepLabels[step]}</span>
+        </motion.div>
+      </AnimatePresence>
+      <div className={`w-full h-1 rounded-full overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+        <div
+          className="h-full bg-indigo-500 rounded-full transition-[width] duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const SkeletonImageLoader = ({ darkMode }) => {
   const bg = darkMode ? 'bg-gray-800' : 'bg-gray-100';
   const bar = darkMode ? 'bg-gray-700' : 'bg-gray-200';
   const shimmer = darkMode
@@ -402,50 +439,10 @@ const SkeletonImageLoader = ({ darkMode }) => {
     : 'linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)';
 
   return (
-    <div className={`w-full h-72 sm:h-80 rounded-xl overflow-hidden relative ${bg}`}>
+    <div className={`w-full h-72 sm:h-80 rounded-xl overflow-hidden relative flex items-center justify-center p-8 ${bg}`}>
       {/* ─ Skeleton background shape (image placeholder) ─ */}
-      <div className="absolute inset-0 p-5 flex flex-col gap-3">
-        {/* Big image rectangle */}
-        <div className={`rounded-lg flex-1 relative overflow-hidden ${bar}`}>
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_ease-in-out_infinite]" style={{ background: shimmer }} />
-        </div>
-        {/* Text line stubs */}
-        <div className={`h-3 w-3/4 rounded-full relative overflow-hidden ${bar}`}>
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_0.15s_ease-in-out_infinite]" style={{ background: shimmer }} />
-        </div>
-        <div className={`h-3 w-1/2 rounded-full relative overflow-hidden ${bar}`}>
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_0.3s_ease-in-out_infinite]" style={{ background: shimmer }} />
-        </div>
-      </div>
-
-      {/* ─ Spinner overlay (CSS animations only — Safari-friendly) ─ */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 gap-4 bg-black/30 dark:bg-black/50">
-
-
-        {/* Progress bar */}
-        <div className={`w-32 h-1 rounded-full overflow-hidden ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-          <div
-            className="h-full bg-indigo-500 rounded-full transition-[width] duration-700 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        {/* Status message with SVG icon */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.25 }}
-            className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border ${
-              darkMode ? 'bg-gray-900/80 border-gray-700 text-indigo-300' : 'bg-white/90 border-gray-200 text-indigo-700'
-            }`}
-          >
-            <span className="flex items-center">{StepIcons[step]}</span>
-            {skeletonStepLabels[step]}
-          </motion.div>
-        </AnimatePresence>
+      <div className={`w-full h-full rounded-lg relative overflow-hidden ${bar}`}>
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.7s_ease-in-out_infinite]" style={{ background: shimmer }} />
       </div>
     </div>
   );
