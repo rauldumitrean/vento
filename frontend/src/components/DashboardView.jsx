@@ -111,9 +111,9 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
   return (
     <>
       <motion.div 
-        whileHover={{ scale: 1.03, y: -5 }} 
+        whileHover={{ scale: 1.02, y: -4 }} 
         onClick={onOpen}
-        className={`group cursor-pointer relative overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}
+        className={`group cursor-pointer relative rounded-2xl flex flex-col shadow-lg transition-all duration-300 overflow-hidden ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}
       >
         <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
           <span className={`p-1.5 rounded-full inline-flex ${darkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
@@ -187,9 +187,12 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
           {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
         </span>
         <span className="font-bold text-lg leading-tight mb-2">{prenda.nombre_corto || prenda.descripcion}</span>
-        <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto custom-scrollbar pr-2">
-          {prenda.nombre_corto ? `${prenda.descripcion}\n\n${prenda.razon}` : prenda.razon}
-        </span>
+        <p className="text-sm opacity-70 mb-3 leading-relaxed line-clamp-4">
+          {prenda.nombre_corto ? prenda.descripcion : prenda.razon}
+        </p>
+        {prenda.nombre_corto && (
+          <p className="text-xs opacity-50 mb-3 leading-relaxed italic line-clamp-2">{prenda.razon}</p>
+        )}
         <div className="mt-auto flex justify-center pt-3 border-t border-gray-200/20">
           {(prenda.enlace_compra && prenda.tienda_recomendada) && (
             <a 
@@ -328,14 +331,28 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [openIdx, setOpenIdx] = useState(null);
   
+  const scrollPosRef = useRef(0);
   const isModalOpen = openIdx !== null;
   useEffect(() => {
     if (isModalOpen) {
+      scrollPosRef.current = window.scrollY;
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollPosRef.current}px`;
+      document.body.style.width = '100%';
     } else {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollPosRef.current);
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    };
   }, [isModalOpen]);
 
   if (!prendas || !Array.isArray(prendas)) return null;
@@ -1196,7 +1213,23 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                   <div className="opacity-90 mb-2">
                     <p className="font-medium text-lg">Sensación térmica: {weather.current.apparent_temperature}°C</p>
                     <p className="opacity-80 mt-1 flex items-center gap-2">
-                      <Wind size={16} /> {weather.current.wind_speed_10m} km/h <span className="opacity-50">|</span> <Droplets size={16} /> {weather.current.relative_humidity_2m}%
+                      <motion.span
+                        animate={{ x: [0, 4, -2, 4, 0], rotate: [0, 8, -8, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                        className="inline-flex"
+                      >
+                        <Wind size={16} />
+                      </motion.span>
+                      {weather.current.wind_speed_10m} km/h
+                      <span className="opacity-50">|</span>
+                      <motion.span
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                        className="inline-flex"
+                      >
+                        <Droplets size={16} />
+                      </motion.span>
+                      {weather.current.relative_humidity_2m}%
                     </p>
                     {weather.daily && (
                       <p className={`mt-2 font-semibold ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>
