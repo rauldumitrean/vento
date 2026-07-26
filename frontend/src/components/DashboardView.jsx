@@ -1276,7 +1276,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-[110%] left-0 right-0 rounded-2xl shadow-2xl border overflow-hidden z-[100] bg-black/40 border-white/10 backdrop-blur-2xl"
+                                className="absolute top-[110%] left-0 right-0 rounded-2xl shadow-2xl border overflow-hidden z-[100] bg-[#0f111a]/95 border-white/10 backdrop-blur-2xl"
                               >
                                 {suggestions.map((city, idx) => (
                                   <div 
@@ -1328,22 +1328,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     </div>
                   ) : (
                     // Result state
-                    <div className="w-full flex flex-col xl:flex-row gap-8 relative pt-12 xl:pt-0">
-                       <button onClick={() => {setWeather(null); setOutfit(null);}} className="absolute top-0 left-0 xl:-top-12 z-50 text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-black/40 hover:bg-black/60 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
-                          <ArrowLeft size={16} /> Volver a buscar
-                       </button>
-                       <div className="flex-1 flex flex-col space-y-8 min-w-0">
-                          {/* Weather pill and result state below */}
-                          
-                          {loading && (
-                            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                              <Sparkles className="w-12 h-12 text-indigo-400 animate-pulse" />
-                              <p className="text-lg font-medium text-indigo-300">{loadingSteps[loadingStepIndex]}</p>
-                            </div>
-                          )}
+                    <div className="w-full h-full flex flex-col">
+                       <div className="w-full mb-6">
+                         <button onClick={() => {setWeather(null); setOutfit(null);}} className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-md border border-white/10 w-fit shadow-lg shadow-black/20">
+                            <ArrowLeft size={16} /> Volver a buscar
+                         </button>
+                       </div>
 
-                          {weather && (
-                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden">
+                       {weather && (
+                           <div className="w-full xl:w-[calc(100%-450px)] mb-8">
+                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden shadow-lg shadow-black/20">
                                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full filter blur-[60px]" />
                                <div className="relative z-10">
                                   <h2 className="text-sm tracking-widest uppercase opacity-50 mb-2 font-bold text-indigo-400">Clima Actual</h2>
@@ -1359,7 +1353,21 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                   <AnimatedWeatherIcon temperature={weather.current.temperature_2m} size={80} />
                                </div>
                              </motion.div>
-                          )}
+                           </div>
+                       )}
+
+                       <div className="w-full flex flex-col xl:flex-row gap-8 relative">
+                          <div className="flex-1 flex flex-col space-y-8 min-w-0">
+                             {/* Result state below */}
+                          
+                             {loading && (
+                               <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                 <Sparkles className="w-12 h-12 text-indigo-400 animate-pulse" />
+                                 <p className="text-lg font-medium text-indigo-300">{loadingSteps[loadingStepIndex]}</p>
+                               </div>
+                             )}
+
+                          {/* Weather block moved up */}
 
                           {outfit && !loading && (
                              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl relative">
@@ -1394,9 +1402,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                          </div>
                        )}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                 )}
+               </div>
+             )}
             </main>
           </div>
         </div>

@@ -212,7 +212,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                <p className="text-gray-500 col-span-full text-center py-8">Tu armario está vacío. Añade algunas prendas para que la IA las utilice en sus recomendaciones.</p>
             ) : (
               armario.map(prenda => (
-                <div key={prenda.id} className={`p-4 rounded-lg flex justify-between items-start border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
+                <div key={prenda.id} className={`p-4 rounded-lg flex justify-between items-start border ${'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
                   <div>
                     <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-white/10 px-2 py-1 rounded">{prenda.categoria}</span>
                     <h3 className="font-medium mt-2">{prenda.descripcion}</h3>
@@ -248,8 +248,8 @@ const ArmarioHistorial = ({ token, darkMode }) => {
 
             if (displayHistorial.length === 0) {
               return (
-                <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                  <p className="text-gray-500">
+                <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-white/20 bg-white/5 backdrop-blur-md">
+                  <p className="text-gray-400">
                     {historialFilter === 'compartidos' 
                       ? 'No tienes outfits guardados de tus amigos.' 
                       : 'No tienes historial de consultas todavía.'}
@@ -266,7 +266,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               try { outfit = JSON.parse(h.recomendacion_json); } catch (e) { console.error('Error parsing recomendacion_json', e); }
 
               return (
-                <div key={h.id} className={`p-6 rounded-xl border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
+                <div key={h.id} className={`p-6 rounded-xl border ${'bg-white/5 border-white/10 backdrop-blur-xl shadow-lg'}`}>
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Clock size={16} /> {new Date(h.createdAt).toLocaleDateString()} - <MapPin size={16} className="ml-2"/> {h.ubicacion} {clima.temperature_2m != null ? `(${clima.temperature_2m}ºC)` : ''}
