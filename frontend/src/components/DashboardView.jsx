@@ -31,7 +31,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [showModal, setShowModal] = useState(false);
   // FIX A-2: Store timer ID in a ref so we can clear it on unmount
-  const retryTimerRef = React.useRef(null);
+  const retryTimerRef = useRef(null);
 
 
 
