@@ -53,10 +53,14 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
       // FIX A-1: Guard all state updates with isMounted check
       if (isMounted) setImgStatus('loading');
       
-      const seed = Math.floor(Math.random() * 1000000);
-      const queryText = prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
-      const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+      let url = prenda.imgUrl;
+      if (!url || loadAttempt > 0) {
+        const seed = Math.floor(Math.random() * 1000000);
+        const queryText = prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
+        const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
+        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+        prenda.imgUrl = url;
+      }
       
       if (isMounted) setImgSrc(url);
     };
@@ -183,10 +187,10 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
           {prenda.categoria === 'TOP' ? 'PARTE SUPERIOR' : prenda.categoria === 'BOTTOM' ? 'PARTE INFERIOR' : prenda.categoria}
         </span>
         <span className="font-bold text-lg leading-tight mb-2">{prenda.nombre_corto || prenda.descripcion}</span>
-        <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed whitespace-pre-line">
+        <span className="text-sm opacity-70 mb-5 flex-1 leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto custom-scrollbar pr-2">
           {prenda.nombre_corto ? `${prenda.descripcion}\n\n${prenda.razon}` : prenda.razon}
         </span>
-        <div className="mt-auto flex justify-center">
+        <div className="mt-auto flex justify-center pt-3 border-t border-gray-200/20">
           {(prenda.enlace_compra && prenda.tienda_recomendada) && (
             <a 
               href={prenda.enlace_compra} 
@@ -324,6 +328,16 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [openIdx, setOpenIdx] = useState(null);
   
+  const isModalOpen = openIdx !== null;
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen]);
+
   if (!prendas || !Array.isArray(prendas)) return null;
 
   return (
