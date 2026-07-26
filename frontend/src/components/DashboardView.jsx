@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Search, ArrowRight, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge } from 'lucide-react';
+import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge } from 'lucide-react';
 import AdModal from './AdModal';
 import { lazy, Suspense } from 'react';
 const AdminView = lazy(() => import('./AdminView'));
@@ -25,15 +25,23 @@ const loadingSteps = [
   "A punto de terminar..."
 ];
 
-const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx = 0 }) => {
+const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, onOpen, onClose, onPrev, onNext, delayIdx = 0 }) => {
   if (!prenda) return null;
   const [imgStatus, setImgStatus] = useState('waiting'); // 'waiting', 'loading', 'loaded', 'error'
   const [imgSrc, setImgSrc] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
-  const [showModal, setShowModal] = useState(false);
+  const [fullScreenImage, setFullScreenImage] = useState(false);
   // FIX A-2: Store timer ID in a ref so we can clear it on unmount
   const retryTimerRef = useRef(null);
 
+  useEffect(() => {
+    if (isOpen || fullScreenImage) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen, fullScreenImage]);
 
 
   useEffect(() => {
@@ -100,7 +108,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
     <>
       <motion.div 
         whileHover={{ scale: 1.03, y: -5 }} 
-        onClick={() => setShowModal(true)}
+        onClick={onOpen}
         className={`group cursor-pointer relative overflow-hidden rounded-2xl flex flex-col shadow-lg transition-all duration-300 ${darkMode ? 'bg-gray-800/40 backdrop-blur-xl border border-white/10 shadow-black/50' : 'bg-white/80 backdrop-blur-xl border border-white/60 shadow-indigo-900/5'}`}
       >
         <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
@@ -199,12 +207,13 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
     </motion.div>
 
     {typeof document !== 'undefined' && createPortal(
+      <>
       <AnimatePresence>
-        {showModal && (
+        {isOpen && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-            onClick={() => setShowModal(false)}
+            onClick={onClose}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -214,11 +223,23 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
               className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
             >
               {/* Modal Header */}
-              <div className={`sticky top-0 z-20 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
-                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
-                <button onClick={() => setShowModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
-                  <X size={20} />
-                </button>
+              <div className={`sticky top-0 z-20 flex items-center justify-between p-4 sm:p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
+                <h3 className={`text-lg sm:text-xl font-bold pr-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                  {onPrev && (
+                    <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-indigo-400' : 'hover:bg-indigo-50 text-indigo-600'}`}>
+                      <ArrowLeft size={20} />
+                    </button>
+                  )}
+                  {onNext && (
+                    <button onClick={(e) => { e.stopPropagation(); onNext(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-indigo-400' : 'hover:bg-indigo-50 text-indigo-600'}`}>
+                      <ArrowRight size={20} />
+                    </button>
+                  )}
+                  <button onClick={onClose} className={`ml-2 p-1.5 sm:p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
               
               {/* Modal Content */}
@@ -226,7 +247,12 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
                 {/* Modal Image */}
                 <div className={`w-full sm:w-1/2 shrink-0 rounded-2xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-50'}`}>
                   {imgSrc ? (
-                    <img src={imgSrc} alt={prenda.nombre_corto || "Prenda"} className="w-full h-auto max-h-[60vh] object-contain rounded-xl" />
+                    <img 
+                      src={imgSrc} 
+                      alt={prenda.nombre_corto || "Prenda"} 
+                      className="w-full h-auto max-h-[60vh] object-contain rounded-xl cursor-pointer hover:scale-[1.02] transition-transform" 
+                      onClick={(e) => { e.stopPropagation(); setFullScreenImage(true); }}
+                    />
                   ) : (
                     <div className="flex flex-col items-center justify-center text-indigo-500 opacity-50 py-20">
                       <Sparkles size={32} className="animate-pulse mb-2" />
@@ -271,7 +297,22 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>,
+      </AnimatePresence>
+      <AnimatePresence>
+        {fullScreenImage && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 cursor-zoom-out"
+            onClick={() => setFullScreenImage(false)}
+          >
+            <img src={imgSrc} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" />
+            <button className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
+              <X size={24} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </>,
       document.body
     )}
     </>
@@ -281,6 +322,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, delayIdx
 // Loads all images in parallel for maximum speed
 const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [openIdx, setOpenIdx] = useState(null);
   
   if (!prendas || !Array.isArray(prendas)) return null;
 
@@ -294,6 +336,11 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
           canLoad={idx <= currentIdx}
           onLoadComplete={() => setCurrentIdx(prev => Math.max(prev, idx + 1))}
           token={token}
+          isOpen={openIdx === idx}
+          onOpen={() => setOpenIdx(idx)}
+          onClose={() => setOpenIdx(null)}
+          onPrev={idx > 0 ? () => setOpenIdx(idx - 1) : null}
+          onNext={idx < prendas.length - 1 ? () => setOpenIdx(idx + 1) : null}
         />
       ))}
     </div>
@@ -1326,7 +1373,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 {weather.hourly && (
                   <div>
                     <h4 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Previsión 24 Horas</h4>
-                    <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+                    <div className="flex overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar">
                       {weather.hourly.time.slice(0, 24).map((timeStr, idx) => {
                         const date = new Date(timeStr);
                         const hours = date.getHours().toString().padStart(2, '0') + ':00';
