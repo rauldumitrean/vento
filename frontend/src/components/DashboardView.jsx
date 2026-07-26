@@ -721,8 +721,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       let url = `${API_URL}/api/weather?`;
-      if (lat && lon) url += `lat=${lat}&lon=${lon}`;
-      else url += `city=${city}`;
+      const params = new URLSearchParams();
+      if (lat) params.append('lat', lat);
+      if (lon) params.append('lon', lon);
+      if (city) params.append('city', city);
+      url += params.toString();
 
       const wRes = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       if (currentRequestId !== requestCountRef.current) return;
