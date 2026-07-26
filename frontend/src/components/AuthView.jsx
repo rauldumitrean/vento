@@ -65,103 +65,6 @@ export default function AuthView({ setToken }) {
     }
   }, []);
 
-  if (isBannedError) {
-    return (
-      <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans">
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="max-w-md w-full bg-gray-900 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center border border-red-900/30"
-        >
-          <motion.div
-            initial={{ y: -50, rotate: -10 }}
-            animate={{ y: 0, rotate: 0 }}
-            transition={{ type: 'spring', bounce: 0.6, duration: 1 }}
-            className="w-24 h-24 mb-6 text-red-500"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full drop-shadow-lg">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-            </svg>
-          </motion.div>
-          <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Cuenta Bloqueada</h2>
-          <p className="text-gray-400 mb-6">Tu cuenta ha sido suspendida por el sistema de seguridad o un administrador.</p>
-          <div className="bg-red-950/50 text-red-300 p-4 rounded-xl w-full mb-6 font-medium border border-red-900/40">
-            {banDetails?.banReason && (
-              <p className="mb-4 text-sm text-red-200 bg-red-900/30 p-2 rounded italic">"{banDetails.banReason}"</p>
-            )}
-            {banDetails?.bannedUntil ? (
-              <p>El bloqueo expirará el: <br/><strong className="text-lg">{new Date(banDetails.bannedUntil).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
-            ) : (
-              <p className="text-lg font-bold">Bloqueo Permanente</p>
-            )}
-          </div>
-          <div className="flex flex-col gap-3 w-full mb-4">
-            <a 
-              href="mailto:soporte@ventoo.app?subject=Revisión de bloqueo de cuenta"
-              className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors"
-            >
-              Contactar Soporte (Apelar)
-            </a>
-            <button 
-              onClick={() => { setIsBannedError(false); setBanDetails(null); }}
-              className="text-sm font-semibold text-gray-500 hover:text-white transition-colors py-2"
-            >
-              ← Volver al inicio de sesión
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (pendingAuth) {
-    return (
-      <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans relative">
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 flex flex-col"
-        >
-          <div className="flex items-center gap-4 mb-8">
-            {pendingAuth.picture && <img src={pendingAuth.picture} alt="Perfil" className="w-14 h-14 rounded-full border-2 border-indigo-100 shadow-sm" />}
-            <div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">¡Casi listo!</h3>
-              <p className="text-sm text-gray-500 font-medium">Completa tu perfil para continuar</p>
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">¿Cuál es tu género?</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['Mujer', 'Hombre'].map((g) => (
-                  <button key={g} type="button" onClick={() => setGender(g)} className={`py-3 px-4 rounded-xl font-bold transition-all border-2 ${gender === g ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm' : 'border-gray-100 text-gray-500 hover:bg-gray-50 hover:border-gray-200'}`}>
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">¿Qué edad tienes?</label>
-              <input type="number" value={age} onChange={e => setAge(e.target.value)} className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 text-gray-900 font-medium transition-colors" placeholder="Ej: 25" min="13" max="100" required />
-            </div>
-          </div>
-          
-          {error && <p className="text-red-500 text-sm mt-4 text-center font-medium bg-red-50 py-2 rounded-lg">{error}</p>}
-          
-          <button 
-            onClick={submitPendingGoogleAuth}
-            disabled={loading || !age}
-            className="w-full mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
-          >
-            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Completar Registro <ArrowRight size={18} /></>}
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
   const handleAuth = async (e, endpoint) => {
     e.preventDefault();
     setError('');
@@ -269,6 +172,105 @@ export default function AuthView({ setToken }) {
       setLoading(false);
     }
   };
+
+  if (isBannedError) {
+
+  if (isBannedError) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="max-w-md w-full bg-gray-900 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center border border-red-900/30"
+        >
+          <motion.div
+            initial={{ y: -50, rotate: -10 }}
+            animate={{ y: 0, rotate: 0 }}
+            transition={{ type: 'spring', bounce: 0.6, duration: 1 }}
+            className="w-24 h-24 mb-6 text-red-500"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full drop-shadow-lg">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+            </svg>
+          </motion.div>
+          <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Cuenta Bloqueada</h2>
+          <p className="text-gray-400 mb-6">Tu cuenta ha sido suspendida por el sistema de seguridad o un administrador.</p>
+          <div className="bg-red-950/50 text-red-300 p-4 rounded-xl w-full mb-6 font-medium border border-red-900/40">
+            {banDetails?.banReason && (
+              <p className="mb-4 text-sm text-red-200 bg-red-900/30 p-2 rounded italic">"{banDetails.banReason}"</p>
+            )}
+            {banDetails?.bannedUntil ? (
+              <p>El bloqueo expirará el: <br/><strong className="text-lg">{new Date(banDetails.bannedUntil).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
+            ) : (
+              <p className="text-lg font-bold">Bloqueo Permanente</p>
+            )}
+          </div>
+          <div className="flex flex-col gap-3 w-full mb-4">
+            <a 
+              href="mailto:soporte@ventoo.app?subject=Revisión de bloqueo de cuenta"
+              className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors"
+            >
+              Contactar Soporte (Apelar)
+            </a>
+            <button 
+              onClick={() => { setIsBannedError(false); setBanDetails(null); }}
+              className="text-sm font-semibold text-gray-500 hover:text-white transition-colors py-2"
+            >
+              ← Volver al inicio de sesión
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (pendingAuth) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-950 flex items-center justify-center p-4 font-sans relative">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 flex flex-col"
+        >
+          <div className="flex items-center gap-4 mb-8">
+            {pendingAuth.picture && <img src={pendingAuth.picture} alt="Perfil" className="w-14 h-14 rounded-full border-2 border-indigo-100 shadow-sm" />}
+            <div>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight">¡Casi listo!</h3>
+              <p className="text-sm text-gray-500 font-medium">Completa tu perfil para continuar</p>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">¿Cuál es tu género?</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['Mujer', 'Hombre'].map((g) => (
+                  <button key={g} type="button" onClick={() => setGender(g)} className={`py-3 px-4 rounded-xl font-bold transition-all border-2 ${gender === g ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm' : 'border-gray-100 text-gray-500 hover:bg-gray-50 hover:border-gray-200'}`}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">¿Qué edad tienes?</label>
+              <input type="number" value={age} onChange={e => setAge(e.target.value)} className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 text-gray-900 font-medium transition-colors" placeholder="Ej: 25" min="13" max="100" required />
+            </div>
+          </div>
+          
+          {error && <p className="text-red-500 text-sm mt-4 text-center font-medium bg-red-50 py-2 rounded-lg">{error}</p>}
+          
+          <button 
+            onClick={submitPendingGoogleAuth}
+            disabled={loading || !age}
+            className="w-full mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+          >
+            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Completar Registro <ArrowRight size={18} /></>}
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   // ─── Accent side panel content ─────────────────────────────────────────────
   const PanelContent = ({ isLoginPanel }) => (
