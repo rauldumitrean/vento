@@ -419,15 +419,8 @@ const SkeletonImageLoader = ({ darkMode }) => {
       </div>
 
       {/* ─ Spinner overlay (CSS animations only — Safari-friendly) ─ */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/30 dark:bg-black/50">
-        {/* Dual ring */}
-        <div className="relative w-16 h-16 gpu-layer">
-          <div className="skeleton-spin-cw absolute inset-0 rounded-full border-4 border-transparent" style={{ borderTopColor: '#6366f1', borderRightColor: '#818cf8' }} />
-          <div className="skeleton-spin-ccw absolute inset-2 rounded-full border-2 border-transparent" style={{ borderBottomColor: '#a5b4fc' }} />
-          <div className="skeleton-pulse absolute inset-0 flex items-center justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-          </div>
-        </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 gap-4 bg-black/30 dark:bg-black/50">
+
 
         {/* Progress bar */}
         <div className={`w-32 h-1 rounded-full overflow-hidden ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
