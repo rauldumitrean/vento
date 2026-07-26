@@ -94,20 +94,51 @@ const appleSignin = require('apple-signin-auth');
 
 router.post('/google', async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token, accessToken, gender, age } = req.body;
+    
     // FIX A-9: Validate token presence before calling Google
-    if (!token) return res.status(400).json({ error: 'Token de Google requerido.' });
-    const ticket = await googleClient.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    const { email, sub: providerId, name, picture } = payload;
+    if (!token && !accessToken) return res.status(400).json({ error: 'Token de Google requerido.' });
+    
+    let email, providerId, name, picture;
+    
+    if (accessToken) {
+      // Usar la API de UserInfo de Google para obtener los datos con el accessToken
+      const axios = require('axios');
+      const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      ({ email, sub: providerId, name, picture } = response.data);
+    } else {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      ({ email, sub: providerId, name, picture } = payload);
+    }
     
     let user = await prisma.user.findUnique({ where: { email } });
+    
     if (!user) {
+      // Si el usuario no existe y no nos han pasado género, devolvemos estado 202
+      // para que el frontend muestre el modal pidiendo el género y la edad.
+      if (!gender) {
+        return res.status(202).json({
+          needsOnboarding: true,
+          email, name, providerId, picture, accessToken: accessToken || token
+        });
+      }
+      
       user = await prisma.user.create({
-        data: { email, name, authProvider: 'google', providerId, profilePicture: picture || null }
+        data: { 
+          email, 
+          name, 
+          authProvider: 'google', 
+          providerId, 
+          profilePicture: picture || null,
+          gender: gender || 'Mujer',
+          age: age ? parseInt(age) : null
+        }
       });
       await emailService.sendWelcomeEmail(user).catch(console.error);
     } else if (user.authProvider === 'local' && !user.providerId) {
