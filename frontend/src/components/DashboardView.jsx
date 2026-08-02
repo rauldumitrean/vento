@@ -68,7 +68,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
         // If it's a retry, we change the seed slightly to get a new image
         if (loadAttempt > 0) seed += loadAttempt;
 
-        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true&enhance=false`;
         prenda.imgUrl = url;
       }
       
@@ -496,8 +496,8 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
 
   return (
     <div>
-      {/* Mobile view toggle — only visible on small screens */}
-      <div className="flex items-center justify-end mb-3 gap-2 sm:hidden">
+      {/* View toggle */}
+      <div className="flex items-center justify-end mb-3 gap-2">
         <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Vista:</span>
         <button
           onClick={() => setMobileView('grid')}
@@ -527,18 +527,18 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
         </button>
       </div>
 
-      {/* Strip layout — mobile only */}
+      {/* Strip layout */}
       {mobileView === 'strip' && (
-        <div className="flex flex-col gap-3 sm:hidden">
+        <div className="flex flex-col gap-3">
           {prendas.map((prenda, idx) => (
             <PrendaCard key={`strip-${prenda.nombre_corto || 'prenda'}-${idx}`} {...cardProps(prenda, idx)} viewMode="strip" />
           ))}
         </div>
       )}
 
-      {/* Grid layout — always on desktop, on mobile when mobileView === 'grid' */}
+      {/* Grid layout */}
       <div className={`grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${
-        mobileView === 'strip' ? 'hidden sm:grid' : ''
+        mobileView === 'strip' ? 'hidden' : ''
       }`}>
         {prendas.map((prenda, idx) => (
           <PrendaCard key={`grid-${prenda.nombre_corto || 'prenda'}-${idx}`} {...cardProps(prenda, idx)} viewMode="grid" />
@@ -727,7 +727,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   };
 
   return (
-    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-xl border-white/10 shadow-black/50`}>
+    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-white/5 backdrop-blur-2xl border-white/10 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
         <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
           <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">
