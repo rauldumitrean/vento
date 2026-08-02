@@ -1239,7 +1239,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         />
 
         {/* Main Content */}
-        <div className="flex-1 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/20 backdrop-blur-2xl">
+        <div className="flex-1 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/40">
           {/* Mobile Top Bar */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
              <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 group">

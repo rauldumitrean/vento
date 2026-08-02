@@ -30,14 +30,18 @@ const AnimatedScannerIcon = () => (
 
 const AnimatedChatIcon = () => (
   <div className="relative w-10 h-10 flex items-center justify-center">
-    <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+    <motion.div 
+      className="relative flex items-center justify-center"
+      animate={{ scale: [1, 1.05, 1] }} 
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    >
       <MessageSquare size={28} className="text-pink-400" />
+      <div className="absolute inset-0 flex items-center justify-center gap-[2px] pb-[4px]">
+        <motion.div className="w-1 h-1 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
+        <motion.div className="w-1 h-1 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
+        <motion.div className="w-1 h-1 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} />
+      </div>
     </motion.div>
-    <div className="absolute inset-0 flex items-center justify-center gap-[3px] pb-1.5">
-      <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} />
-      <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} />
-      <motion.div className="w-1.5 h-1.5 bg-pink-400 rounded-full shadow-[0_0_5px_rgba(244,114,182,0.8)]" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} />
-    </div>
   </div>
 );
 
@@ -308,7 +312,7 @@ export default function LandingView({ setToken }) {
       )}
 
       {/* Main Content Container */}
-      <div className="flex-1 max-w-7xl mx-auto w-full" ref={containerRef}>
+      <div className="flex-1 w-full relative" ref={containerRef}>
       {/* ── Background ── */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)]" />
