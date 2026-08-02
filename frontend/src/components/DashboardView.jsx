@@ -128,11 +128,16 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
           className={`cursor-pointer flex flex-row items-center gap-4 rounded-2xl overflow-hidden shadow-md p-3 transition-all duration-200 ${darkMode ? 'bg-gray-800/50 border border-white/10' : 'bg-white/90 border border-gray-100 shadow-gray-100'}`}
         >
           {/* Thumbnail */}
-          <div className={`w-20 h-20 shrink-0 rounded-xl overflow-hidden flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-100'}`}>
-            {imgSrc && imgStatus === 'loaded' ? (
-              <img src={imgSrc} alt={prenda.nombre_corto} className="w-full h-full object-cover" />
-            ) : (
-              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }}>
+          <div className={`w-20 h-20 shrink-0 rounded-xl overflow-hidden relative flex items-center justify-center ${darkMode ? 'bg-black/30' : 'bg-gray-100'}`}>
+            <img 
+              src={imgSrc || ''} 
+              alt={prenda.nombre_corto} 
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={handleSuccess}
+              onError={handleError}
+            />
+            {imgStatus !== 'loaded' && (
+              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute z-10">
                 <Sparkles size={22} className="text-indigo-400" />
               </motion.div>
             )}
@@ -729,17 +734,21 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   return (
     <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-md border-white/10 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
-        <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
-          <h2 className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
-            <Sparkles size={14} className="text-indigo-400" /> Asistente de Estilo
-          </h2>
-        </div>
+        <div className={`p-4 border-b ${darkMode ? 'bg-[#18181b] border-white/10' : 'bg-white border-neutral-200/50'}`}>
+           <h2 className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
+             <Sparkles size={14} className="text-indigo-400" /> Asistente de Estilo
+           </h2>
+         </div>
         
         <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
           {!outfit ? (
-            <p className="text-sm text-center mt-10 text-white font-medium">Busca una ubicación para comenzar a chatear.</p>
+            <div className="flex justify-center mt-10">
+              <p className="text-sm text-center text-white font-medium bg-[#18181b] px-6 py-3 rounded-2xl shadow-xl border border-white/5">Busca una ubicación para comenzar a chatear.</p>
+            </div>
           ) : chat.length === 0 ? (
-            <p className="text-sm text-center mt-10 text-white font-medium">¿Tienes dudas sobre el outfit? Pregúntame.</p>
+            <div className="flex justify-center mt-10">
+              <p className="text-sm text-center text-white font-medium bg-[#18181b] px-6 py-3 rounded-2xl shadow-xl border border-white/5">¿Tienes dudas sobre el outfit? Pregúntame.</p>
+            </div>
           ) : (
             <>
               {chat.map((msg, idx) => (
@@ -758,7 +767,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
           )}
         </div>
 
-        <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
+        <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'bg-[#18181b] border-white/10' : 'bg-white border-neutral-200/50'}`}>
           {selectedImage && (
             <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
               <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
