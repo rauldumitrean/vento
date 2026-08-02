@@ -134,7 +134,10 @@ const AdminView = ({ token }) => {
   const handleDeleteAllTickets = async () => {
     if (!window.confirm('¿Estás SEGURO de que quieres borrar todos los tickets? Esto no se puede deshacer.')) return;
     try {
-      await axios.delete(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API_URL}/api/admin/tickets`, { 
+        data: { confirmDelete: 'DELETE_ALL_TICKETS' },
+        headers: { Authorization: `Bearer ${token}` } 
+      });
       setTickets([]);
       showAdminMsg('Todos los tickets borrados', 'success');
     } catch (error) {
@@ -275,7 +278,10 @@ const AdminView = ({ token }) => {
     }
     
     try {
-      await axios.delete(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API_URL}/api/admin/outfits`, { 
+        data: { confirmDelete: 'DELETE_ALL_OUTFITS' },
+        headers: { Authorization: `Bearer ${token}` } 
+      });
       setOutfits([]);
       fetchStats();
       showAdminMsg('Todos los outfits han sido eliminados', 'success');
