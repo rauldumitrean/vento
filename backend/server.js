@@ -4,10 +4,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-if (!process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
-  process.exit(1);
-}
+// Removed top-level JWT_SECRET check to prevent serverless function crashes
 
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');

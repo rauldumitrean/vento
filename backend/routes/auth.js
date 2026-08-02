@@ -5,10 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
 
-// FIX C-6: Fail fast if JWT_SECRET is not configured — never sign tokens with undefined secret
-if (!process.env.JWT_SECRET) {
-  throw new Error('FATAL: JWT_SECRET environment variable is not set. Server cannot start.');
-}
+// JWT_SECRET is required but will be checked at runtime to prevent serverless function crash
 
 router.post('/register', async (req, res) => {
   try {

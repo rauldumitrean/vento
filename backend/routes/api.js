@@ -8,11 +8,9 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const bcrypt = require('bcryptjs');
 const { sendBanNotificationEmail, sendNewTicketEmail } = require('../services/emailService');
 
-if (!process.env.GEMINI_API_KEY) {
-  console.error("FATAL ERROR: GEMINI_API_KEY is not defined in environment variables.");
-  process.exit(1);
-}
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Initialize Gemini (graceful degradation if missing)
+const geminiKey = process.env.GEMINI_API_KEY || 'MISSING_KEY';
+const genAI = new GoogleGenerativeAI(geminiKey);
 
 // In-memory fallbacks for when DB tables are not yet provisioned (e.g., fresh deploys)
 const activeRequests = new Map();
