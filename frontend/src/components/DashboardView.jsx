@@ -1370,7 +1370,28 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                      <span className="text-6xl sm:text-7xl font-light text-white">{weather.current.temperature_2m}°</span>
                                      <div className="pb-1 sm:pb-2">
                                         <h3 className="text-xl font-bold text-white mb-1">{weather.location}</h3>
-                                        <p className="text-gray-400 text-sm">{weather.current.wind_speed_10m} km/h • {weather.current.relative_humidity_2m}% humedad</p>
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-3">
+                                          <div className="flex items-center gap-1.5 text-gray-300 text-sm bg-black/20 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+                                            <Thermometer size={14} className="text-rose-400" />
+                                            <span>Sensación {weather.current.apparent_temperature}°</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-gray-300 text-sm bg-black/20 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+                                            <Droplets size={14} className="text-blue-400" />
+                                            <span>{weather.current.relative_humidity_2m}% humedad</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-gray-300 text-sm bg-black/20 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+                                            <Wind size={14} className="text-teal-400" />
+                                            <span>{weather.current.wind_speed_10m} km/h</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-gray-300 text-sm bg-black/20 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+                                            <Sun size={14} className="text-yellow-400" />
+                                            <span>UV {weather.current.uv_index}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-gray-300 text-sm bg-black/20 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+                                            <CloudRain size={14} className="text-indigo-400" />
+                                            <span>{weather.current.precipitation} mm</span>
+                                          </div>
+                                        </div>
                                      </div>
                                   </div>
                                </div>
