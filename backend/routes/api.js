@@ -968,7 +968,7 @@ router.get('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) =
     console.error('Error fetching tickets:', error);
     res.status(500).json({ error: 'Error obteniendo tickets' });
   }
-});ssssssssssssssss
+});
 
 router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (req, res) => {
   try {

@@ -1,40 +1,41 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
+let app;
+try {
+  const express = require('express');
+  const cors = require('cors');
+  const dotenv = require('dotenv');
 
-dotenv.config();
+  dotenv.config();
 
-// Removed top-level JWT_SECRET check to prevent serverless function crashes
+  const authRoutes = require('./routes/auth');
+  const apiRoutes = require('./routes/api');
+  const paymentsRoutes = require('./routes/payments');
+  const friendsRoutes = require('./routes/friends');
 
-const authRoutes = require('./routes/auth');
-const apiRoutes = require('./routes/api');
-const paymentsRoutes = require('./routes/payments');
-const friendsRoutes = require('./routes/friends');
+  app = express();
 
-const app = express();
+  app.use(cors({ origin: '*' }));
+  app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// CORS: Allow configured frontend URL, Vercel preview URLs, and localhost
-// Simplified CORS for production stability
-app.use(cors({
-  origin: '*'
-}));
+  app.use('/api/auth', authRoutes);
+  app.use('/api/payments', paymentsRoutes);
+  app.use('/api/friends', friendsRoutes);
+  app.use('/api', apiRoutes);
 
-// El webhook de Stripe necesita el body en crudo (raw)
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
-
-// FIX: Aumentado el límite de JSON a 50mb para permitir el envío de imágenes en base64 en el chat
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-app.use('/api/auth', authRoutes);
-app.use('/api/payments', paymentsRoutes);
-app.use('/api/friends', friendsRoutes);
-app.use('/api', apiRoutes);
-
-const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+  const PORT = process.env.PORT || 3000;
+  if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+  }
+} catch (error) {
+  const express = require('express');
+  app = express();
+  app.all('*', (req, res) => {
+    res.status(500).json({
+      error: 'CRITICAL STARTUP ERROR',
+      message: error.message,
+      stack: error.stack
+    });
   });
 }
 

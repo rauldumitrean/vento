@@ -4,7 +4,9 @@ const Stripe = require('stripe');
 const prisma = require('../prismaClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const emailService = require('../services/emailService');
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+// Initialize Stripe safely to prevent startup crash if key is somehow missing or empty in Vercel
+const stripeSecret = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy';
+const stripe = require('stripe')(stripeSecret);
 
 router.post('/create-checkout-session', authMiddleware, async (req, res) => {
   try {
