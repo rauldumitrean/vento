@@ -1250,7 +1250,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           </div>
 
           <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col relative">
-            <main className="flex-1 p-6 sm:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full">
+            <main className="flex-1 p-4 sm:p-8 lg:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full">
               {view === 'armario' ? (
                 <ArmarioHistorial token={token} darkMode={true} />
               ) : view === 'admin' && Cookies.get('userRole') === 'ADMIN' ? (
@@ -1371,7 +1371,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
                        {weather && (
                            <div className="w-full xl:w-[calc(100%-450px)] mb-8">
-                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden shadow-lg shadow-black/20">
+                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-4 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden shadow-lg shadow-black/20">
                                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full filter blur-[60px]" />
                                <div className="relative z-10">
                                   <h2 className="text-sm tracking-widest uppercase opacity-50 mb-2 font-bold text-indigo-400">Clima Actual</h2>
@@ -1425,7 +1425,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                           {/* Weather block moved up */}
 
                           {outfit && !loading && (
-                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl relative">
+                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full bg-white/5 border border-white/10 rounded-3xl p-4 sm:p-8 backdrop-blur-xl relative">
                                <div className="flex justify-between items-start mb-6">
                                  <div>
                                    <h2 className="text-sm tracking-widest uppercase font-bold text-purple-400 mb-2">Generado por IA</h2>
