@@ -4,8 +4,8 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge } from 'lucide-react';
-import AdModal from './AdModal';
 import { lazy, Suspense } from 'react';
+import AdModal from './AdModal';
 const AdminView = lazy(() => import('./AdminView'));
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
@@ -657,6 +657,173 @@ const ChatMessage = ({ msg, darkMode, token }) => {
   );
 };
 
+const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, setView }) => {
+  const [chat, setChat] = useState([]);
+  const [message, setMessage] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageBase64, setImageBase64] = useState('');
+  const [imageMimeType, setImageMimeType] = useState('');
+  
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  useEffect(() => {
+    setChat([]);
+  }, [consultaId]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen es muy grande (máximo 5MB)');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        const parts = result.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const base64 = parts[1];
+        
+        setSelectedImage(result);
+        setImageBase64(base64);
+        setImageMimeType(mime);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if ((!message && !imageBase64) || !consultaId) return;
+
+    const currentBase64 = imageBase64;
+    const currentMime = imageMimeType;
+    const currentPreview = selectedImage;
+
+    const userMsg = { role: 'user', content: message || '', image: currentPreview || null };
+    const newChat = [...chat, userMsg];
+    setChat(newChat);
+    setMessage('');
+    setSelectedImage(null);
+    setImageBase64('');
+    setImageMimeType('');
+
+    try {
+      setIsChatLoading(true);
+      const res = await axios.post(`${API_URL}/api/chat`, {
+        consultaId,
+        mensaje: userMsg.content || 'Analiza esta imagen',
+        imageBase64: currentBase64,
+        imageMimeType: currentMime
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
+    } catch (error) {
+      alert('Error enviando mensaje: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  return (
+    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-xl border-white/10 shadow-black/50`}>
+      <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
+        <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
+          <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">
+            <Sparkles size={14} className="text-indigo-500" /> Asistente de Estilo
+          </h2>
+        </div>
+        
+        <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
+          {!outfit ? (
+            <p className="text-sm text-center mt-10 opacity-50">Busca una ubicación para comenzar a chatear.</p>
+          ) : chat.length === 0 ? (
+            <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
+          ) : (
+            <>
+              {chat.map((msg, idx) => (
+                <ChatMessage key={`${idx}-${msg.content?.substring(0,10)}`} msg={msg} darkMode={darkMode} token={token} />
+              ))}
+              {isChatLoading && (
+                <div className="flex justify-start">
+                  <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-3 bg-white/10 backdrop-blur-md border border-white/10 shadow-lg`}>
+                    <div className={`h-2.5 w-48 rounded-full bg-white/20`}></div>
+                    <div className={`h-2.5 w-64 rounded-full bg-white/20`}></div>
+                    <div className={`h-2.5 w-32 rounded-full bg-white/20`}></div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
+          {selectedImage && (
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
+              <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => { setSelectedImage(null); setImageBase64(''); setImageMimeType(''); }} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
+                <X size={12} />
+              </button>
+            </div>
+          )}
+          <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              id="cameraInput" 
+              className="hidden" 
+              onChange={handleImageChange}
+            />
+            <label 
+              htmlFor="cameraInput" 
+              className={`p-3 rounded-xl cursor-pointer transition-colors shadow-sm ${darkMode ? 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700' : 'bg-white text-gray-500 hover:text-indigo-600 hover:bg-gray-50 border border-gray-100'}`}
+            >
+              <Camera className="w-5 h-5" />
+            </label>
+
+            <input 
+              type="text"
+              placeholder="Escribe tu mensaje..."
+              className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors bg-white/5 border-white/10 text-white placeholder-gray-400`}
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              disabled={!outfit}
+            />
+            <button 
+              type="submit" 
+              disabled={!outfit || (!message && !selectedImage)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 px-5 rounded-xl disabled:opacity-50 transition-all shadow-md shadow-indigo-600/20"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {!isPremium && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-black/20 dark:bg-black/40 backdrop-blur-[2px]">
+          <div className={`p-4 rounded-full mb-4 ${darkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-600'} shadow-lg backdrop-blur-md`}>
+            <Lock size={32} />
+          </div>
+          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Asistente IA Exclusivo</h3>
+          <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-xs mx-auto`}>
+            El Asistente de Estilo impulsado por IA está disponible únicamente para usuarios Premium.
+          </p>
+          <button 
+            onClick={(e) => { e.preventDefault(); setView('profile'); }}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
+          >
+            <Star size={18} />
+            Desbloquear Premium
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function DashboardView({ token, defaultView = 'dashboard', onLogout }) {
   const [showAd, setShowAd] = useState(() => {
     if (Cookies.get('isPremium') === 'true') return false;
@@ -689,7 +856,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
     return () => clearInterval(interval);
   }, [loading]);
-  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageBase64, setImageBase64] = useState('');
@@ -992,7 +1158,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
       setOutfit(oRes.data.recomendacion);
       setConsultaId(oRes.data.consultaId);
-      setChat([]);
       
       // Update local history count if we generated successfully and aren't at the limit yet
       setHistoryCount(prev => Math.min(prev + 1, historyLimit));
@@ -1008,61 +1173,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   // Se eliminaron las funciones originales de handleSearch, handleSelectSuggestion y handleGeolocation porque se movieron arriba
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        // Result is like "data:image/jpeg;base64,/9j/4AAQSk..."
-        const parts = result.split(',');
-        const mime = parts[0].match(/:(.*?);/)[1];
-        const base64 = parts[1];
-        
-        setSelectedImage(result);
-        setImageBase64(base64);
-        setImageMimeType(mime);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if ((!message && !imageBase64) || !consultaId) return;
-
-    const currentBase64 = imageBase64;
-    const currentMime = imageMimeType;
-    const currentPreview = selectedImage; // Save preview BEFORE clearing
-
-    // Build user message with optional image preview
-    const userMsg = { role: 'user', content: message || '', image: currentPreview || null };
-    const newChat = [...chat, userMsg];
-    setChat(newChat);
-    setMessage('');
-    setSelectedImage(null);
-    setImageBase64('');
-    setImageMimeType('');
-
-    try {
-      setIsChatLoading(true);
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const res = await axios.post(`${API_URL}/api/chat`, {
-        consultaId,
-        // Send the actual message text to backend (not the display string)
-        mensaje: message || 'Analiza esta imagen',
-        imageBase64: currentBase64,
-        imageMimeType: currentMime
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
-    } catch (error) {
-      showToast('Error enviando mensaje');
-    } finally {
-      setIsChatLoading(false);
-    }
-  };
-
   const handleToggleFavorite = async () => {
     if (!consultaId) return;
     try {
@@ -1077,106 +1187,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   // Sync browser/Safari theme-color with dark mode
 
   if (showAd) return <AdModal onClose={handleCloseAd} />;
-
-  const chatWidget = (
-    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-xl border-white/10 shadow-black/50 ${view === 'chat' ? 'flex-1 h-[calc(100vh-140px)]' : 'hidden lg:flex'}`}>
-      
-      {/* Chat content — blurred + locked when not premium */}
-      <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
-        <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
-          <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">
-            <Sparkles size={14} className="text-indigo-500" /> Asistente de Estilo
-          </h2>
-        </div>
-        
-        <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
-          {!outfit ? (
-            <p className="text-sm text-center mt-10 opacity-50">Busca una ubicación para comenzar a chatear.</p>
-          ) : chat.length === 0 ? (
-            <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
-          ) : (
-            <>
-              {chat.map((msg, idx) => (
-                <ChatMessage key={`${idx}-${msg.content?.substring(0,10)}`} msg={msg} darkMode={darkMode} token={token} />
-              ))}
-              {isChatLoading && (
-                <div className="flex justify-start">
-                  <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-3 bg-white/10 backdrop-blur-md border border-white/10 shadow-lg`}>
-                    <div className={`h-2.5 w-48 rounded-full bg-white/20`}></div>
-                    <div className={`h-2.5 w-64 rounded-full bg-white/20`}></div>
-                    <div className={`h-2.5 w-32 rounded-full bg-white/20`}></div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
-          {selectedImage && (
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
-              <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
-              <button type="button" onClick={() => { setSelectedImage(null); setImageBase64(''); setImageMimeType(''); }} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5">
-                <X size={12} />
-              </button>
-            </div>
-          )}
-          <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
-            <input 
-              type="file" 
-              accept="image/*" 
-              capture="environment" 
-              id="cameraInput" 
-              className="hidden" 
-              onChange={handleImageChange}
-            />
-            <label 
-              htmlFor="cameraInput" 
-              className={`p-3 rounded-xl cursor-pointer transition-colors shadow-sm ${darkMode ? 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700' : 'bg-white text-gray-500 hover:text-indigo-600 hover:bg-gray-50 border border-gray-100'}`}
-            >
-              <Camera className="w-5 h-5" />
-            </label>
-
-            <input 
-              type="text"
-              placeholder="Escribe tu mensaje..."
-              className={`flex-1 px-5 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm shadow-sm transition-colors bg-white/5 border-white/10 text-white placeholder-gray-400`}
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              disabled={!outfit}
-            />
-            <button 
-              type="submit" 
-              disabled={!outfit || (!message && !selectedImage)}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 px-5 rounded-xl disabled:opacity-50 transition-all shadow-md shadow-indigo-600/20"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Overlay Premium Bloqueado */}
-      {!isPremium && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-black/20 dark:bg-black/40 backdrop-blur-[2px]">
-          <div className={`p-4 rounded-full mb-4 ${darkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-600'} shadow-lg backdrop-blur-md`}>
-            <Lock size={32} />
-          </div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Asistente IA Exclusivo</h3>
-          <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-xs mx-auto`}>
-            El Asistente de Estilo impulsado por IA está disponible únicamente para usuarios Premium.
-          </p>
-          <button 
-            onClick={(e) => { e.preventDefault(); setView('profile'); }}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
-          >
-            <Star size={18} />
-            Desbloquear Premium
-          </button>
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="flex min-h-[100dvh] font-sans overflow-hidden text-white bg-black">
@@ -1241,7 +1251,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               ) : view === 'friends' ? (
                 <FriendsView token={token} darkMode={true} onNavigate={setView} />
               ) : view === 'chat' ? (
-                <div className="h-full flex flex-col pt-8 pb-[100px] lg:pb-0">{chatWidget}</div>
+                <div className="h-full flex flex-col pt-8 pb-[100px] lg:pb-0">
+                  <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
+                </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh]">
                   {/* Dashboard - Zyricon style centralized search */}
@@ -1419,7 +1431,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
                                  className="absolute bottom-16 right-0 w-[400px] h-[600px] mb-4 origin-bottom-right"
                                >
-                                 {chatWidget}
+                                 <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
                                </motion.div>
                              )}
                            </AnimatePresence>

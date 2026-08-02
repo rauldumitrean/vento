@@ -156,3 +156,15 @@ model ImageCache {
   @@index([createdAt])
 }
 
+model WeatherCache {
+  id        String   @id // Formato: coord_lat_lon
+  data      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model ActiveRequestLock {
+  userId    Int      @id
+  lockedAt  DateTime @default(now())
+}

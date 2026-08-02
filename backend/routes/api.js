@@ -14,10 +14,7 @@ if (!process.env.GEMINI_API_KEY) {
 }
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// FIX A-4: In-memory lock to prevent concurrent request race conditions on daily limits
-const activeRequests = new Map();
-// FIX B-M2: LRUCache for weather
-const weatherCacheKeys = [];
+// Locks and Caches migrated to DB (PostgreSQL) for Serverless scaling
 
 // Admin Middleware
 const adminMiddleware = async (req, res, next) => {
@@ -94,8 +91,7 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
   }
 });
 
-// Cache in-memory simple para el clima y autocompletado
-const weatherCache = new Map();
+// Cache movida a DB
 
 router.get('/autocomplete', authMiddleware, async (req, res) => {
   try {
@@ -140,15 +136,15 @@ router.get('/weather', authMiddleware, async (req, res) => {
     // Normalised cache key based on coordinates only (fixes B-M3)
     const cacheKey = `coord_${latNum.toFixed(2)}_${lonNum.toFixed(2)}`;
     
-    // Check cache (10 min TTL)
-    if (weatherCache.has(cacheKey)) {
-      const cached = weatherCache.get(cacheKey);
-      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
-        return res.json(cached.data);
-      }
-      weatherCache.delete(cacheKey);
-      const index = weatherCacheKeys.indexOf(cacheKey);
-      if (index > -1) weatherCacheKeys.splice(index, 1);
+    // Check DB cache (10 min TTL)
+    const cachedWeather = await prisma.weatherCache.findUnique({
+      where: { id: cacheKey }
+    });
+    if (cachedWeather && (Date.now() - new Date(cachedWeather.createdAt).getTime() < 10 * 60 * 1000)) {
+      return res.json(JSON.parse(cachedWeather.data));
+    } else if (cachedWeather) {
+      // delete old cache
+      await prisma.weatherCache.delete({ where: { id: cacheKey } });
     }
 
     const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
@@ -162,13 +158,12 @@ router.get('/weather', authMiddleware, async (req, res) => {
       hourly: weatherResponse.data.hourly
     };
 
-    // FIX B-M2: enforce size limit on cache
-    if (weatherCache.size >= 500) {
-      const oldestKey = weatherCacheKeys.shift();
-      if (oldestKey) weatherCache.delete(oldestKey);
-    }
-    weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
-    weatherCacheKeys.push(cacheKey);
+    // Save to DB cache
+    await prisma.weatherCache.upsert({
+      where: { id: cacheKey },
+      update: { data: JSON.stringify(responseData), createdAt: new Date() },
+      create: { id: cacheKey, data: JSON.stringify(responseData) }
+    });
 
     res.json(responseData);
   } catch (error) {
@@ -178,13 +173,22 @@ router.get('/weather', authMiddleware, async (req, res) => {
 });
 
 router.post('/recomendacion', authMiddleware, async (req, res) => {
-  if (activeRequests.has(req.user.id)) {
-    return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
-  }
-  
-  activeRequests.set(req.user.id, true);
-
   try {
+    const lock = await prisma.activeRequestLock.create({
+      data: { userId: req.user.id }
+    }).catch(e => null); // Falla si ya existe un candado para este usuario
+
+    if (!lock) {
+      const existingLock = await prisma.activeRequestLock.findUnique({ where: { userId: req.user.id }});
+      if (existingLock && (Date.now() - new Date(existingLock.lockedAt).getTime() > 2 * 60 * 1000)) {
+        await prisma.activeRequestLock.update({
+          where: { userId: req.user.id },
+          data: { lockedAt: new Date() }
+        });
+      } else {
+        return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
+      }
+    }
     const { lat, lon, ubicacion, clima, daily } = req.body;
 
     if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
@@ -217,7 +221,7 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       });
   
       if (consultasHoy >= 5) {
-          activeRequests.delete(req.user.id);
+          await prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(e => null);
           return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
       }
     }
@@ -358,7 +362,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
     console.error(error);
     res.status(500).json({ error: 'Error al generar la recomendación' });
   } finally {
-    activeRequests.delete(req.user.id);
+    await prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(e => null);
   }
 });
 
@@ -604,9 +608,16 @@ router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
     const sharedConsulta = await prisma.consulta.findUnique({ where: { id } });
     if (!sharedConsulta) return res.status(404).json({ error: 'Consulta no encontrada' });
 
-    // FIX A-6: IDOR prevention — only allow saving outfits that were explicitly shared
-    if (!sharedConsulta.isShared) {
-      return res.status(403).json({ error: 'Este outfit no ha sido compartido.' });
+    // FIX A-6 (Actualizado): IDOR prevention — only allow saving outfits that were explicitly shared with THIS user
+    const receivedMessage = await prisma.directMessage.findFirst({
+      where: {
+        receiverId: req.user.id,
+        outfitId: id
+      }
+    });
+
+    if (!receivedMessage) {
+      return res.status(403).json({ error: 'No tienes permiso para guardar este outfit porque no te ha sido compartido directamente.' });
     }
 
     // Verificar si ya la tiene guardada (para no duplicar innecesariamente)
@@ -957,7 +968,7 @@ router.get('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) =
     console.error('Error fetching tickets:', error);
     res.status(500).json({ error: 'Error obteniendo tickets' });
   }
-});
+});ssssssssssssssss
 
 router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (req, res) => {
   try {
