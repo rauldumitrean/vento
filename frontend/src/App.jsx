@@ -76,6 +76,35 @@ const GlobalBanOverlay = ({ token, bannedData, setBannedData, setToken }) => {
   );
 };
 
+const SessionExpiredOverlay = ({ sessionExpired, setSessionExpired }) => {
+  if (!sessionExpired) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-gray-900 border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-300">
+        <div className="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(248,113,113,0.3)]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-8 h-8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Sesión Cerrada</h2>
+        <p className="text-gray-400 mb-8 leading-relaxed">Alguien ha iniciado sesión en tu cuenta desde otro dispositivo. Por motivos de seguridad, esta sesión ha sido cerrada automáticamente.</p>
+        <div className="flex flex-col gap-3 w-full">
+          <button 
+            onClick={() => { setSessionExpired(false); window.location.href = '/login'; }} 
+            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25"
+          >
+            Volver a iniciar sesión
+          </button>
+          <button 
+            onClick={() => { setSessionExpired(false); window.location.href = '/'; }} 
+            className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-semibold transition-all border border-white/10"
+          >
+            Ir a la página principal
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [token, setToken] = useState(Cookies.get('token'));
   const [adminToken, setAdminToken] = useState(Cookies.get('adminToken'));
@@ -84,6 +113,7 @@ function App() {
     // FIX C-3: Wrap in try/catch — malformed cookie must not crash the whole app
     try { return data ? JSON.parse(data) : null; } catch { return null; }
   });
+  const [sessionExpired, setSessionExpired] = useState(false);
   
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
@@ -91,6 +121,10 @@ function App() {
       error => {
         if (error.response) {
           if (error.response.status === 401) {
+            // Check if it's the specific single-session error
+            if (error.response.data?.error === 'Sesión expirada. Has iniciado sesión en otro dispositivo.') {
+              setSessionExpired(true);
+            }
             // If the token is invalid or the user was deleted, log them out
             setToken(null);
             setBannedData(null);
@@ -151,6 +185,10 @@ function App() {
         bannedData={bannedData} 
         setBannedData={setBannedData} 
         setToken={setToken} 
+      />
+      <SessionExpiredOverlay 
+        sessionExpired={sessionExpired} 
+        setSessionExpired={setSessionExpired} 
       />
       <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden">
           <Routes>
