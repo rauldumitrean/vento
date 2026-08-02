@@ -39,4 +39,11 @@ try {
   });
 }
 
+// Auto-migration for Vercel database (adds column if missing)
+try {
+  const prisma = require('./prismaClient');
+  prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "sessionVersion" INTEGER NOT NULL DEFAULT 0;')
+    .catch(() => {}); // Ignore error if column already exists
+} catch (e) {}
+
 module.exports = app;
