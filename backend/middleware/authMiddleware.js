@@ -21,6 +21,11 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ error: 'El usuario ya no existe.' });
     }
 
+    // Single-session check (invalidate older tokens)
+    if (verified.sessionVersion !== undefined && user.sessionVersion !== verified.sessionVersion) {
+      return res.status(401).json({ error: 'Sesión expirada. Has iniciado sesión en otro dispositivo.' });
+    }
+
     if (user.isBanned) {
       if (user.bannedUntil && new Date() > user.bannedUntil) {
         // Unban if time expired

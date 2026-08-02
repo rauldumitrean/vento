@@ -30,6 +30,7 @@ model User {
   friendCode         String?  @unique
   createdAt  DateTime @default(now())
   lastActive DateTime @default(now())
+  sessionVersion Int  @default(0)
   consultas  Consulta[]
   prendas    PrendaArmario[]
   tickets    Ticket[]

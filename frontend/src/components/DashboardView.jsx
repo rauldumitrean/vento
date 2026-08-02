@@ -727,7 +727,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   };
 
   return (
-    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/60 backdrop-blur-3xl border-white/10 shadow-black/50`}>
+    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/30 backdrop-blur-2xl border-white/10 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
         <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
           <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">

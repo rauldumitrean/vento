@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
     // Send async welcome email (must await in Vercel serverless)
     await emailService.sendWelcomeEmail(user).catch(console.error);
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id, sessionVersion: user.sessionVersion || 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture } });
   } catch (error) {
     console.error(error);
@@ -70,7 +70,11 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { sessionVersion: { increment: 1 } }
+    });
+    const token = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
     
     // Send async login alert (must await in Vercel serverless)
     const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -152,7 +156,11 @@ router.post('/google', async (req, res) => {
       }
     }
 
-    const jwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { sessionVersion: { increment: 1 } }
+    });
+    const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
     const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
@@ -199,7 +207,11 @@ router.post('/apple', async (req, res) => {
       }
     }
 
-    const jwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { sessionVersion: { increment: 1 } }
+    });
+    const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
     // FIX A-10: Never return raw Prisma object — whitelist safe fields only
     res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture } });
   } catch (error) {
