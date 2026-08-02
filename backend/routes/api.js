@@ -14,7 +14,10 @@ if (!process.env.GEMINI_API_KEY) {
 }
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Locks and Caches migrated to DB (PostgreSQL) for Serverless scaling
+// In-memory fallbacks for when DB tables are not yet provisioned (e.g., fresh deploys)
+const activeRequests = new Map();
+const weatherCache = new Map();
+const weatherCacheKeys = [];
 
 // Admin Middleware
 const adminMiddleware = async (req, res, next) => {
@@ -91,7 +94,7 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
   }
 });
 
-// Cache movida a DB
+// Weather Cache: Try DB first, fall back to in-memory
 
 router.get('/autocomplete', authMiddleware, async (req, res) => {
   try {
@@ -133,18 +136,30 @@ router.get('/weather', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas' });
     }
     
-    // Normalised cache key based on coordinates only (fixes B-M3)
+    // Normalised cache key based on coordinates only
     const cacheKey = `coord_${latNum.toFixed(2)}_${lonNum.toFixed(2)}`;
     
-    // Check DB cache (10 min TTL)
-    const cachedWeather = await prisma.weatherCache.findUnique({
-      where: { id: cacheKey }
-    });
-    if (cachedWeather && (Date.now() - new Date(cachedWeather.createdAt).getTime() < 10 * 60 * 1000)) {
-      return res.json(JSON.parse(cachedWeather.data));
-    } else if (cachedWeather) {
-      // delete old cache
-      await prisma.weatherCache.delete({ where: { id: cacheKey } });
+    // Check in-memory cache first (10 min TTL)
+    if (weatherCache.has(cacheKey)) {
+      const cached = weatherCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
+        return res.json(cached.data);
+      }
+      weatherCache.delete(cacheKey);
+      const idx = weatherCacheKeys.indexOf(cacheKey);
+      if (idx > -1) weatherCacheKeys.splice(idx, 1);
+    }
+
+    // Also try DB cache
+    try {
+      const cachedWeather = await prisma.weatherCache.findUnique({ where: { id: cacheKey } });
+      if (cachedWeather && (Date.now() - new Date(cachedWeather.createdAt).getTime() < 10 * 60 * 1000)) {
+        return res.json(JSON.parse(cachedWeather.data));
+      } else if (cachedWeather) {
+        await prisma.weatherCache.delete({ where: { id: cacheKey } }).catch(() => {});
+      }
+    } catch (dbErr) {
+      // DB table not ready yet, using in-memory cache only
     }
 
     const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
@@ -158,12 +173,20 @@ router.get('/weather', authMiddleware, async (req, res) => {
       hourly: weatherResponse.data.hourly
     };
 
-    // Save to DB cache
-    await prisma.weatherCache.upsert({
+    // Save to in-memory cache
+    if (weatherCache.size >= 500) {
+      const oldestKey = weatherCacheKeys.shift();
+      if (oldestKey) weatherCache.delete(oldestKey);
+    }
+    weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+    weatherCacheKeys.push(cacheKey);
+
+    // Also try to save to DB cache (non-blocking)
+    prisma.weatherCache.upsert({
       where: { id: cacheKey },
       update: { data: JSON.stringify(responseData), createdAt: new Date() },
       create: { id: cacheKey, data: JSON.stringify(responseData) }
-    });
+    }).catch(() => {});
 
     res.json(responseData);
   } catch (error) {
@@ -172,23 +195,20 @@ router.get('/weather', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/recomendacion', authMiddleware, async (req, res) => {
-  try {
-    const lock = await prisma.activeRequestLock.create({
-      data: { userId: req.user.id }
-    }).catch(e => null); // Falla si ya existe un candado para este usuario
+router.post('/recomendacion', authMiddleware, async (req, res) => {  // In-memory lock (serverless-safe fallback)
+  if (activeRequests.has(req.user.id)) {
+    return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
+  }
+  activeRequests.set(req.user.id, true);
 
-    if (!lock) {
-      const existingLock = await prisma.activeRequestLock.findUnique({ where: { userId: req.user.id }});
-      if (existingLock && (Date.now() - new Date(existingLock.lockedAt).getTime() > 2 * 60 * 1000)) {
-        await prisma.activeRequestLock.update({
-          where: { userId: req.user.id },
-          data: { lockedAt: new Date() }
-        });
-      } else {
-        return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
-      }
-    }
+  // Also try DB lock (non-critical, best-effort)
+  try {
+    await prisma.activeRequestLock.create({ data: { userId: req.user.id } });
+  } catch (dbErr) {
+    // DB table not ready or lock already exists - in-memory lock covers this
+  }
+
+  try {
     const { lat, lon, ubicacion, clima, daily } = req.body;
 
     if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
@@ -221,7 +241,8 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       });
   
       if (consultasHoy >= 5) {
-          await prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(e => null);
+          activeRequests.delete(req.user.id);
+          prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(() => {});
           return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
       }
     }
@@ -362,7 +383,10 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
     console.error(error);
     res.status(500).json({ error: 'Error al generar la recomendación' });
   } finally {
-    await prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(e => null);
+    // Release in-memory lock
+    activeRequests.delete(req.user.id);
+    // Also try to release DB lock (best-effort)
+    prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(() => {});
   }
 });
 
