@@ -16,9 +16,24 @@ const friendsRoutes = require('./routes/friends');
 
 const app = express();
 
-// FIX: Restrict CORS to the frontend domain instead of allowing all origins
+// CORS: Allow configured frontend URL, Vercel preview URLs, and localhost
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://ventoo.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    // Allow any vercel.app subdomain (for preview deployments)
+    if (origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
