@@ -150,17 +150,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
       if (idx > -1) weatherCacheKeys.splice(idx, 1);
     }
 
-    // Also try DB cache
-    try {
-      const cachedWeather = await prisma.weatherCache.findUnique({ where: { id: cacheKey } });
-      if (cachedWeather && (Date.now() - new Date(cachedWeather.createdAt).getTime() < 10 * 60 * 1000)) {
-        return res.json(JSON.parse(cachedWeather.data));
-      } else if (cachedWeather) {
-        await prisma.weatherCache.delete({ where: { id: cacheKey } }).catch(() => {});
-      }
-    } catch (dbErr) {
-      // DB table not ready yet, using in-memory cache only
-    }
+
 
     const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
     
@@ -181,12 +171,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
     weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
     weatherCacheKeys.push(cacheKey);
 
-    // Also try to save to DB cache (non-blocking)
-    prisma.weatherCache.upsert({
-      where: { id: cacheKey },
-      update: { data: JSON.stringify(responseData), createdAt: new Date() },
-      create: { id: cacheKey, data: JSON.stringify(responseData) }
-    }).catch(() => {});
+
 
     res.json(responseData);
   } catch (error) {
@@ -202,12 +187,7 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
   }
   activeRequests.set(req.user.id, true);
 
-  // Also try DB lock (non-critical, best-effort)
-  try {
-    await prisma.activeRequestLock.create({ data: { userId: req.user.id } });
-  } catch (dbErr) {
-    // DB table not ready or lock already exists - in-memory lock covers this
-  }
+
 
   try {
     const { lat, lon, ubicacion, clima, daily } = req.body;
@@ -243,7 +223,6 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
   
       if (consultasHoy >= 5) {
           activeRequests.delete(req.user.id);
-          prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(() => {});
           return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
       }
     }
@@ -386,8 +365,6 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
   } finally {
     // Release in-memory lock
     activeRequests.delete(req.user.id);
-    // Also try to release DB lock (best-effort)
-    prisma.activeRequestLock.delete({ where: { userId: req.user.id } }).catch(() => {});
   }
 });
 
