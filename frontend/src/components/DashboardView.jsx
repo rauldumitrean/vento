@@ -1241,10 +1241,17 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         <div className="flex-1 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/20 backdrop-blur-2xl">
           {/* Mobile Top Bar */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
-             <span className="text-xl font-bold tracking-widest text-white">Ventoo</span>
+             <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 group">
+               <Cloud className="w-6 h-6 text-white group-hover:text-indigo-400 transition-colors" />
+               <span className="text-xl font-bold tracking-widest text-white group-hover:text-indigo-400 transition-colors">Ventoo</span>
+             </button>
              <div className="flex gap-2">
-               <button onClick={() => setView('profile')} className="p-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10">
-                 <User size={18} />
+               <button onClick={() => setView('profile')} className="p-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 overflow-hidden">
+                 {Cookies.get('userProfilePicture') ? (
+                   <img src={Cookies.get('userProfilePicture')} alt="Profile" className="w-5 h-5 rounded-full object-cover" />
+                 ) : (
+                   <User size={18} />
+                 )}
                </button>
              </div>
           </div>
@@ -1256,7 +1263,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               ) : view === 'admin' && Cookies.get('userRole') === 'ADMIN' ? (
                 <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>}><AdminView token={token} darkMode={true} /></Suspense>
               ) : view === 'profile' ? (
-                <ProfileSettings token={token} darkMode={true} onLogout={onLogout} />
+                <ProfileSettings token={token} darkMode={true} onLogout={onLogout} onBack={() => setView('dashboard')} />
               ) : view === 'friends' ? (
                 <FriendsView token={token} darkMode={true} onNavigate={setView} />
               ) : view === 'chat' ? (
