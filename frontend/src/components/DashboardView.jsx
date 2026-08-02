@@ -727,19 +727,19 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   };
 
   return (
-    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-white/10 backdrop-blur-lg border-white/20 shadow-black/50`}>
+    <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-white/5 backdrop-blur-md border-white/20 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
         <div className={`p-4 border-b ${darkMode ? 'border-white/10' : 'border-neutral-200/50'}`}>
-          <h2 className="text-sm tracking-widest uppercase opacity-50 font-bold flex items-center gap-2">
-            <Sparkles size={14} className="text-indigo-500" /> Asistente de Estilo
+          <h2 className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
+            <Sparkles size={14} className="text-indigo-400" /> Asistente de Estilo
           </h2>
         </div>
         
         <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
           {!outfit ? (
-            <p className="text-sm text-center mt-10 opacity-50">Busca una ubicación para comenzar a chatear.</p>
+            <p className="text-sm text-center mt-10 text-gray-300">Busca una ubicación para comenzar a chatear.</p>
           ) : chat.length === 0 ? (
-            <p className="text-sm text-center mt-10 opacity-50">¿Tienes dudas sobre el outfit? Pregúntame.</p>
+            <p className="text-sm text-center mt-10 text-gray-300">¿Tienes dudas sobre el outfit? Pregúntame.</p>
           ) : (
             <>
               {chat.map((msg, idx) => (
