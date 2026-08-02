@@ -72,6 +72,16 @@ export default function TermsView() {
               <li><strong>Moderación de Chat:</strong> El contenido de los chats directos está sujeto a las mismas reglas de auto-moderación automatizada estipuladas en la Sección 6.</li>
             </ul>
           </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">8. Funciones de Visión por IA (Subida de Imágenes)</h2>
+            <p className="mb-3">Los usuarios Premium tienen acceso a la funcionalidad de reconocimiento visual de prendas:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Propiedad:</strong> Al subir una imagen, conservas todos los derechos sobre la misma. Sin embargo, otorgas a Ventoo una licencia temporal para procesarla mediante IA de terceros (OpenAI) con el fin de extraer características de la ropa.</li>
+              <li><strong>Privacidad de Imágenes:</strong> Las imágenes subidas no se utilizan para entrenar los modelos de inteligencia artificial y se descartan tras generar la recomendación o guardarse en tu historial personal cifrado.</li>
+              <li><strong>Contenido Apropiado:</strong> Está terminantemente prohibido subir imágenes de personas identificables sin su consentimiento, desnudos, o contenido ilegal. El sistema de moderación puede bloquear tu cuenta de forma permanente si detecta este tipo de contenido.</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>

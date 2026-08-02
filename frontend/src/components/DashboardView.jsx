@@ -1200,12 +1200,13 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   return (
     <div className="flex min-h-[100dvh] font-sans overflow-hidden text-white bg-black">
       {/* Immersive Glassmorphism Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop')]" />
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[60px]" />
-        {/* Subtle glowing orbs */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/20 rounded-full filter blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-indigo-600/20 rounded-full filter blur-[150px]" />
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[#0A0A0B]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)]" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/8 rounded-full blur-[100px]" />
+        {/* Grid */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
       </div>
 
       <AnimatePresence>

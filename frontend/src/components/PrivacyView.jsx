@@ -38,8 +38,8 @@ export default function PrivacyView() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">3. Procesamiento de IA</h2>
-            <p>Al utilizar las funciones de generación de IA o análisis de imágenes, los datos son procesados por nuestros proveedores de IA de terceros bajo estrictos acuerdos de confidencialidad. No utilizamos tus fotos personales para entrenar modelos públicos.</p>
+            <h2 className="text-2xl font-bold text-white mb-4">3. Procesamiento de Visión y Generación por IA</h2>
+            <p>Al utilizar las funciones de generación de IA o subir fotos a la sección de armario virtual mediante "Visión por IA", los datos son procesados por nuestros proveedores de IA de terceros bajo estrictos acuerdos de confidencialidad. No utilizamos tus fotos personales para entrenar modelos públicos y son eliminadas una vez analizadas o almacenadas temporalmente para tu historial.</p>
           </section>
 
           <section>
