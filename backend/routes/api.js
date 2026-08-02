@@ -195,7 +195,8 @@ router.get('/weather', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/recomendacion', authMiddleware, async (req, res) => {  // In-memory lock (serverless-safe fallback)
+// In-memory lock (serverless-safe fallback) - also tries DB lock when tables available
+router.post('/recomendacion', authMiddleware, async (req, res) => {
   if (activeRequests.has(req.user.id)) {
     return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
   }
