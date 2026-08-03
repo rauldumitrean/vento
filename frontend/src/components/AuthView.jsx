@@ -325,7 +325,7 @@ export default function AuthView({ setToken }) {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <div
-      className="min-h-[100dvh] font-sans flex items-center justify-center bg-[#0A0A0B] p-4 relative overflow-hidden"
+      className="min-h-[100dvh] font-sans flex items-center justify-center bg-[#0A0A0B] py-12 px-4 relative overflow-y-auto overflow-x-hidden"
       style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
     >
       {/* Background depth effect */}
