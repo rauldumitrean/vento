@@ -18,7 +18,7 @@ const getWeatherIcon = (code) => {
   return { icon: Cloud, color: "text-indigo-300", bg: "from-indigo-500/20 to-indigo-600/10" };
 };
 
-const FavCityCard = ({ fav, onSelect, onDelete }) => {
+const FavCityCard = ({ fav, onSelect, onDelete, token }) => {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,8 @@ const FavCityCard = ({ fav, onSelect, onDelete }) => {
     const fetchW = async () => {
       try {
         const res = await axios.get(
-          `${API_URL}/api/weather-mini?city=${encodeURIComponent(fav.cityName)}${fav.lat ? "&lat=" + fav.lat + "&lon=" + fav.lon : ""}`
+          `${API_URL}/api/weather-mini?city=${encodeURIComponent(fav.cityName)}${fav.lat ? "&lat=" + fav.lat + "&lon=" + fav.lon : ""}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!cancelled && res.data) setWeather(res.data);
       } catch {
@@ -204,6 +205,7 @@ export default function FavoriteCitiesView({ token, onSelectCity }) {
               <FavCityCard
                 key={fav.id}
                 fav={fav}
+                token={token}
                 onSelect={onSelectCity}
                 onDelete={handleDelete}
               />
