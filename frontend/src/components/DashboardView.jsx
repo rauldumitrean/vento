@@ -734,7 +734,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   return (
     <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-md border-white/10 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
-        <div className={`p-4 border-b ${darkMode ? 'bg-[#18181b] border-white/10' : 'bg-white border-neutral-200/50'}`}>
+        <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md">
            <h2 className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
              <Sparkles size={14} className="text-indigo-400" /> Asistente de Estilo
            </h2>
@@ -767,7 +767,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
           )}
         </div>
 
-        <div className={`p-4 border-t flex flex-col gap-2 ${darkMode ? 'bg-[#18181b] border-white/10' : 'bg-white border-neutral-200/50'}`}>
+        <div className="p-4 border-t border-white/10 flex flex-col gap-2 bg-white/5 backdrop-blur-md">
           {selectedImage && (
             <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-md">
               <img src={selectedImage} alt="preview" className="w-full h-full object-cover" />
