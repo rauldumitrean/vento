@@ -278,8 +278,12 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
-    const { name, gender, age, estiloPersonal, estiloDetalles } = req.body;
+    const { name, gender, age, estiloPersonal, estiloDetalles, usaGorras } = req.body;
     const updateData = { name, gender, estiloPersonal, estiloDetalles };
+    
+    if (usaGorras !== undefined) {
+      updateData.usaGorras = usaGorras;
+    }
     if (age !== undefined && age !== null && age !== '') {
       const parsedAge = parseInt(age);
       if (isNaN(parsedAge) || parsedAge < 13 || parsedAge > 120) {

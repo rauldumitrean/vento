@@ -11,6 +11,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [age, setAge] = useState(Cookies.get('userAge') || '');
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
+  const [usaGorras, setUsaGorras] = useState(false);
   const [profilePicture, setProfilePicture] = useState(Cookies.get('userProfilePicture') || '');
   const [historyCount, setHistoryCount] = useState(0);
   const [dailyCount, setDailyCount] = useState(0);
@@ -38,6 +39,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
           setAge(res.data.user.age || '');
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
+          setUsaGorras(res.data.user.usaGorras || false);
           setProfilePicture(res.data.user.profilePicture || '');
           Cookies.set('userProfilePicture', res.data.user.profilePicture || '', { expires: 365 });
           setHistoryCount(res.data.user.historyCount || 0);
@@ -106,7 +108,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
     setLoading(true);
     setMessage('');
     try {
-      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles }, {
+      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles, usaGorras }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Cookies.set('userName', res.data.user.name, { expires: 365 });
@@ -340,6 +342,22 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                 className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'} border resize-none`}
               />
               <p className="mt-2 text-xs text-gray-500">La IA tendrá en cuenta esto para recomendarte prendas.</p>
+            </div>
+            
+            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
+              <div>
+                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Gorras y Sombreros</h4>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>La IA considerará incluir gorras en tus outfits.</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={usaGorras}
+                  onChange={(e) => setUsaGorras(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+              </label>
             </div>
           </div>
         </WidgetSection>
