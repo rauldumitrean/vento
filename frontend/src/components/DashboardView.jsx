@@ -1493,19 +1493,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
       {/* ── Mobile Bottom Navigation Bar ── */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="mx-3 mb-3 flex items-center justify-around bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl px-2 py-2 shadow-2xl shadow-black/50">
-          {/* Dashboard */}
-          <button
-            onClick={() => { setView('dashboard'); }}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'dashboard'
-                ? 'bg-indigo-600/25 text-indigo-400'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            <LayoutDashboard size={22} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Inicio</span>
-          </button>
+        <div className="mx-3 mb-3 flex items-end justify-around bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl px-4 py-2 shadow-2xl shadow-black/50">
 
           {/* Armario */}
           <button
@@ -1520,16 +1508,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             <span className="text-[10px] font-semibold uppercase tracking-wider">Armario</span>
           </button>
 
-          {/* Nueva Consulta - center button */}
+          {/* Buscar - center elevated button */}
           <button
             onClick={() => { setView('dashboard'); setWeather(null); setOutfit(null); setLocation(''); }}
-            className="flex flex-col items-center gap-1 -mt-6 px-3 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95"
+            className="flex flex-col items-center gap-1 -mt-7 px-4 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <Search size={22} />
             <span className="text-[9px] font-bold uppercase tracking-wider">Buscar</span>
           </button>
 
-          {/* Comunidad */}
+          {/* Amigos */}
           <button
             onClick={() => setView('friends')}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ${
