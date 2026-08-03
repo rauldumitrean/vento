@@ -547,9 +547,22 @@ export default function LandingView({ setToken }) {
           </div>
         </div>
       </section>
-
-
-
+      {/* ── FAQ Banner ── */}
+      <section className="relative z-10 py-16 px-6 border-t border-white/[0.06]">
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between bg-gray-900/40 border border-white/[0.08] rounded-3xl p-8 backdrop-blur-sm">
+          <div className="text-center md:text-left mb-6 md:mb-0">
+            <h3 className="text-2xl font-bold text-white mb-2">¿Tienes alguna duda?</h3>
+            <p className="text-gray-400">Visita nuestra página de Preguntas Frecuentes para más información.</p>
+          </div>
+          <button
+            onClick={() => navigate('/faq')}
+            className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-semibold transition-colors"
+          >
+            Ver Preguntas Frecuentes
+            <ArrowRight size={18} />
+          </button>
+        </div>
+      </section>
       {/* ── Final CTA banner ── */}
       <section className="relative z-10 py-24 px-6">
         <div className="max-w-3xl mx-auto">
