@@ -41,6 +41,8 @@ export default function AuthView({ setToken }) {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [gender, setGender] = useState('Mujer');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [age, setAge] = useState('');
   const [usaGorras, setUsaGorras] = useState(false);
   const [registerStep, setRegisterStep] = useState(1);
