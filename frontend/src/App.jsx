@@ -14,6 +14,7 @@ import IosInstallPrompt from './components/IosInstallPrompt';
 import TermsView from './components/TermsView';
 import PrivacyView from './components/PrivacyView';
 import SupportView from './components/SupportView';
+import FaqView from './components/FaqView';
 import CookieBanner from './components/CookieBanner';
 
 // FIX C-5: React Error Boundary — prevents a single render error from crashing the entire app
@@ -223,6 +224,7 @@ function App() {
             />
             <Route path="/terms" element={<TermsView />} />
             <Route path="/privacy" element={<PrivacyView />} />
+            <Route path="/faq" element={<FaqView />} />
           </Routes>
         {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
         {token && <IosInstallPrompt />}
