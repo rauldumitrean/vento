@@ -1321,6 +1321,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-8 flex items-center justify-center shadow-lg shadow-indigo-500/50 animate-[pulse_3s_ease-in-out_infinite]">
                          <CloudSnow className="text-white w-12 h-12" />
                       </div>
+                      <div className="text-center mb-2">
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+                          {userName ? `¡Bienvenido, ${userName}!` : '¡Bienvenido!'}
+                        </span>
+                      </div>
                       <h1 className="text-4xl sm:text-5xl font-black text-white text-center mb-10 tracking-tight">
                         ¿Listo para crear algo nuevo?
                       </h1>

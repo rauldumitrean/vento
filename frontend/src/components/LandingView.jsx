@@ -159,6 +159,18 @@ const faqs = [
     a: "Ventoo funciona a nivel mundial. Simplemente busca cualquier ciudad o permite que la web acceda a tu geolocalización, y la IA adaptará las recomendaciones al clima exacto de esa ubicación en tiempo real."
   },
   {
+    q: "¿Cómo puedo cancelar mi suscripción Premium?",
+    a: "Puedes cancelarla en cualquier momento de forma sencilla desde los ajustes de tu cuenta. No hay contratos a largo plazo ni cargos ocultos."
+  },
+  {
+    q: "¿Las prendas recomendadas se pueden comprar?",
+    a: "Sí, en los planes Premium incluimos enlaces directos de compra para que puedas adquirir rápidamente las prendas que te sugiere la IA en las mejores tiendas online."
+  },
+  {
+    q: "¿Puedo organizar mi ropa para distintas ocasiones?",
+    a: "Totalmente. Ventoo te permite guardar outfits no solo para el día a día, sino categorizados para eventos, escapadas o fiestas, creando un catálogo personal."
+  },
+  {
     q: "¿Puedo comprar la ropa que me recomienda la IA?",
     a: "¡Sí! Nuestra IA integra enlaces directos de compra en Amazon y otras tiendas para las prendas sugeridas, facilitándote renovar tu armario con un solo clic según el look generado."
   },
@@ -597,7 +609,7 @@ export default function LandingView({ setToken }) {
             <PricingCard
               accent="indigo" plan="Premium Mensual" price="1,99€" period="/mes"
               desc="Todo el potencial de Ventoo sin compromiso a largo plazo."
-              features={['Outfits ilimitados', '100% sin anuncios', 'Visión por IA (sube fotos)', 'Chatbot de estilo avanzado', 'Armario virtual infinito', 'Historial ilimitado', 'Generación de IA prioritaria', 'Enlaces de compra directos']}
+              features={['Outfits ilimitados', '100% sin anuncios', 'Visión por IA (sube fotos)', 'Chatbot de estilo avanzado', 'Armario virtual infinito', 'Historial ilimitado', 'Generación de IA prioritaria', 'Enlaces de compra directos', 'Análisis de tu color de piel', 'Modo eventos (bodas, fiestas)', 'Clima hiper-local preciso']}
               cta={Cookies.get('token') ? 'Mejorar a Mensual' : 'Suscribirse por 1,99€'}
               badge={<><Zap size={13} fill="currentColor" /> POPULAR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'monthly' })}
@@ -605,7 +617,7 @@ export default function LandingView({ setToken }) {
             <PricingCard
               accent="purple" plan="Premium Lifetime" price="20€" period=" pago único"
               desc="Paga una sola vez y disfruta de Ventoo Premium para siempre."
-              features={['Todo lo incluido en Mensual', 'Pago único sin recurrencias', 'Acceso vitalicio garantizado', 'Soporte prioritario VIP', 'Acceso anticipado a nuevas IA', 'Todas las mejoras futuras', 'Estatus de Usuario Fundador']}
+              features={['Todo lo incluido en Mensual', 'Pago único sin recurrencias', 'Acceso vitalicio garantizado', 'Soporte prioritario VIP', 'Acceso anticipado a nuevas IA', 'Todas las mejoras futuras', 'Estatus de Usuario Fundador', 'Insignia exclusiva en la comunidad', 'Asesoría de estilistas (Beta)', 'Exportación de armario']}
               cta={Cookies.get('token') ? 'Comprar pase vitalicio' : 'Adquirir por 20€'}
               badge={<><Crown size={13} fill="currentColor" /> MEJOR VALOR</>}
               lifted onClick={() => goAuth({ isRegister: true, plan: 'lifetime' })}
