@@ -15,7 +15,7 @@ router.get('/code', authMiddleware, async (req, res) => {
     let user = await prisma.user.findUnique({ where: { id: req.user.id } });
     
     // FIX B-M18: null check
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado', errorCode: '0x1068' });
     
     if (!user.friendCode) {
       // Generar uno nuevo y asegurar que sea único
@@ -28,7 +28,7 @@ router.get('/code', authMiddleware, async (req, res) => {
         if (!exists) isUnique = true;
         attempts++;
       }
-      if (!isUnique) return res.status(500).json({ error: 'No se pudo generar un código único' });
+      if (!isUnique) return res.status(500).json({ error: 'No se pudo generar un código único', errorCode: '0x1069' });
       
       user = await prisma.user.update({
         where: { id: req.user.id },
@@ -39,19 +39,19 @@ router.get('/code', authMiddleware, async (req, res) => {
     res.json({ friendCode: user.friendCode });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error obteniendo código de amigo' });
+    res.status(500).json({ error: 'Error obteniendo código de amigo', errorCode: '0x106A' });
   }
 });
 
 // Enviar solicitud de amistad
 router.post('/request', authMiddleware, async (req, res) => {
   const { code } = req.body;
-  if (!code) return res.status(400).json({ error: 'Falta el código' });
+  if (!code) return res.status(400).json({ error: 'Falta el código', errorCode: '0x106B' });
 
   try {
     const friend = await prisma.user.findUnique({ where: { friendCode: code.toUpperCase() } });
-    if (!friend) return res.status(404).json({ error: 'Usuario no encontrado' });
-    if (friend.id === req.user.id) return res.status(400).json({ error: 'No puedes añadirte a ti mismo' });
+    if (!friend) return res.status(404).json({ error: 'Usuario no encontrado', errorCode: '0x106C' });
+    if (friend.id === req.user.id) return res.status(400).json({ error: 'No puedes añadirte a ti mismo', errorCode: '0x106D' });
 
     // Comprobar si ya existe una solicitud o amistad
     const existing = await prisma.friendship.findFirst({
@@ -64,8 +64,8 @@ router.post('/request', authMiddleware, async (req, res) => {
     });
 
     if (existing) {
-      if (existing.status === 'accepted') return res.status(400).json({ error: 'Ya sois amigos' });
-      return res.status(400).json({ error: 'Ya existe una solicitud pendiente' });
+      if (existing.status === 'accepted') return res.status(400).json({ error: 'Ya sois amigos', errorCode: '0x106E' });
+      return res.status(400).json({ error: 'Ya existe una solicitud pendiente', errorCode: '0x106F' });
     }
 
     await prisma.friendship.create({
@@ -79,7 +79,7 @@ router.post('/request', authMiddleware, async (req, res) => {
     res.json({ success: true, message: 'Solicitud enviada correctamente' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error enviando solicitud' });
+    res.status(500).json({ error: 'Error enviando solicitud', errorCode: '0x1070' });
   }
 });
 
@@ -97,7 +97,7 @@ router.get('/requests', authMiddleware, async (req, res) => {
     res.json({ requests: requests.map(r => ({ id: r.id, user: r.user1 })) });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error obteniendo solicitudes' });
+    res.status(500).json({ error: 'Error obteniendo solicitudes', errorCode: '0x1071' });
   }
 });
 
@@ -105,12 +105,12 @@ router.get('/requests', authMiddleware, async (req, res) => {
 router.post('/accept', authMiddleware, async (req, res) => {
   const friendshipId = parseInt(req.body.friendshipId);
   const { accept } = req.body;
-  if (isNaN(friendshipId)) return res.status(400).json({ error: 'ID inválido' });
+  if (isNaN(friendshipId)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x1072' });
   
   try {
     const friendship = await prisma.friendship.findUnique({ where: { id: friendshipId } });
     if (!friendship || friendship.user2Id !== req.user.id) {
-      return res.status(404).json({ error: 'Solicitud no encontrada' });
+      return res.status(404).json({ error: 'Solicitud no encontrada', errorCode: '0x1073' });
     }
 
     if (accept) {
@@ -125,7 +125,7 @@ router.post('/accept', authMiddleware, async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error procesando solicitud' });
+    res.status(500).json({ error: 'Error procesando solicitud', errorCode: '0x1074' });
   }
 });
 
@@ -157,7 +157,7 @@ router.get('/', authMiddleware, async (req, res) => {
     res.json({ friends });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error obteniendo amigos' });
+    res.status(500).json({ error: 'Error obteniendo amigos', errorCode: '0x1075' });
   }
 });
 
@@ -165,7 +165,7 @@ router.get('/', authMiddleware, async (req, res) => {
 router.get('/:friendId/messages', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
   // FIX A-11: isNaN guard
-  if (isNaN(friendId)) return res.status(400).json({ error: 'ID inv\u00e1lido' });
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID inv\u00e1lido', errorCode: '0x1076' });
   try {
     // FIX A-11: IDOR \u2014 verify the requesting user is actually friends with friendId before returning messages
     const friendship = await prisma.friendship.findFirst({
@@ -177,7 +177,7 @@ router.get('/:friendId/messages', authMiddleware, async (req, res) => {
         ]
       }
     });
-    if (!friendship) return res.status(403).json({ error: 'No tienes permiso para ver estos mensajes.' });
+    if (!friendship) return res.status(403).json({ error: 'No tienes permiso para ver estos mensajes.', errorCode: '0x1077' });
 
     const messages = await prisma.directMessage.findMany({
       where: {
@@ -194,18 +194,18 @@ router.get('/:friendId/messages', authMiddleware, async (req, res) => {
     res.json({ messages });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error obteniendo mensajes' });
+    res.status(500).json({ error: 'Error obteniendo mensajes', errorCode: '0x1078' });
   }
 });
 
 // Enviar un mensaje de texto
 router.post('/:friendId/messages', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
-  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido' });
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido', errorCode: '0x1079' });
   const { content } = req.body;
   
-  if (!content || !content.trim()) return res.status(400).json({ error: 'El mensaje no puede estar vacío' });
-  if (content.length > 2000) return res.status(400).json({ error: 'El mensaje es demasiado largo (máximo 2000 caracteres)' });
+  if (!content || !content.trim()) return res.status(400).json({ error: 'El mensaje no puede estar vacío', errorCode: '0x107A' });
+  if (content.length > 2000) return res.status(400).json({ error: 'El mensaje es demasiado largo (máximo 2000 caracteres)', errorCode: '0x107B' });
 
   try {
     // Validar amistad
@@ -219,7 +219,7 @@ router.post('/:friendId/messages', authMiddleware, async (req, res) => {
       }
     });
 
-    if (!isFriend) return res.status(403).json({ error: 'No eres amigo de este usuario' });
+    if (!isFriend) return res.status(403).json({ error: 'No eres amigo de este usuario', errorCode: '0x107C' });
 
     const message = await prisma.directMessage.create({
       data: {
@@ -232,17 +232,17 @@ router.post('/:friendId/messages', authMiddleware, async (req, res) => {
     res.json({ message });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error enviando mensaje' });
+    res.status(500).json({ error: 'Error enviando mensaje', errorCode: '0x107D' });
   }
 });
 
 // Compartir un outfit
 router.post('/:friendId/share', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
-  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido' });
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido', errorCode: '0x107E' });
   const { consultaId } = req.body;
 
-  if (!consultaId) return res.status(400).json({ error: 'Falta el ID del outfit' });
+  if (!consultaId) return res.status(400).json({ error: 'Falta el ID del outfit', errorCode: '0x107F' });
 
   try {
     // Validar amistad
@@ -256,14 +256,14 @@ router.post('/:friendId/share', authMiddleware, async (req, res) => {
       }
     });
 
-    if (!isFriend) return res.status(403).json({ error: 'No eres amigo de este usuario' });
+    if (!isFriend) return res.status(403).json({ error: 'No eres amigo de este usuario', errorCode: '0x1080' });
 
     // Validar que el outfit es del usuario
     const consulta = await prisma.consulta.findFirst({
       where: { id: consultaId, userId: req.user.id }
     });
 
-    if (!consulta) return res.status(404).json({ error: 'Outfit no encontrado' });
+    if (!consulta) return res.status(404).json({ error: 'Outfit no encontrado', errorCode: '0x1081' });
 
     const message = await prisma.directMessage.create({
       data: {
@@ -280,17 +280,17 @@ router.post('/:friendId/share', authMiddleware, async (req, res) => {
     res.json({ message });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error compartiendo outfit' });
+    res.status(500).json({ error: 'Error compartiendo outfit', errorCode: '0x1082' });
   }
 });
 
 // Reportar a un usuario
 router.post('/:friendId/report', authMiddleware, async (req, res) => {
   const friendId = parseInt(req.params.friendId);
-  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido' });
+  if (isNaN(friendId)) return res.status(400).json({ error: 'ID de amigo inválido', errorCode: '0x1083' });
   const { reason, description } = req.body;
 
-  if (!reason) return res.status(400).json({ error: 'El motivo es obligatorio' });
+  if (!reason) return res.status(400).json({ error: 'El motivo es obligatorio', errorCode: '0x1084' });
 
   try {
     // Check if already reported
@@ -304,7 +304,7 @@ router.post('/:friendId/report', authMiddleware, async (req, res) => {
     });
 
     if (existingReport) {
-      return res.status(400).json({ error: 'Ya has reportado a este usuario anteriormente' });
+      return res.status(400).json({ error: 'Ya has reportado a este usuario anteriormente', errorCode: '0x1085' });
     }
 
     // Create report
@@ -351,7 +351,7 @@ router.post('/:friendId/report', authMiddleware, async (req, res) => {
     res.json({ message: 'Reporte enviado con éxito' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error enviando el reporte' });
+    res.status(500).json({ error: 'Error enviando el reporte', errorCode: '0x1086' });
   }
 });
 

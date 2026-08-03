@@ -22,11 +22,11 @@ const adminMiddleware = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user || user.role !== 'ADMIN') {
-        return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de Administrador.' });
+        return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de Administrador.', errorCode: '0x1000' });
     }
     next();
   } catch (error) {
-    res.status(500).json({ error: 'Error verificando rol de administrador' });
+    res.status(500).json({ error: 'Error verificando rol de administrador', errorCode: '0x1001' });
   }
 };
 
@@ -39,7 +39,7 @@ router.post('/ping', authMiddleware, async (req, res) => {
     });
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'Ping error' });
+    res.status(500).json({ error: 'Ping error', errorCode: '0x1002' });
   }
 });
 
@@ -54,7 +54,7 @@ router.get('/favorites', authMiddleware, async (req, res) => {
     res.json({ favorites });
   } catch (err) {
     console.error('Error fetching favorites:', err);
-    res.status(500).json({ error: 'Error al obtener ciudades favoritas' });
+    res.status(500).json({ error: 'Error al obtener ciudades favoritas', errorCode: '0x1003' });
   }
 });
 
@@ -62,7 +62,7 @@ router.get('/favorites', authMiddleware, async (req, res) => {
 router.post('/favorites', authMiddleware, async (req, res) => {
   try {
     const { cityName, lat, lon } = req.body;
-    if (!cityName) return res.status(400).json({ error: 'cityName es requerido' });
+    if (!cityName) return res.status(400).json({ error: 'cityName es requerido', errorCode: '0x1004' });
 
     const latFloat = lat ? parseFloat(lat) : null;
     const lonFloat = lon ? parseFloat(lon) : null;
@@ -75,7 +75,7 @@ router.post('/favorites', authMiddleware, async (req, res) => {
     res.json({ favorite });
   } catch (err) {
     console.error('Error saving favorite:', err);
-    res.status(500).json({ error: 'Error al guardar ciudad favorita' });
+    res.status(500).json({ error: 'Error al guardar ciudad favorita', errorCode: '0x1005' });
   }
 });
 
@@ -86,13 +86,13 @@ router.delete('/favorites/:id', authMiddleware, async (req, res) => {
     // Verify ownership before deleting
     const fav = await prisma.favoriteCity.findUnique({ where: { id } });
     if (!fav || fav.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Favorito no encontrado' });
+      return res.status(404).json({ error: 'Favorito no encontrado', errorCode: '0x1006' });
     }
     await prisma.favoriteCity.delete({ where: { id } });
     res.json({ ok: true });
   } catch (err) {
     console.error('Error deleting favorite:', err);
-    res.status(500).json({ error: 'Error al eliminar ciudad favorita' });
+    res.status(500).json({ error: 'Error al eliminar ciudad favorita', errorCode: '0x1007' });
   }
 });
 
@@ -100,7 +100,7 @@ router.delete('/favorites/:id', authMiddleware, async (req, res) => {
 router.post('/upload-avatar', authMiddleware, async (req, res) => {
   try {
     const { imageBase64 } = req.body;
-    if (!imageBase64) return res.status(400).json({ error: 'No se envió ninguna imagen.' });
+    if (!imageBase64) return res.status(400).json({ error: 'No se envió ninguna imagen.', errorCode: '0x1008' });
 
     // Ensure API key is configured
     const apiKey = process.env.IMGBB_API_KEY;
@@ -137,11 +137,11 @@ router.post('/upload-avatar', authMiddleware, async (req, res) => {
       
       res.json({ profilePicture });
     } else {
-      res.status(500).json({ error: 'Error inesperado al subir la imagen a ImgBB.' });
+      res.status(500).json({ error: 'Error inesperado al subir la imagen a ImgBB.', errorCode: '0x1009' });
     }
   } catch (error) {
     console.error('Error uploading avatar:', error?.response?.data || error.message);
-    res.status(500).json({ error: 'Error al subir la imagen.' });
+    res.status(500).json({ error: 'Error al subir la imagen.', errorCode: '0x100A' });
   }
 });
 
@@ -170,7 +170,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
     if (city && (latitude == null || longitude == null)) {
       const geoResponse = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
       if (!geoResponse.data.results || geoResponse.data.results.length === 0) {
-        return res.status(404).json({ error: 'Ciudad no encontrada' });
+        return res.status(404).json({ error: 'Ciudad no encontrada', errorCode: '0x100B' });
       }
       latitude = geoResponse.data.results[0].latitude;
       longitude = geoResponse.data.results[0].longitude;
@@ -178,13 +178,13 @@ router.get('/weather', authMiddleware, async (req, res) => {
 
     // FIX B-M4: allow 0
     if (latitude == null || longitude == null) {
-      return res.status(400).json({ error: 'Se requiere latitud y longitud o nombre de ciudad' });
+      return res.status(400).json({ error: 'Se requiere latitud y longitud o nombre de ciudad', errorCode: '0x100C' });
     }
 
     const latNum = parseFloat(latitude);
     const lonNum = parseFloat(longitude);
     if (isNaN(latNum) || isNaN(lonNum) || latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
-      return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas' });
+      return res.status(400).json({ error: 'Coordenadas de latitud/longitud inválidas', errorCode: '0x100D' });
     }
     
     // Normalised cache key based on coordinates only
@@ -227,7 +227,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
     res.json(responseData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al obtener el clima' });
+    res.status(500).json({ error: 'Error al obtener el clima', errorCode: '0x100E' });
   }
 });
 
@@ -241,13 +241,13 @@ router.get('/weather-mini', authMiddleware, async (req, res) => {
     if (city && (!latitude || !longitude)) {
       const geoRes = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
       if (!geoRes.data.results || geoRes.data.results.length === 0) {
-        return res.status(404).json({ error: 'Ciudad no encontrada' });
+        return res.status(404).json({ error: 'Ciudad no encontrada', errorCode: '0x100F' });
       }
       latitude = geoRes.data.results[0].latitude;
       longitude = geoRes.data.results[0].longitude;
     }
 
-    if (!latitude || !longitude) return res.status(400).json({ error: 'Parámetros insuficientes' });
+    if (!latitude || !longitude) return res.status(400).json({ error: 'Parámetros insuficientes', errorCode: '0x1010' });
 
     const latNum = parseFloat(latitude);
     const lonNum = parseFloat(longitude);
@@ -309,14 +309,14 @@ router.get('/weather-mini', authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error('weather-mini error:', err.message);
-    res.status(500).json({ error: 'Error al obtener el clima' });
+    res.status(500).json({ error: 'Error al obtener el clima', errorCode: '0x1011' });
   }
 });
 
 // In-memory lock (serverless-safe fallback) - also tries DB lock when tables available
 router.post('/recomendacion', authMiddleware, async (req, res) => {
   if (activeRequests.has(req.user.id)) {
-    return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera." });
+    return res.status(429).json({ error: "Ya estamos generando un outfit para ti, por favor espera.", errorCode: '0x1012' });
   }
   activeRequests.set(req.user.id, true);
 
@@ -325,9 +325,9 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
   try {
     const { lat, lon, ubicacion, clima, daily } = req.body;
 
-    if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima' });
+    if (!clima) return res.status(400).json({ error: 'Se requieren datos del clima', errorCode: '0x1013' });
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'INSERT_YOUR_GEMINI_KEY_HERE') {
-      return res.status(500).json({ error: 'La API Key de Gemini no está configurada en el backend.'});
+      return res.status(500).json({ error: 'La API Key de Gemini no está configurada en el backend.', errorCode: '0x1014'});
     }
 
     // --- Optimizacion: Ejecutar peticiones a DB en paralelo ---
@@ -337,12 +337,12 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       prisma.consulta.count({ where: { userId: req.user.id, isFavorite: false } })
     ]);
 
-    if (!dbUser) return res.status(401).json({ error: 'Usuario no encontrado' });
+    if (!dbUser) return res.status(401).json({ error: 'Usuario no encontrado', errorCode: '0x1015' });
     
     // --- LÍMITE DE HISTORIAL ---
     const historyLimit = dbUser.isPremium || dbUser.role === 'ADMIN' ? 50 : 15;
     if (allNonFavsCount >= historyLimit) {
-      return res.status(403).json({ error: `Has alcanzado el límite máximo de tu historial (${historyLimit}/${historyLimit}). Borra algunos outfits desde tu Armario para generar nuevos.` });
+      return res.status(403).json({ error: `Has alcanzado el límite máximo de tu historial (${historyLimit}/${historyLimit}). Borra algunos outfits desde tu Armario para generar nuevos.`, errorCode: '0x1016' });
     }
 
     // --- SISTEMA FREEMIUM: Límite de 5 outfits al día ---
@@ -356,7 +356,7 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
   
       if (consultasHoy >= 5) {
           activeRequests.delete(req.user.id);
-          return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium." });
+          return res.status(403).json({ error: "Has alcanzado tu límite gratuito de 5 outfits por día. Vuelve mañana o actualiza a Premium.", errorCode: '0x1017' });
       }
     }
     // ----------------------------------------------------
@@ -454,7 +454,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       recomendacionJSON = JSON.parse(textResult);
     } catch(e) {
       console.error("Error parseando JSON de Gemini:", textResult);
-      return res.status(500).json({ error: 'Error procesando respuesta de IA' });
+      return res.status(500).json({ error: 'Error procesando respuesta de IA', errorCode: '0x1018' });
     }
 
     // --- AUTO-MODERATOR: Check for violations ---
@@ -474,8 +474,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
         sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
       }, 0);
 
-      return res.status(403).json({ 
-        error: 'BANNED', 
+      return res.status(403).json({ error: 'BANNED', 
         message: 'Tu cuenta ha sido bloqueada por violar las normas.',
         bannedUntil,
         banReason 
@@ -494,7 +493,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
     res.json({ consultaId: consulta.id, recomendacion: recomendacionJSON });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al generar la recomendación' });
+    res.status(500).json({ error: ', errorCode: '0x1019'Error al generar la recomendación' });
   } finally {
     // Release in-memory lock
     activeRequests.delete(req.user.id);
@@ -504,13 +503,13 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
 router.post('/chat', authMiddleware, async (req, res) => {
   try {
     const { consultaId, mensaje, imageBase64, imageMimeType } = req.body;
-    if (!consultaId || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
+    if (!consultaId || !mensaje) return res.status(400).json({ error: 'Faltan datos', errorCode: '0x101A' });
 
     // FIX B-M6: MIME type validation for image uploads
     if (imageBase64 && imageMimeType) {
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(imageMimeType)) {
-        return res.status(400).json({ error: 'Tipo de imagen no soportado. Usa JPEG, PNG o WebP.' });
+        return res.status(400).json({ error: 'Tipo de imagen no soportado. Usa JPEG, PNG o WebP.', errorCode: '0x101B' });
       }
     }
 
@@ -519,8 +518,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
       where: { id: consultaId }, 
       include: { mensajes: { take: 50, orderBy: { createdAt: 'desc' } } } 
     });
-    if (!consulta) return res.status(404).json({ error: 'Consulta no encontrada' });
-    if (consulta.userId !== req.user.id) return res.status(403).json({ error: 'No autorizado' });
+    if (!consulta) return res.status(404).json({ error: 'Consulta no encontrada', errorCode: '0x101C' });
+    if (consulta.userId !== req.user.id) return res.status(403).json({ error: 'No autorizado', errorCode: '0x101D' });
 
     // Ensure they are in chronological order for the model
     consulta.mensajes.reverse();
@@ -618,8 +617,7 @@ Estructura obligatoria del JSON:
           data: { consultaId, rol: 'model', contenido: textResponse }
         });
 
-        return res.status(403).json({ 
-          error: 'BANNED', 
+        return res.status(403).json({ error: 'BANNED', 
           message: 'Tu cuenta ha sido bloqueada por violar las normas.',
           bannedUntil,
           banReason 
@@ -636,6 +634,12 @@ Estructura obligatoria del JSON:
     res.json({ respuesta: textResponse, mensajeId: nuevoMensaje.id });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ error: ', errorCode: '0x101E'Error al procesar el mensaje de chat' }
+    });
+
+    res.json({ respuesta: textResponse, mensajeId: nuevoMensaje.id });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error al procesar el mensaje de chat' });
   }
 });
@@ -646,21 +650,21 @@ router.get('/armario', authMiddleware, async (req, res) => {
     const prendas = await prisma.prendaArmario.findMany({ where: { userId: req.user.id } });
     res.json(prendas);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener el armario' });
+    res.status(500).json({ error: 'Error al obtener el armario', errorCode: '0x101F' });
   }
 });
 
 router.post('/armario', authMiddleware, async (req, res) => {
   try {
     const { categoria, descripcion, color } = req.body;
-    if (!categoria || !descripcion) return res.status(400).json({ error: 'Faltan datos' });
-    if (descripcion.length > 500) return res.status(400).json({ error: 'La descripción no puede superar los 500 caracteres' });
+    if (!categoria || !descripcion) return res.status(400).json({ error: 'Faltan datos', errorCode: '0x1020' });
+    if (descripcion.length > 500) return res.status(400).json({ error: 'La descripción no puede superar los 500 caracteres', errorCode: '0x1021' });
     const nuevaPrenda = await prisma.prendaArmario.create({
       data: { userId: req.user.id, categoria, descripcion, color }
     });
     res.json(nuevaPrenda);
   } catch (error) {
-    res.status(500).json({ error: 'Error al añadir prenda' });
+    res.status(500).json({ error: 'Error al añadir prenda', errorCode: '0x1022' });
   }
 });
 
@@ -668,14 +672,14 @@ router.delete('/armario/:id', authMiddleware, async (req, res) => {
   try {
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x1023' });
     await prisma.prendaArmario.delete({ 
       where: { id, userId: req.user.id } 
     });
     res.json({ success: true });
   } catch (error) {
-    if (error.code === 'P2025') return res.status(404).json({ error: 'Prenda no encontrada' });
-    res.status(500).json({ error: 'Error al eliminar prenda' });
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Prenda no encontrada', errorCode: '0x1024' });
+    res.status(500).json({ error: 'Error al eliminar prenda', errorCode: '0x1025' });
   }
 });
 
@@ -688,7 +692,7 @@ router.get('/historial', authMiddleware, async (req, res) => {
     });
     res.json(historial);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener historial' });
+    res.status(500).json({ error: 'Error al obtener historial', errorCode: '0x1026' });
   }
 });
 
@@ -696,10 +700,10 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
   try {
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x1027' });
     // FIX B-M10: type validation
     const { isFavorite } = req.body;
-    if (typeof isFavorite !== 'boolean') return res.status(400).json({ error: 'isFavorite debe ser un booleano' });
+    if (typeof isFavorite !== 'boolean') return res.status(400).json({ error: 'isFavorite debe ser un booleano', errorCode: '0x1028' });
     
     const consulta = await prisma.consulta.update({
       where: { id, userId: req.user.id },
@@ -707,19 +711,19 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
     });
     res.json(consulta);
   } catch (error) {
-    if (error.code === 'P2025') return res.status(404).json({ error: 'Consulta no encontrada' });
-    res.status(500).json({ error: 'Error al actualizar favorito' });
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Consulta no encontrada', errorCode: '0x1029' });
+    res.status(500).json({ error: 'Error al actualizar favorito', errorCode: '0x102A' });
   }
 });
 
 router.delete('/historial/:id', authMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x102B' });
 
     // Verificar propiedad
     const consulta = await prisma.consulta.findUnique({ where: { id, userId: req.user.id } });
-    if (!consulta) return res.status(404).json({ error: 'Consulta no encontrada' });
+    if (!consulta) return res.status(404).json({ error: 'Consulta no encontrada', errorCode: '0x102C' });
 
     // Borrar mensajes asociados primero (Foreign Key constraint)
     await prisma.mensajeChat.deleteMany({ where: { consultaId: id } });
@@ -730,18 +734,18 @@ router.delete('/historial/:id', authMiddleware, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error al borrar historial:', error);
-    res.status(500).json({ error: 'Error al borrar la consulta' });
+    res.status(500).json({ error: 'Error al borrar la consulta', errorCode: '0x102D' });
   }
 });
 
 router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x102E' });
 
     // Buscar la consulta compartida
     const sharedConsulta = await prisma.consulta.findUnique({ where: { id } });
-    if (!sharedConsulta) return res.status(404).json({ error: 'Consulta no encontrada' });
+    if (!sharedConsulta) return res.status(404).json({ error: 'Consulta no encontrada', errorCode: '0x102F' });
 
     // FIX A-6 (Actualizado): IDOR prevention — only allow saving outfits that were explicitly shared with THIS user
     const receivedMessage = await prisma.directMessage.findFirst({
@@ -752,7 +756,7 @@ router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
     });
 
     if (!receivedMessage) {
-      return res.status(403).json({ error: 'No tienes permiso para guardar este outfit porque no te ha sido compartido directamente.' });
+      return res.status(403).json({ error: 'No tienes permiso para guardar este outfit porque no te ha sido compartido directamente.', errorCode: '0x1030' });
     }
 
     // Verificar si ya la tiene guardada (para no duplicar innecesariamente)
@@ -784,7 +788,7 @@ router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
     res.json({ success: true, consulta: newConsulta });
   } catch (error) {
     console.error('Error al guardar outfit compartido:', error);
-    res.status(500).json({ error: 'Error al guardar el outfit compartido' });
+    res.status(500).json({ error: 'Error al guardar el outfit compartido', errorCode: '0x1031' });
   }
 });
 
@@ -813,14 +817,14 @@ router.get('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) =
     res.json(outfits);
   } catch (error) {
     console.error('Error fetching admin outfits:', error);
-    res.status(500).json({ error: 'Error obteniendo los outfits' });
+    res.status(500).json({ error: 'Error obteniendo los outfits', errorCode: '0x1032' });
   }
 });
 
 router.delete('/admin/outfits/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x1033' });
 
     // Delete chat messages first
     await prisma.mensajeChat.deleteMany({ where: { consultaId: id } });
@@ -831,14 +835,14 @@ router.delete('/admin/outfits/:id', authMiddleware, adminMiddleware, async (req,
     res.json({ success: true });
   } catch (error) {
     console.error('Error al eliminar el outfit:', error);
-    res.status(500).json({ error: 'Error al eliminar el outfit' });
+    res.status(500).json({ error: 'Error al eliminar el outfit', errorCode: '0x1034' });
   }
 });
 
 router.delete('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) => {
   // FIX C-7: Require explicit confirmation to prevent accidental data wipe
   if (req.body.confirmDelete !== 'DELETE_ALL_OUTFITS') {
-    return res.status(400).json({ error: 'Se requiere confirmación. Envia confirmDelete: "DELETE_ALL_OUTFITS" en el body.' });
+    return res.status(400).json({ error: 'Se requiere confirmación. Envia confirmDelete: "DELETE_ALL_OUTFITS" en el body.', errorCode: '0x1035' });
   }
   try {
     // Delete all chat messages first
@@ -850,7 +854,7 @@ router.delete('/admin/outfits', authMiddleware, adminMiddleware, async (req, res
     res.json({ success: true });
   } catch (error) {
     console.error('Error al eliminar TODOS los outfits:', error);
-    res.status(500).json({ error: 'Error al eliminar todos los outfits' });
+    res.status(500).json({ error: 'Error al eliminar todos los outfits', errorCode: '0x1036' });
   }
 });
 
@@ -887,7 +891,7 @@ router.get('/admin/stats', authMiddleware, adminMiddleware, async (req, res) => 
       maxUsersCapacity: 50000 // Free tier calculation estimate
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener estadísticas' });
+    res.status(500).json({ error: 'Error al obtener estadísticas', errorCode: '0x1037' });
   }
 });
 
@@ -940,7 +944,7 @@ router.get('/admin/users', authMiddleware, adminMiddleware, async (req, res) => 
 
     res.json(result);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener usuarios' });
+    res.status(500).json({ error: 'Error al obtener usuarios', errorCode: '0x1038' });
   }
 });
 
@@ -962,7 +966,7 @@ router.post('/admin/users', authMiddleware, adminMiddleware, async (req, res) =>
     });
     res.json({ id: newUser.id, email: newUser.email, name: newUser.name, gender: newUser.gender });
   } catch (error) {
-    res.status(500).json({ error: 'Error al crear usuario' });
+    res.status(500).json({ error: 'Error al crear usuario', errorCode: '0x1039' });
   }
 });
 
@@ -970,24 +974,24 @@ router.put('/admin/users/:id/premium', authMiddleware, adminMiddleware, async (r
   try {
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x103A' });
     const { isPremium, premiumPlan } = req.body;
     // FIX B-M12: Validate boolean and include premiumPlan
-    if (typeof isPremium !== 'boolean') return res.status(400).json({ error: 'isPremium debe ser booleano' });
+    if (typeof isPremium !== 'boolean') return res.status(400).json({ error: 'isPremium debe ser booleano', errorCode: '0x103B' });
     const user = await prisma.user.update({
       where: { id },
       data: { isPremium, premiumPlan: isPremium ? premiumPlan || 'pro' : null }
     });
     res.json({ id: user.id, isPremium: user.isPremium, premiumPlan: user.premiumPlan });
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar estado premium' });
+    res.status(500).json({ error: 'Error al actualizar estado premium', errorCode: '0x103C' });
   }
 });
 
 router.put('/admin/users/:id/ban', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x103D' });
     
     const { isBanned, bannedUntil, banReason } = req.body;
     
@@ -1007,7 +1011,7 @@ router.put('/admin/users/:id/ban', authMiddleware, adminMiddleware, async (req, 
     res.json({ id: user.id, isBanned: user.isBanned, bannedUntil: user.bannedUntil, banReason: user.banReason });
   } catch (error) {
     console.error('Error banning user:', error);
-    res.status(500).json({ error: 'Error al banear usuario' });
+    res.status(500).json({ error: 'Error al banear usuario', errorCode: '0x103E' });
   }
 });
 
@@ -1015,7 +1019,7 @@ router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res)
   try {
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x103F' });
     const { email, name, gender, age, role, password } = req.body;
     // FIX: Only include defined fields to avoid overwriting with undefined
     const dataToUpdate = {};
@@ -1034,8 +1038,8 @@ router.put('/admin/users/:id', authMiddleware, adminMiddleware, async (req, res)
     });
     res.json({ id: user.id, email: user.email, name: user.name, gender: user.gender, role: user.role });
   } catch (error) {
-    if (error.code === 'P2002') return res.status(409).json({ error: 'El email ya está en uso por otro usuario' });
-    res.status(500).json({ error: 'Error al editar usuario' });
+    if (error.code === 'P2002') return res.status(409).json({ error: 'El email ya está en uso por otro usuario', errorCode: '0x1040' });
+    res.status(500).json({ error: 'Error al editar usuario', errorCode: '0x1041' });
   }
 });
 
@@ -1043,7 +1047,7 @@ router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, r
   try {
     // FIX: Validate ID is a valid integer
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x1042' });
 
     // FIX: Wrapped in a transaction to prevent orphaned records if the process crashes mid-delete
     await prisma.$transaction(async (tx) => {
@@ -1059,8 +1063,8 @@ router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, r
     res.json({ success: true });
   } catch (error) {
     console.error(error);
-    if (error.code === 'P2025') return res.status(404).json({ error: 'Usuario no encontrado' });
-    res.status(500).json({ error: 'Error al eliminar usuario' });
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Usuario no encontrado', errorCode: '0x1043' });
+    res.status(500).json({ error: 'Error al eliminar usuario', errorCode: '0x1044' });
   }
 });
 
@@ -1068,7 +1072,7 @@ router.delete('/admin/users/:id', authMiddleware, adminMiddleware, async (req, r
 router.post('/tickets', authMiddleware, async (req, res) => {
   try {
     const { asunto, mensaje } = req.body;
-    if (!asunto || !mensaje) return res.status(400).json({ error: 'Faltan datos' });
+    if (!asunto || !mensaje) return res.status(400).json({ error: 'Faltan datos', errorCode: '0x1045' });
 
     const ticket = await prisma.ticket.create({
       data: {
@@ -1086,7 +1090,7 @@ router.post('/tickets', authMiddleware, async (req, res) => {
     res.json({ success: true, ticket });
   } catch (error) {
     console.error('Error creating ticket:', error);
-    res.status(500).json({ error: 'Error al enviar ticket' });
+    res.status(500).json({ error: 'Error al enviar ticket', errorCode: '0x1046' });
   }
 });
 
@@ -1101,14 +1105,14 @@ router.get('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) =
     res.json(tickets);
   } catch (error) {
     console.error('Error fetching tickets:', error);
-    res.status(500).json({ error: 'Error obteniendo tickets' });
+    res.status(500).json({ error: 'Error obteniendo tickets', errorCode: '0x1047' });
   }
 });
 
 router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido', errorCode: '0x1048' });
 
     const ticket = await prisma.ticket.update({
       where: { id },
@@ -1120,7 +1124,7 @@ router.put('/admin/tickets/:id/close', authMiddleware, adminMiddleware, async (r
     res.json(ticket);
   } catch (error) {
     console.error('Error closing ticket:', error);
-    res.status(500).json({ error: 'Error al cerrar ticket' });
+    res.status(500).json({ error: 'Error al cerrar ticket', errorCode: '0x1049' });
   }
 });
 
@@ -1137,7 +1141,7 @@ router.get('/admin/reports', authMiddleware, adminMiddleware, async (req, res) =
     res.json({ reports });
   } catch (error) {
     console.error('Error fetching reports:', error);
-    res.status(500).json({ error: 'Error al obtener reportes' });
+    res.status(500).json({ error: 'Error al obtener reportes', errorCode: '0x104A' });
   }
 });
 
@@ -1151,21 +1155,21 @@ router.put('/admin/reports/:id/resolve', authMiddleware, adminMiddleware, async 
     res.json({ report });
   } catch (error) {
     console.error('Error resolving report:', error);
-    res.status(500).json({ error: 'Error al resolver reporte' });
+    res.status(500).json({ error: 'Error al resolver reporte', errorCode: '0x104B' });
   }
 });
 
 router.delete('/admin/tickets', authMiddleware, adminMiddleware, async (req, res) => {
   // FIX C-8: Require explicit confirmation to prevent accidental data wipe
   if (req.body.confirmDelete !== 'DELETE_ALL_TICKETS') {
-    return res.status(400).json({ error: 'Se requiere confirmación. Envia confirmDelete: "DELETE_ALL_TICKETS" en el body.' });
+    return res.status(400).json({ error: 'Se requiere confirmación. Envia confirmDelete: "DELETE_ALL_TICKETS" en el body.', errorCode: '0x104C' });
   }
   try {
     await prisma.ticket.deleteMany({});
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting tickets:', error);
-    res.status(500).json({ error: 'Error al borrar tickets' });
+    res.status(500).json({ error: 'Error al borrar tickets', errorCode: '0x104D' });
   }
 });
 
@@ -1183,7 +1187,7 @@ router.get('/admin/chats', authMiddleware, adminMiddleware, async (req, res) => 
     res.json(chats);
   } catch (error) {
     console.error('Error fetching admin chats:', error);
-    res.status(500).json({ error: 'Error obteniendo chats' });
+    res.status(500).json({ error: 'Error obteniendo chats', errorCode: '0x104E' });
   }
 });
 
@@ -1191,7 +1195,7 @@ router.get('/admin/chats', authMiddleware, adminMiddleware, async (req, res) => 
 router.get('/images/generate', authMiddleware, async (req, res) => {
   try {
     const { prompt } = req.query;
-    if (!prompt) return res.status(400).json({ error: 'Falta prompt' });
+    if (!prompt) return res.status(400).json({ error: 'Falta prompt', errorCode: '0x104F' });
 
     const promptKey = prompt.trim().toLowerCase();
 
@@ -1225,7 +1229,7 @@ router.get('/images/generate', authMiddleware, async (req, res) => {
     return res.json({ imageUrl, cached: false });
   } catch (error) {
     console.error('Error in /images/generate:', error);
-    res.status(500).json({ error: 'Error generando imagen' });
+    res.status(500).json({ error: 'Error generando imagen', errorCode: '0x1050' });
   }
 });
 

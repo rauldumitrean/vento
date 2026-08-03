@@ -140,6 +140,9 @@ function App() {
             setBannedData(banInfo);
             // Do NOT setToken(null) here so we can refresh the token status later
           }
+          if (error.response.data && error.response.data.errorCode) {
+            error.response.data.error = `${error.response.data.error} (Código: ${error.response.data.errorCode})`;
+          }
         }
         return Promise.reject(error);
       }
