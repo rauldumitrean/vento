@@ -44,6 +44,22 @@ try {
   const prisma = require('./prismaClient');
   prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "sessionVersion" INTEGER NOT NULL DEFAULT 0;')
     .catch(() => {}); // Ignore error if column already exists
+
+  // Create FavoriteCity table if it doesn't exist
+  prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "FavoriteCity" (
+      "id" SERIAL PRIMARY KEY,
+      "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+      "cityName" TEXT NOT NULL,
+      "lat" DOUBLE PRECISION,
+      "lon" DOUBLE PRECISION,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "FavoriteCity_userId_cityName_key" UNIQUE ("userId", "cityName")
+    );
+  `).catch(() => {});
+  
+  prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FavoriteCity_userId_idx" ON "FavoriteCity"("userId");`)
+    .catch(() => {});
 } catch (e) {}
 
 module.exports = app;

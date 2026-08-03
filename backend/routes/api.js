@@ -43,6 +43,56 @@ router.post('/ping', authMiddleware, async (req, res) => {
   }
 });
 
+// ── Favorite Cities ──────────────────────────────────────────────────────────
+// GET /api/favorites — list user's favorite cities
+router.get('/favorites', authMiddleware, async (req, res) => {
+  try {
+    const favorites = await prisma.favoriteCity.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ favorites });
+  } catch (err) {
+    console.error('Error fetching favorites:', err);
+    res.status(500).json({ error: 'Error al obtener ciudades favoritas' });
+  }
+});
+
+// POST /api/favorites — add a city to favorites
+router.post('/favorites', authMiddleware, async (req, res) => {
+  try {
+    const { cityName, lat, lon } = req.body;
+    if (!cityName) return res.status(400).json({ error: 'cityName es requerido' });
+
+    const favorite = await prisma.favoriteCity.upsert({
+      where: { userId_cityName: { userId: req.user.id, cityName } },
+      update: { lat: lat || null, lon: lon || null },
+      create: { userId: req.user.id, cityName, lat: lat || null, lon: lon || null }
+    });
+    res.json({ favorite });
+  } catch (err) {
+    console.error('Error saving favorite:', err);
+    res.status(500).json({ error: 'Error al guardar ciudad favorita' });
+  }
+});
+
+// DELETE /api/favorites/:id — remove a city from favorites
+router.delete('/favorites/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    // Verify ownership before deleting
+    const fav = await prisma.favoriteCity.findUnique({ where: { id } });
+    if (!fav || fav.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Favorito no encontrado' });
+    }
+    await prisma.favoriteCity.delete({ where: { id } });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error deleting favorite:', err);
+    res.status(500).json({ error: 'Error al eliminar ciudad favorita' });
+  }
+});
+
 // Upload avatar to ImgBB
 router.post('/upload-avatar', authMiddleware, async (req, res) => {
   try {
@@ -174,6 +224,88 @@ router.get('/weather', authMiddleware, async (req, res) => {
     res.json(responseData);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ error: 'Error al obtener el clima' });
+  }
+});
+
+// Lightweight weather for favorite city cards (temp, condition, feel, wind)
+router.get('/weather-mini', authMiddleware, async (req, res) => {
+  try {
+    const { city, lat, lon } = req.query;
+    let latitude = lat;
+    let longitude = lon;
+
+    if (city && (!latitude || !longitude)) {
+      const geoRes = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
+      if (!geoRes.data.results || geoRes.data.results.length === 0) {
+        return res.status(404).json({ error: 'Ciudad no encontrada' });
+      }
+      latitude = geoRes.data.results[0].latitude;
+      longitude = geoRes.data.results[0].longitude;
+    }
+
+    if (!latitude || !longitude) return res.status(400).json({ error: 'Parámetros insuficientes' });
+
+    const latNum = parseFloat(latitude);
+    const lonNum = parseFloat(longitude);
+
+    // Re-use main weather cache if available
+    const cacheKey = `coord_${latNum.toFixed(2)}_${lonNum.toFixed(2)}`;
+    if (weatherCache.has(cacheKey)) {
+      const cached = weatherCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
+        const c = cached.data.current;
+        // Map Open-Meteo WMO code to OWM-style code
+        const code = c.weather_code;
+        let owmCode = 800;
+        if (code === 0) owmCode = 800;
+        else if (code <= 3) owmCode = 801;
+        else if (code <= 48) owmCode = 741;
+        else if (code <= 67) owmCode = 500;
+        else if (code <= 77) owmCode = 601;
+        else if (code <= 82) owmCode = 521;
+        else if (code <= 86) owmCode = 601;
+        else owmCode = 211;
+
+        const descs = { 0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',51:'Llovizna',53:'Llovizna',61:'Lluvia ligera',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve ligera',73:'Nieve',75:'Nieve fuerte',80:'Chubascos ligeros',81:'Chubascos',82:'Chubascos fuertes',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta con granizo fuerte' };
+
+        return res.json({
+          temp: Math.round(c.temperature_2m),
+          feels: Math.round(c.apparent_temperature),
+          desc: descs[code] || 'Variable',
+          code: owmCode,
+          humidity: c.relative_humidity_2m,
+          wind: Math.round((c.wind_speed_10m || 0))
+        });
+      }
+    }
+
+    // Fetch fresh
+    const wRes = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`);
+    const c = wRes.data.current;
+    const code = c.weather_code;
+    let owmCode = 800;
+    if (code === 0) owmCode = 800;
+    else if (code <= 3) owmCode = 801;
+    else if (code <= 48) owmCode = 741;
+    else if (code <= 67) owmCode = 500;
+    else if (code <= 77) owmCode = 601;
+    else if (code <= 82) owmCode = 521;
+    else if (code <= 86) owmCode = 601;
+    else owmCode = 211;
+
+    const descs = { 0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',51:'Llovizna',53:'Llovizna',61:'Lluvia ligera',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve ligera',73:'Nieve',75:'Nieve fuerte',80:'Chubascos ligeros',81:'Chubascos',82:'Chubascos fuertes',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta con granizo fuerte' };
+
+    res.json({
+      temp: Math.round(c.temperature_2m),
+      feels: Math.round(c.apparent_temperature),
+      desc: descs[code] || 'Variable',
+      code: owmCode,
+      humidity: c.relative_humidity_2m,
+      wind: Math.round((c.wind_speed_10m || 0))
+    });
+  } catch (err) {
+    console.error('weather-mini error:', err.message);
     res.status(500).json({ error: 'Error al obtener el clima' });
   }
 });

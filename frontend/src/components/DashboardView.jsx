@@ -10,6 +10,7 @@ const AdminView = lazy(() => import('./AdminView'));
 import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import FriendsView from './FriendsView';
+import FavoriteCitiesView from './FavoriteCitiesView';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import MobileNavBar from './MobileNavBar';
@@ -1193,6 +1194,44 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   };
 
+  // ── Save city to favorites ──────────────────────────────────────────────────
+  const [isCityFavorite, setIsCityFavorite] = useState(false);
+  const [savingCityFav, setSavingCityFav] = useState(false);
+
+  // Reset city-favorite state on new search
+  useEffect(() => { setIsCityFavorite(false); }, [weather?.location]);
+
+  const handleSaveCityFavorite = async () => {
+    if (!weather) return;
+    setSavingCityFav(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      if (isCityFavorite) {
+        // We don't store the id here, so just toggle UI (user can manage from favorites view)
+        setIsCityFavorite(false);
+      } else {
+        await axios.post(`${API_URL}/api/favorites`, {
+          cityName: weather.location,
+          lat: weather.lat,
+          lon: weather.lon
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        setIsCityFavorite(true);
+        showToast(`⭐ ${weather.location} guardada en favoritos`, 'success');
+      }
+    } catch (e) {
+      showToast('Error guardando ciudad favorita');
+    } finally {
+      setSavingCityFav(false);
+    }
+  };
+
+  // ── Select city from FavoriteCitiesView → jump to dashboard + fetch ────────
+  const handleSelectFavoriteCity = (cityName, lat, lon) => {
+    setView('dashboard');
+    setLocation(cityName);
+    fetchWeatherAndOutfit(lat || null, lon || null, cityName);
+  };
+
   // Sync browser/Safari theme-color with dark mode
 
   if (showAd) return <AdModal onClose={handleCloseAd} />;
@@ -1267,6 +1306,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <ProfileSettings token={token} darkMode={true} onLogout={onLogout} onBack={() => setView('dashboard')} />
               ) : view === 'friends' ? (
                 <FriendsView token={token} darkMode={true} onNavigate={setView} />
+              ) : view === 'favorites' ? (
+                <FavoriteCitiesView token={token} onSelectCity={handleSelectFavoriteCity} />
               ) : view === 'chat' ? (
                 <div className="h-full flex flex-col pt-8 pb-[100px] lg:pb-0">
                   <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
@@ -1371,9 +1412,23 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                   ) : (
                     // Result state
                     <div className="w-full h-full flex flex-col">
-                       <div className="w-full mb-6">
+                       <div className="w-full mb-6 flex items-center gap-3">
                          <button onClick={() => {setWeather(null); setOutfit(null);}} className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-md border border-white/10 w-fit shadow-lg shadow-black/20">
                             <ArrowLeft size={16} /> Volver a buscar
+                         </button>
+                         {/* Save city to favorites */}
+                         <button
+                           onClick={handleSaveCityFavorite}
+                           disabled={savingCityFav}
+                           title={isCityFavorite ? 'Ciudad guardada en favoritos' : 'Guardar ciudad en favoritos'}
+                           className={`flex items-center gap-2 px-4 py-2.5 rounded-full backdrop-blur-md border transition-all shadow-lg shadow-black/20 text-sm font-medium ${
+                             isCityFavorite
+                               ? 'bg-yellow-400/15 border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/20'
+                               : 'bg-white/5 border-white/10 text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/10 hover:border-yellow-400/20'
+                           } disabled:opacity-50`}
+                         >
+                           <Star size={15} fill={isCityFavorite ? 'currentColor' : 'none'} className="transition-all" />
+                           <span className="hidden sm:inline">{isCityFavorite ? 'Guardada' : 'Favorita'}</span>
                          </button>
                        </div>
 
@@ -1493,58 +1548,63 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
       {/* ── Mobile Bottom Navigation Bar ── */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="mx-3 mb-3 flex items-end justify-around bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl px-4 py-2 shadow-2xl shadow-black/50">
+        <div className="mx-3 mb-3 flex items-end justify-around bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl px-1 py-2 shadow-2xl shadow-black/50">
 
           {/* Armario */}
           <button
             onClick={() => setView('armario')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'armario'
-                ? 'bg-indigo-600/25 text-indigo-400'
-                : 'text-gray-500 hover:text-gray-300'
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
+              view === 'armario' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
-            <Archive size={22} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Armario</span>
+            <Archive size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Armario</span>
+          </button>
+
+          {/* Favoritos */}
+          <button
+            onClick={() => setView('favorites')}
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
+              view === 'favorites' ? 'bg-yellow-500/20 text-yellow-400' : 'text-gray-500 hover:text-yellow-400'
+            }`}
+          >
+            <Star size={20} fill={view === 'favorites' ? 'currentColor' : 'none'} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Favoritos</span>
           </button>
 
           {/* Buscar - center elevated button */}
           <button
             onClick={() => { setView('dashboard'); setWeather(null); setOutfit(null); setLocation(''); }}
-            className="flex flex-col items-center gap-1 -mt-7 px-4 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95"
+            className="flex flex-col items-center gap-1 -mt-7 px-3 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95"
           >
-            <Search size={22} />
+            <Search size={20} />
             <span className="text-[9px] font-bold uppercase tracking-wider">Buscar</span>
           </button>
 
           {/* Amigos */}
           <button
             onClick={() => setView('friends')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'friends'
-                ? 'bg-indigo-600/25 text-indigo-400'
-                : 'text-gray-500 hover:text-gray-300'
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
+              view === 'friends' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
-            <Users size={22} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Amigos</span>
+            <Users size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Amigos</span>
           </button>
 
           {/* Perfil */}
           <button
             onClick={() => setView('profile')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 overflow-hidden ${
-              view === 'profile'
-                ? 'bg-indigo-600/25 text-indigo-400'
-                : 'text-gray-500 hover:text-gray-300'
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 overflow-hidden ${
+              view === 'profile' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             {Cookies.get('userProfilePicture') ? (
-              <img src={Cookies.get('userProfilePicture')} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-white/20" />
+              <img src={Cookies.get('userProfilePicture')} alt="Profile" className="w-5 h-5 rounded-full object-cover border border-white/20" />
             ) : (
-              <User size={22} />
+              <User size={20} />
             )}
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Perfil</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Perfil</span>
           </button>
         </div>
       </div>

@@ -46,6 +46,7 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsul
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-2">Features</p>
         <SidebarItem icon={LayoutDashboard} label="Dashboard" isActive={view === 'dashboard'} onClick={() => setView('dashboard')} />
         <SidebarItem icon={Archive} label="Armario & Historial" isActive={view === 'armario'} onClick={() => setView('armario')} />
+        <SidebarItem icon={Star} label="Ciudades Favoritas" isActive={view === 'favorites'} onClick={() => setView('favorites')} />
         <SidebarItem icon={Activity} label="Comunidad" isActive={view === 'friends'} onClick={() => setView('friends')} />
       </div>
 
