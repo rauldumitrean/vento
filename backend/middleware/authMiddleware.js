@@ -6,7 +6,7 @@ const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Acceso denegado, no hay token.', errorCode: '0x108E' });
+    return res.status(401).json({ errorCode: '0x1090', error: 'Acceso denegado, no hay token.' });
   }
 
   try {
@@ -18,12 +18,12 @@ const authMiddleware = async (req, res, next) => {
     });
     
     if (!user) {
-      return res.status(401).json({ error: 'El usuario ya no existe.', errorCode: '0x108F' });
+      return res.status(401).json({ errorCode: '0x1091', error: 'El usuario ya no existe.' });
     }
 
     // Single-session check (invalidate older tokens)
     if (verified.sessionVersion !== undefined && user.sessionVersion !== verified.sessionVersion) {
-      return res.status(401).json({ error: 'Sesión expirada. Has iniciado sesión en otro dispositivo.', errorCode: '0x1090' });
+      return res.status(401).json({ errorCode: '0x1092', error: 'Sesión expirada. Has iniciado sesión en otro dispositivo.' });
     }
 
     if (user.isBanned) {
@@ -34,7 +34,8 @@ const authMiddleware = async (req, res, next) => {
           data: { isBanned: false, bannedUntil: null, banReason: null }
         });
       } else {
-        return res.status(403).json({ error: 'BANNED', 
+        return res.status(403).json({ 
+          errorCode: '0x1093', error: 'BANNED', 
           message: 'Tu cuenta está bloqueada.', 
           bannedUntil: user.bannedUntil, 
           banReason: user.banReason 
@@ -46,7 +47,7 @@ const authMiddleware = async (req, res, next) => {
     next();
   } catch (err) {
     // FIX: Changed 400 to 401 - invalid/expired token is an authentication error
-    res.status(401).json({ error: ', errorCode: '0x1091'Token inválido.' });
+    res.status(401).json({ errorCode: '0x1094', error: 'Token inválido.' });
   }
 };
 

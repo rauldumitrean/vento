@@ -13,15 +13,15 @@ router.post('/create-checkout-session', authMiddleware, async (req, res) => {
     const { plan } = req.body; // 'monthly' o 'lifetime'
     
     if (!plan || (plan !== 'monthly' && plan !== 'lifetime')) {
-      return res.status(400).json({ error: 'Plan inválido', errorCode: '0x1087' });
+      return res.status(400).json({ errorCode: '0x1089', error: 'Plan inválido' });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ error: 'Stripe no está configurado en el servidor', errorCode: '0x1088' });
+      return res.status(500).json({ errorCode: '0x108A', error: 'Stripe no está configurado en el servidor' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado', errorCode: '0x1089' });
+    if (!user) return res.status(404).json({ errorCode: '0x108B', error: 'Usuario no encontrado' });
     
     let priceId;
     let mode;
@@ -35,7 +35,7 @@ router.post('/create-checkout-session', authMiddleware, async (req, res) => {
     }
 
     if (!priceId) {
-      return res.status(500).json({ error: 'El ID del precio de Stripe no está configurado', errorCode: '0x108A' });
+      return res.status(500).json({ errorCode: '0x108C', error: 'El ID del precio de Stripe no está configurado' });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -60,7 +60,7 @@ router.post('/create-checkout-session', authMiddleware, async (req, res) => {
     res.json({ url: session.url });
   } catch (error) {
     console.error('Error creating checkout session:', error);
-    res.status(500).json({ error: 'Error interno del servidor al crear sesión de pago', errorCode: '0x108B' });
+    res.status(500).json({ errorCode: '0x108D', error: 'Error interno del servidor al crear sesión de pago' });
   }
 });
 
@@ -70,7 +70,7 @@ router.post('/cancel-subscription', authMiddleware, async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     
     if (!user.isPremium || user.premiumPlan === 'lifetime') {
-      return res.status(400).json({ error: 'No puedes cancelar porque no tienes un plan mensual activo.', errorCode: '0x108C' });
+      return res.status(400).json({ errorCode: '0x108E', error: 'No puedes cancelar porque no tienes un plan mensual activo.' });
     }
 
     if (!user.stripeSubscriptionId) {
@@ -99,7 +99,7 @@ router.post('/cancel-subscription', authMiddleware, async (req, res) => {
     res.json({ success: true, message: 'Suscripción cancelada correctamente.' });
   } catch (error) {
     console.error('Error canceling subscription:', error);
-    res.status(500).json({ error: 'Error interno al cancelar la suscripción.', errorCode: '0x108D' });
+    res.status(500).json({ errorCode: '0x108F', error: 'Error interno al cancelar la suscripción.' });
   }
 });
 
