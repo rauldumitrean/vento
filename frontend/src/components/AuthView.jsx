@@ -41,10 +41,9 @@ export default function AuthView({ setToken }) {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [gender, setGender] = useState('Mujer');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [registerStep, setRegisterStep] = useState(1);
   const [age, setAge] = useState('');
+  const [usaGorras, setUsaGorras] = useState(false);
+  const [registerStep, setRegisterStep] = useState(1);
   const [showPlans, setShowPlans] = useState(false);
   const [pendingAuth, setPendingAuth] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -70,7 +69,7 @@ export default function AuthView({ setToken }) {
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age });
+      const res = await axios.post(`${API_URL}${endpoint}`, { email, password, name, gender, age, usaGorras });
       if (res.data.token) {
         if (res.data.user) {
           Cookies.set('isPremium', res.data.user.isPremium ? 'true' : 'false', { expires: 365 });
@@ -103,6 +102,7 @@ export default function AuthView({ setToken }) {
     setName('');
     setRegisterStep(1);
     setAge('');
+    setUsaGorras(false);
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -561,6 +561,13 @@ export default function AuthView({ setToken }) {
                         <label className={labelClass}>¿Qué edad tienes?</label>
                         <p className="text-xs text-gray-500 mb-2">Usaremos este dato para que la IA genere outfits apropiados para tu edad.</p>
                         <input type="number" value={age} onChange={e => setAge(e.target.value)} className={inputClass} placeholder="Ej: 25" min="13" max="100" required />
+                      </div>
+                      <div className="mt-4 flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 cursor-pointer" onClick={() => setUsaGorras(!usaGorras)}>
+                        <input type="checkbox" checked={usaGorras} onChange={(e) => setUsaGorras(e.target.checked)} className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" onClick={(e) => e.stopPropagation()} />
+                        <div>
+                          <label className="text-sm font-semibold text-gray-900 cursor-pointer">¿Usas gorras o sombreros?</label>
+                          <p className="text-xs text-gray-500">Marcalo si te gusta que la IA los incluya en tus outfits.</p>
+                        </div>
                       </div>
                       <div className="flex gap-3 mt-4">
                         <button type="button" onClick={() => setRegisterStep(1)} className="px-6 py-3.5 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-colors">

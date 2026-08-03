@@ -4,12 +4,13 @@ const prisma = require('../prismaClient');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // JWT_SECRET is required but will be checked at runtime to prevent serverless function crash
 
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, gender, age } = req.body;
+    const { email, password, name, gender, age, usaGorras } = req.body;
     if (!email || !password) return res.status(400).json({ errorCode: '0x1053', error: 'Faltan datos.' });
     // FIX A-8: Basic input validation
     if (typeof email !== 'string' || !email.includes('@')) return res.status(400).json({ errorCode: '0x1054', error: 'Email inválido.' });
@@ -26,17 +27,35 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name, gender, age: age ? parseInt(age) : null },
+      data: { email, password: hashedPassword, name, gender, age: age ? parseInt(age) : null, usaGorras: usaGorras === true },
     });
 
     // Send async welcome email (must await in Vercel serverless)
     await emailService.sendWelcomeEmail(user).catch(console.error);
 
     const token = jwt.sign({ id: user.id, sessionVersion: user.sessionVersion || 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ errorCode: '0x1058', error: 'Error al registrar usuario.' });
+  }
+});
+
+router.post('/update-preferences', authMiddleware, async (req, res) => {
+  try {
+    const { usaGorras } = req.body;
+    if (usaGorras === undefined) return res.status(400).json({ errorCode: '0x105Z', error: 'Faltan datos.' });
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { usaGorras: usaGorras === true },
+      select: { id: true, email: true, role: true, isPremium: true, premiumPlan: true, name: true, gender: true, age: true, estiloPersonal: true, estiloDetalles: true, profilePicture: true, usaGorras: true }
+    });
+
+    res.json({ user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ errorCode: '0x105Y', error: 'Error al actualizar preferencias.' });
   }
 });
 
@@ -220,7 +239,7 @@ router.post('/apple', async (req, res) => {
   }
 });
 
-const authMiddleware = require('../middleware/authMiddleware');
+// Removed duplicate authMiddleware import
 
 router.get('/me', authMiddleware, async (req, res) => {
   try {

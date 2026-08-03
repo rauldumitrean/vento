@@ -380,6 +380,13 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       styleText = "IMPORTANTE: El estilo personal del usuario es: " + (dbUser.estiloPersonal || "No especificado") + ". " + (dbUser.estiloDetalles ? "Detalles extra: " + dbUser.estiloDetalles : "");
     }
 
+    let gorrasText = "";
+    if (dbUser.usaGorras === true) {
+      gorrasText = "IMPORTANTE: El usuario SÍ usa gorras/sombreros. Incluye una gorra o sombrero que combine perfectamente con el outfit.";
+    } else if (dbUser.usaGorras === false) {
+      gorrasText = "IMPORTANTE: El usuario NO usa gorras/sombreros. NO incluyas bajo ningún concepto gorras o sombreros.";
+    }
+
     let ageText = "";
     if (dbUser.age) {
       ageText = `IMPORTANTE: El usuario tiene ${dbUser.age} años de edad. CRÍTICO: Las prendas sugeridas DEBEN SER estrictamente acordes y apropiadas para alguien de ${dbUser.age} años.`;
@@ -402,13 +409,14 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
       weatherExtraText = `\n- Temperatura Máxima: ${maxTemp}°C\n- Temperatura Mínima: ${minTemp}°C\n${layeringTip}`;
     }
 
-    const prompt = `Actúas como un Personal Shopper y Asesor de Imagen de altísimo nivel, reconocido por tu impecable gusto, conocimiento de tendencias y capacidad para crear "looks" de revista.
+const prompt = `Actúas como un Personal Shopper y Asesor de Imagen de altísimo nivel, reconocido por tu impecable gusto, conocimiento de tendencias y capacidad para crear "looks" de revista.
 
 [PERFIL DEL CLIENTE]
 ${nameText}
 ${genderText}
 ${ageText}
 ${styleText}
+${gorrasText}
 ${armarioText}
 
 [CONDICIONES METEOROLÓGICAS - ${ubicacion}]
@@ -419,19 +427,26 @@ IMPORTANTE: Basa el outfit en las condiciones de TODO el día, no solo en la act
 
 [INSTRUCCIONES DE DISEÑO]
 1. Diseña un outfit impecable, moderno y estéticamente superior que resuelva perfectamente el clima y encaje con el perfil del usuario.
-2. El "resumen" debe sonar experto, cálido y persuasivo.
-3. El "consejo_extra" debe ser un "pro-tip" de estilismo útil y avanzado aplicable al outfit recomendado.
-4. CRÍTICO PARA LA IA DE IMÁGENES: La "descripcion" de cada prenda DEBE ser extremadamente detallada, altamente visual y fotográfica. Especifica el tejido, el corte (fit), el tono exacto del color, y detalles de diseño (ej. "Jersey oversize de punto grueso en lana merino color verde musgo con cuello perkins" en lugar de "Jersey verde").
-5. "nombre_corto" debe ser el título simple de la prenda para mostrar en grande en la app (ej. "Camiseta Básica (Blanca)", "Pantalón Cargo (Beige)", "Zapatillas Nike (Gris)").
+2. REQUISITOS DE PRENDAS OBLIGATORIAS:
+   - Debes incluir SIEMPRE: Camiseta/Top, Pantalón/Bottom, Calzado y Calcetines (especifica su color/modelo, ej: "Calcetines altos blancos de canalé").
+   - SI hace frío, debes incluir obligatoriamente Sudadera/Jersey y/o Abrigo/Chaqueta.
+   - SI el usuario usa gorras, incluye Gorra.
+3. El "resumen" debe sonar experto, cálido y persuasivo.
+4. El "consejo_extra" debe ser un "pro-tip" de estilismo útil y avanzado aplicable al outfit recomendado.
+5. CRÍTICO PARA LA IA DE IMÁGENES:
+   - "descripcion": DEBE ser extremadamente detallada, altamente visual y fotográfica. Especifica el tejido, el corte (fit), el tono exacto del color, y detalles de diseño (ej. "Jersey oversize de punto grueso en lana merino color verde musgo con cuello perkins").
+   - "english_query": DEBE ser la traducción al inglés exacta, corta y optimizada para un generador de imágenes de la descripción de la prenda. (Ej: "vintage blue baggy denim jeans, product photography, white background, flat lay"). Es súper importante que esta traducción sea precisa para que el sistema encuentre/genere la imagen correcta.
+   - "nombre_corto": debe ser el título simple de la prenda para mostrar en grande en la app (ej. "Camiseta Básica (Blanca)").
 
 Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloques de código markdown ni explicaciones adicionales:
 {
   "resumen": "Resumen experto y persuasivo del look y por qué funciona para hoy",
   "prendas": [
     { 
-      "categoria": "top", 
+      "categoria": "TOP|BOTTOM|CALZADO|ABRIGO|ACCESORIO", 
       "nombre_corto": "Nombre corto y comercial de la prenda (Ej: Pantalón de Lino (Arena))",
-      "descripcion": "Descripción ultra-detallada y fotográfica de la prenda", 
+      "descripcion": "Descripción ultra-detallada y fotográfica de la prenda en español", 
+      "english_query": "English translation optimized for image generation (e.g. 'white oversized t-shirt')",
       "razon": "Justificación técnica o estilística para incluir esta prenda",
       "tienda_recomendada": "Amazon",
       "enlace_compra": "https://www.amazon.es/s?k=busqueda+de+la+prenda&tag=${amazonTag}"

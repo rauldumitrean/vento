@@ -18,6 +18,7 @@ model User {
   gender     String?
   role       String   @default("USER")
   isPremium  Boolean  @default(false)
+  usaGorras  Boolean?
   estiloPersonal String?
   estiloDetalles String?
   age        Int?

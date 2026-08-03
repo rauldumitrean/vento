@@ -28,9 +28,10 @@ try {
     app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
   }
 } catch (error) {
+  console.error("CRITICAL STARTUP ERROR:", error);
   const express = require('express');
   app = express();
-  app.all('*', (req, res) => {
+  app.all('(.*)', (req, res) => {
     res.status(500).json({
       error: 'CRITICAL STARTUP ERROR',
       message: error.message,
@@ -44,6 +45,10 @@ try {
   const prisma = require('./prismaClient');
   prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "sessionVersion" INTEGER NOT NULL DEFAULT 0;')
     .catch(() => {}); // Ignore error if column already exists
+
+  // Auto-migrate usaGorras
+  prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "usaGorras" BOOLEAN;')
+    .catch(() => {});
 
   // Create FavoriteCity table if it doesn't exist
   prisma.$executeRawUnsafe(`

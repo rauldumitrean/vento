@@ -56,7 +56,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
       
       let url = prenda.imgUrl;
       if (!url || loadAttempt > 0) {
-        const queryText = prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
+        const queryText = prenda.english_query || prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
         const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
         
         // Use deterministic seed based on prompt so Pollinations and CDNs cache the image automatically
@@ -883,6 +883,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [showAgePrompt, setShowAgePrompt] = useState(false);
   const [ageInput, setAgeInput] = useState('');
   const [savingAge, setSavingAge] = useState(false);
+  const [showGorrasPrompt, setShowGorrasPrompt] = useState(false);
+  const [usaGorrasInput, setUsaGorrasInput] = useState(false);
+  const [savingGorras, setSavingGorras] = useState(false);
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -895,6 +898,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           setHistoryCount(res.data.user.historyCount || 0);
           if (res.data.user.age === null) {
             setShowAgePrompt(true);
+            if (!res.data.user.estiloPersonal) {
+              Cookies.set('needsStyleOnboarding', 'true', { expires: 365 });
+            }
+          } else if (res.data.user.usaGorras === null) {
+            setShowGorrasPrompt(true);
             if (!res.data.user.estiloPersonal) {
               Cookies.set('needsStyleOnboarding', 'true', { expires: 365 });
             }
@@ -926,11 +934,35 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       if (Cookies.get('needsStyleOnboarding') === 'true') {
         Cookies.remove('needsStyleOnboarding');
         setShowStyleOnboarding(true);
+      } else {
+        // If age was just saved, check if we need to ask for gorras
+        checkOnboarding();
       }
     } catch (err) {
       showToast('Error guardando la edad');
     } finally {
       setSavingAge(false);
+    }
+  };
+
+  const handleSaveGorras = async (e) => {
+    e.preventDefault();
+    setSavingGorras(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      await axios.post(`${API_URL}/api/auth/update-preferences`, { usaGorras: usaGorrasInput }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowGorrasPrompt(false);
+      
+      if (Cookies.get('needsStyleOnboarding') === 'true') {
+        Cookies.remove('needsStyleOnboarding');
+        setShowStyleOnboarding(true);
+      }
+    } catch (err) {
+      showToast('Error guardando tus preferencias');
+    } finally {
+      setSavingGorras(false);
     }
   };
 
@@ -1882,6 +1914,46 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50"
                   >
                     {savingAge ? 'Guardando...' : 'Guardar y Continuar'}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showGorrasPrompt && (
+          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowGorrasPrompt(false)}>
+            <motion.div 
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }} 
+              animate={{ scale: 1, y: 0, opacity: 1 }} 
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              className={`max-w-md w-full p-8 rounded-3xl border ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'} shadow-2xl relative overflow-hidden`}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-indigo-50">
+                  <Sparkles size={28} className="text-indigo-600" />
+                </div>
+                <h3 className="text-2xl font-black mb-2 tracking-tight">Afina tus outfits</h3>
+                <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  ¿Te gusta usar gorras o sombreros? Si marcas que sí, la IA los incluirá en tus outfits cuando el clima y el estilo lo pidan.
+                </p>
+                
+                <form onSubmit={handleSaveGorras} className="w-full">
+                  <div className="mb-6 flex items-center justify-center gap-3">
+                    <input type="checkbox" id="usaGorras" checked={usaGorrasInput} onChange={(e) => setUsaGorrasInput(e.target.checked)} className="w-6 h-6 text-indigo-600 rounded focus:ring-indigo-500" />
+                    <label htmlFor="usaGorras" className={`font-semibold cursor-pointer ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Sí, uso gorras o sombreros
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={savingGorras}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50"
+                  >
+                    {savingGorras ? 'Guardando...' : 'Guardar y Continuar'}
                   </button>
                 </form>
               </div>
