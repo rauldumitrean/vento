@@ -88,7 +88,7 @@ export default function AuthView({ setToken }) {
          setIsBannedError(true);
          setBanDetails(err.response.data);
       } else {
-         setError(err.response?.data?.message || 'Error de autenticación');
+         setError(err.response?.data?.error || 'Error de autenticación');
       }
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ export default function AuthView({ setToken }) {
          setIsBannedError(true);
          setBanDetails(err.response.data);
       } else {
-         setError(err.response?.data?.message || 'Error al autenticar con Google');
+         setError(err.response?.data?.error || 'Error al autenticar con Google');
       }
     } finally {
       setLoading(false);
@@ -167,7 +167,7 @@ export default function AuthView({ setToken }) {
         setToken(res.data.token);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al completar el registro.');
+      setError(err.response?.data?.error || 'Error al completar el registro.');
     } finally {
       setLoading(false);
     }
