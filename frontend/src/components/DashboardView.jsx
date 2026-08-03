@@ -1216,7 +1216,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           lon: weather.lon
         }, { headers: { Authorization: `Bearer ${token}` } });
         setIsCityFavorite(true);
-        showToast(`⭐ ${weather.location} guardada en favoritos`, 'success');
+        showToast(`${weather.location} guardada en favoritos`, 'success');
       }
     } catch (e) {
       showToast('Error guardando ciudad favorita');
@@ -1420,7 +1420,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                          <button
                            onClick={handleSaveCityFavorite}
                            disabled={savingCityFav}
-                           title={isCityFavorite ? 'Ciudad guardada en favoritos' : 'Guardar ciudad en favoritos'}
+                           title={isCityFavorite ? 'Ciudad guardada en favoritos' : 'Agregar a favoritos'}
                            className={`flex items-center gap-2 px-4 py-2.5 rounded-full backdrop-blur-md border transition-all shadow-lg shadow-black/20 text-sm font-medium ${
                              isCityFavorite
                                ? 'bg-yellow-400/15 border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/20'
@@ -1428,7 +1428,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                            } disabled:opacity-50`}
                          >
                            <Star size={15} fill={isCityFavorite ? 'currentColor' : 'none'} className="transition-all" />
-                           <span className="hidden sm:inline">{isCityFavorite ? 'Guardada' : 'Favorita'}</span>
+                           <span className="hidden sm:inline">{isCityFavorite ? 'Guardada' : 'Agregar a favoritos'}</span>
                          </button>
                        </div>
 

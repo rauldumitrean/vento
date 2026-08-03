@@ -64,10 +64,13 @@ router.post('/favorites', authMiddleware, async (req, res) => {
     const { cityName, lat, lon } = req.body;
     if (!cityName) return res.status(400).json({ error: 'cityName es requerido' });
 
+    const latFloat = lat ? parseFloat(lat) : null;
+    const lonFloat = lon ? parseFloat(lon) : null;
+
     const favorite = await prisma.favoriteCity.upsert({
       where: { userId_cityName: { userId: req.user.id, cityName } },
-      update: { lat: lat || null, lon: lon || null },
-      create: { userId: req.user.id, cityName, lat: lat || null, lon: lon || null }
+      update: { lat: latFloat, lon: lonFloat },
+      create: { userId: req.user.id, cityName, lat: latFloat, lon: lonFloat }
     });
     res.json({ favorite });
   } catch (err) {

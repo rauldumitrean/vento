@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -146,7 +146,7 @@ export default function FavoriteCitiesView({ token, onSelectCity }) {
           <p className="text-gray-500 text-sm mt-1 ml-[52px]">
             {favorites.length > 0
               ? `${favorites.length} ciudad${favorites.length !== 1 ? "es" : ""} guardada${favorites.length !== 1 ? "s" : ""} · Pulsa una para ver el outfit`
-              : "Guarda ciudades con el botón ⭐ al buscar el clima"}
+              : <span className="flex items-center gap-1">Guarda ciudades con el botón <Star size={14} className="text-yellow-400" fill="currentColor" /> al buscar el clima</span>}
           </p>
         </div>
         <button
@@ -186,8 +186,9 @@ export default function FavoriteCitiesView({ token, onSelectCity }) {
             <Star size={40} className="text-yellow-400/40" />
           </div>
           <h3 className="text-xl font-bold text-white mb-2">Sin ciudades favoritas</h3>
-          <p className="text-gray-500 text-sm max-w-xs mb-8">
-            Busca una ciudad en el dashboard y pulsa el icono ⭐ para guardarla aquí.
+          <p className="text-gray-500 text-sm max-w-xs mb-8 flex flex-col items-center">
+            <span>Busca una ciudad en el dashboard y pulsa el icono</span>
+            <span className="flex items-center gap-1 mt-1"><Star size={14} className="text-yellow-400" fill="currentColor" /> para guardarla aquí.</span>
           </p>
           <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm">
             <Plus size={16} />
