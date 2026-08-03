@@ -429,8 +429,9 @@ IMPORTANTE: Basa el outfit en las condiciones de TODO el día, no solo en la act
 1. Diseña un outfit impecable, moderno y estéticamente superior que resuelva perfectamente el clima y encaje con el perfil del usuario.
 2. REQUISITOS DE PRENDAS OBLIGATORIAS:
    - Debes incluir SIEMPRE: Camiseta/Top, Pantalón/Bottom, Calzado y Calcetines (especifica su color/modelo, ej: "Calcetines altos blancos de canalé").
-   - SI hace frío, debes incluir obligatoriamente Sudadera/Jersey y/o Abrigo/Chaqueta.
-   - SI el usuario usa gorras, incluye Gorra.
+   - SI la temperatura actual o máxima es MENOR a 20°C, debes incluir obligatoriamente Sudadera/Jersey y/o Abrigo/Chaqueta.
+   - SI la temperatura actual o máxima es MAYOR O IGUAL a 25°C, ESTÁ TERMINANTEMENTE PROHIBIDO INCLUIR ABRIGOS, CHAQUETAS, SUDADERAS O JERSEYS. Solo ropa fresca.
+   - SI el usuario usa gorras, SIEMPRE incluye Gorra.
 3. El "resumen" debe sonar experto, cálido y persuasivo.
 4. El "consejo_extra" debe ser un "pro-tip" de estilismo útil y avanzado aplicable al outfit recomendado.
 5. CRÍTICO PARA LA IA DE IMÁGENES:
