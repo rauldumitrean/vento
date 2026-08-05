@@ -1440,27 +1440,33 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                         </form>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mt-10">
-                        <button onClick={handleGeolocation} className="p-5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-col gap-3 group">
-                          <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full mt-6 sm:mt-10">
+                        <button onClick={handleGeolocation} className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-3 group">
+                          <div className="w-10 h-10 shrink-0 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
                             <MapPin size={20} />
                           </div>
-                          <span className="font-bold text-sm text-white">Mi Ubicación Actual</span>
-                          <span className="text-xs text-gray-400">Descubre outfits para tu ciudad al instante.</span>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-white">Mi Ubicación Actual</span>
+                            <span className="text-xs text-gray-400 hidden sm:block">Descubre outfits para tu ciudad al instante.</span>
+                          </div>
                         </button>
-                        <button onClick={() => {setLocation('Madrid'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-col gap-3 group">
-                          <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                        <button onClick={() => {setLocation('Madrid'); handleSearch({preventDefault:()=>{}});}} className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-3 group">
+                          <div className="w-10 h-10 shrink-0 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
                             <Sun size={20} />
                           </div>
-                          <span className="font-bold text-sm text-white">Escapada de Verano</span>
-                          <span className="text-xs text-gray-400">Playa, sol y looks frescos.</span>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-white">Escapada de Verano</span>
+                            <span className="text-xs text-gray-400 hidden sm:block">Playa, sol y looks frescos.</span>
+                          </div>
                         </button>
-                        <button onClick={() => {setLocation('Londres'); handleSearch({preventDefault:()=>{}});}} className="p-5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-col gap-3 group">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                        <button onClick={() => {setLocation('Londres'); handleSearch({preventDefault:()=>{}});}} className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-xl shadow-xl transition-all text-left flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-3 group">
+                          <div className="w-10 h-10 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                             <CloudRain size={20} />
                           </div>
-                          <span className="font-bold text-sm text-white">City Break Lluvioso</span>
-                          <span className="text-xs text-gray-400">Estilo urbano para la lluvia.</span>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-white">City Break Lluvioso</span>
+                            <span className="text-xs text-gray-400 hidden sm:block">Estilo urbano para la lluvia.</span>
+                          </div>
                         </button>
                       </div>
                     </div>
