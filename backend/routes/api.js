@@ -174,6 +174,7 @@ router.get('/weather', authMiddleware, async (req, res) => {
       }
       latitude = geoResponse.data.results[0].latitude;
       longitude = geoResponse.data.results[0].longitude;
+      city = geoResponse.data.results[0].name;
     }
 
     // FIX B-M4: allow 0
@@ -191,40 +192,44 @@ router.get('/weather', authMiddleware, async (req, res) => {
     const cacheKey = `coord_${latNum.toFixed(2)}_${lonNum.toFixed(2)}`;
     
     // Check in-memory cache first (10 min TTL)
+    let responseData;
     if (weatherCache.has(cacheKey)) {
       const cached = weatherCache.get(cacheKey);
       if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
-        return res.json(cached.data);
+        responseData = cached.data;
+      } else {
+        weatherCache.delete(cacheKey);
+        const idx = weatherCacheKeys.indexOf(cacheKey);
+        if (idx > -1) weatherCacheKeys.splice(idx, 1);
       }
-      weatherCache.delete(cacheKey);
-      const idx = weatherCacheKeys.indexOf(cacheKey);
-      if (idx > -1) weatherCacheKeys.splice(idx, 1);
     }
 
+    if (!responseData) {
+      const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
+      
+      responseData = {
+        location: city || `${latitude}, ${longitude}`,
+        lat: latitude,
+        lon: longitude,
+        current: weatherResponse.data.current,
+        daily: weatherResponse.data.daily,
+        hourly: weatherResponse.data.hourly
+      };
 
-
-    const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latNum}&longitude=${lonNum}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,uv_index,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto`);
-    
-    const responseData = {
-      location: city || `${latitude}, ${longitude}`,
-      lat: latitude,
-      lon: longitude,
-      current: weatherResponse.data.current,
-      daily: weatherResponse.data.daily,
-      hourly: weatherResponse.data.hourly
-    };
-
-    // Save to in-memory cache
-    if (weatherCache.size >= 500) {
-      const oldestKey = weatherCacheKeys.shift();
-      if (oldestKey) weatherCache.delete(oldestKey);
+      // Save to in-memory cache
+      if (weatherCache.size >= 500) {
+        const oldestKey = weatherCacheKeys.shift();
+        if (oldestKey) weatherCache.delete(oldestKey);
+      }
+      weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+      weatherCacheKeys.push(cacheKey);
     }
-    weatherCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
-    weatherCacheKeys.push(cacheKey);
 
+    const isFav = await prisma.favoriteCity.findFirst({
+      where: { userId: req.user.id, cityName: responseData.location }
+    });
 
-
-    res.json(responseData);
+    res.json({ ...responseData, isFavoriteCity: !!isFav, favoriteCityId: isFav?.id || null });
   } catch (error) {
     console.error(error);
     res.status(500).json({ errorCode: '0x100E', error: 'Error al obtener el clima' });

@@ -1228,26 +1228,34 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
   // ── Save city to favorites ──────────────────────────────────────────────────
   const [isCityFavorite, setIsCityFavorite] = useState(false);
+  const [favoriteCityId, setFavoriteCityId] = useState(null);
   const [savingCityFav, setSavingCityFav] = useState(false);
 
-  // Reset city-favorite state on new search
-  useEffect(() => { setIsCityFavorite(false); }, [weather?.location]);
+  // Sync city-favorite state when weather changes
+  useEffect(() => { 
+    setIsCityFavorite(!!weather?.isFavoriteCity); 
+    setFavoriteCityId(weather?.favoriteCityId || null);
+  }, [weather]);
 
   const handleSaveCityFavorite = async () => {
     if (!weather) return;
     setSavingCityFav(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (isCityFavorite) {
-        // We don't store the id here, so just toggle UI (user can manage from favorites view)
+      if (isCityFavorite && favoriteCityId) {
+        // Delete favorite
+        await axios.delete(`${API_URL}/api/favorites/${favoriteCityId}`, { headers: { Authorization: `Bearer ${token}` } });
         setIsCityFavorite(false);
+        setFavoriteCityId(null);
+        showToast(`${weather.location} eliminada de favoritos`);
       } else {
-        await axios.post(`${API_URL}/api/favorites`, {
+        const res = await axios.post(`${API_URL}/api/favorites`, {
           cityName: weather.location,
           lat: weather.lat,
           lon: weather.lon
         }, { headers: { Authorization: `Bearer ${token}` } });
         setIsCityFavorite(true);
+        setFavoriteCityId(res.data.favorite?.id || null);
         showToast(`${weather.location} guardada en favoritos`, 'success');
       }
     } catch (e) {
