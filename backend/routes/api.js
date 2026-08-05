@@ -458,6 +458,11 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       "enlace_compra": "https://www.amazon.es/s?k=busqueda+de+la+prenda&tag=${amazonTag}"
     }
   ],
+  "timeline": [
+    { "hora": "08:00", "temp": 15, "emoji": "🧥", "consejo": "Breve consejo de qué llevar o qué acción tomar a esta hora (máx 60 chars)" },
+    { "hora": "13:00", "temp": 24, "emoji": "☀️", "consejo": "Puedes quitarte la chaqueta, quédate con la camiseta" },
+    { "hora": "20:00", "temp": 17, "emoji": "🌙", "consejo": "Recupera la chaqueta, la noche refresca" }
+  ],
   "consejo_extra": "Pro-tip de estilismo avanzado aplicable a este look",
   "infraccion": null
 }`;
@@ -1247,6 +1252,283 @@ router.get('/images/generate', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error in /images/generate:', error);
     res.status(500).json({ errorCode: '0x1052', error: 'Error generando imagen' });
+  }
+});
+
+// ── FEATURE 1: Travel Packing Assistant ──────────────────────────────────────
+router.post('/travel-packing', authMiddleware, async (req, res) => {
+  try {
+    const { destination, startDate, endDate, activities } = req.body;
+    if (!destination || !startDate || !endDate) {
+      return res.status(400).json({ errorCode: '0x1060', error: 'Destination, startDate, and endDate are required.' });
+    }
+
+    const dbUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!dbUser) return res.status(401).json({ errorCode: '0x1061', error: 'User not found' });
+    if (!dbUser.isPremium && dbUser.role !== 'ADMIN') {
+      return res.status(403).json({ errorCode: '0x1062', error: 'Esta función es exclusiva para usuarios Premium.' });
+    }
+
+    // Geocode the destination
+    const geoRes = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=es&format=json`);
+    if (!geoRes.data.results || geoRes.data.results.length === 0) {
+      return res.status(404).json({ errorCode: '0x1063', error: 'Destino no encontrado. Intenta con una ciudad más grande.' });
+    }
+    const { latitude, longitude, name: cityName, country } = geoRes.data.results[0];
+
+    // Get forecast for the trip dates
+    const weatherRes = await axios.get(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&start_date=${startDate}&end_date=${endDate}&forecast_days=16`
+    );
+    const daily = weatherRes.data.daily;
+
+    // Build weather summary for the AI
+    const daysData = daily.time.map((day, i) => ({
+      date: day,
+      max: daily.temperature_2m_max[i],
+      min: daily.temperature_2m_min[i],
+      rain: daily.precipitation_sum[i],
+      code: daily.weather_code[i]
+    }));
+
+    const weatherSummary = daysData.map(d => `- ${d.date}: Max ${d.max}°C / Min ${d.min}°C, lluvia: ${d.rain}mm`).join('\n');
+    const totalDays = daysData.length;
+    const avgMax = (daysData.reduce((s, d) => s + d.max, 0) / totalDays).toFixed(1);
+    const avgMin = (daysData.reduce((s, d) => s + d.min, 0) / totalDays).toFixed(1);
+    const hasRain = daysData.some(d => d.rain > 2);
+    const hasCold = daysData.some(d => d.min < 12);
+    const hasHeat = daysData.some(d => d.max > 25);
+
+    const genderText = dbUser.gender ? `Género: ${dbUser.gender}.` : '';
+    const styleText = dbUser.estiloPersonal ? `Estilo personal: ${dbUser.estiloPersonal}.` : '';
+    const activitiesText = activities ? `Actividades planificadas: ${activities}.` : '';
+
+    const packingPrompt = `Eres un experto en viajes y moda. El usuario va a viajar a ${cityName}, ${country} durante ${totalDays} días (del ${startDate} al ${endDate}).
+
+[PERFIL]
+${genderText} ${styleText} ${activitiesText}
+
+[PREVISIÓN METEOROLÓGICA]
+Temperatura promedio: Max ${avgMax}°C / Min ${avgMin}°C
+${weatherSummary}
+Lluvia: ${hasRain ? 'Sí, lleva ropa impermeable' : 'No se espera lluvia'}
+Frío notable: ${hasCold ? 'Sí' : 'No'}
+Calor notable: ${hasHeat ? 'Sí' : 'No'}
+
+Genera una lista de maleta PERFECTAMENTE OPTIMIZADA (ni demasiado ni muy poco). Devuelve SOLO JSON:
+{
+  "resumen": "Descripción breve y experta del clima y qué esperar en el viaje",
+  "maleta": [
+    { "categoria": "Nombre de categoría (ej: Camisetas)", "emoji": "👕", "cantidad": 3, "tipo": "Descripción específica de qué tipo (ej: Camisetas de manga corta en tonos neutros)", "esencial": true },
+    { "categoria": "Pantalones", "emoji": "👖", "cantidad": 2, "tipo": "Un vaquero y un chino/lino ligero", "esencial": true }
+  ],
+  "accesorios": ["Neceser", "Adaptador de enchufes si aplica", "Gafas de sol"],
+  "consejo_maleta": "Un consejo clave de packing pro (ej: método de enrollado para ahorrar espacio)"
+}`;
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
+    const result = await model.generateContent(packingPrompt);
+    let textResult = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    let packingList;
+    try {
+      packingList = JSON.parse(textResult);
+    } catch(e) {
+      return res.status(500).json({ errorCode: '0x1064', error: 'Error generando la lista de maleta.' });
+    }
+
+    res.json({ destination: cityName, country, totalDays, avgMax, avgMin, hasRain, packingList, forecast: daysData });
+  } catch (err) {
+    console.error('Travel packing error:', err);
+    res.status(500).json({ errorCode: '0x1065', error: 'Error al generar la lista de maleta.' });
+  }
+});
+
+// ── FEATURE 4: Community Feed ─────────────────────────────────────────────────
+// GET /api/community — paginated public outfits feed
+router.get('/community', authMiddleware, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    const outfits = await prisma.consulta.findMany({
+      where: { isPublic: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip,
+      include: {
+        user: { select: { id: true, name: true, profilePicture: true, estiloPersonal: true } },
+        outfitLikes: { select: { userId: true } },
+        _count: { select: { outfitLikes: true } }
+      }
+    });
+
+    const total = await prisma.consulta.count({ where: { isPublic: true } });
+
+    const formatted = outfits.map(o => {
+      let rec = null;
+      try { rec = JSON.parse(o.recomendacion_json); } catch {}
+      return {
+        id: o.id,
+        ubicacion: o.ubicacion,
+        createdAt: o.createdAt,
+        user: o.user,
+        likesCount: o._count.outfitLikes,
+        likedByMe: o.outfitLikes.some(l => l.userId === req.user.id),
+        outfit: rec
+      };
+    });
+
+    res.json({ outfits: formatted, total, page, pages: Math.ceil(total / limit) });
+  } catch (err) {
+    console.error('Community feed error:', err);
+    res.status(500).json({ errorCode: '0x1070', error: 'Error obteniendo el feed.' });
+  }
+});
+
+// POST /api/community/:id/share — toggle public visibility of an outfit
+router.post('/community/:id/share', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const consulta = await prisma.consulta.findUnique({ where: { id } });
+    if (!consulta) return res.status(404).json({ errorCode: '0x1071', error: 'Outfit no encontrado' });
+    if (consulta.userId !== req.user.id) return res.status(403).json({ errorCode: '0x1072', error: 'No autorizado' });
+
+    const updated = await prisma.consulta.update({
+      where: { id },
+      data: { isPublic: !consulta.isPublic }
+    });
+    res.json({ isPublic: updated.isPublic });
+  } catch (err) {
+    console.error('Share error:', err);
+    res.status(500).json({ errorCode: '0x1073', error: 'Error al compartir' });
+  }
+});
+
+// POST /api/community/:id/like — toggle like on a public outfit
+router.post('/community/:id/like', authMiddleware, async (req, res) => {
+  try {
+    const consultaId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const existing = await prisma.outfitLike.findUnique({
+      where: { userId_consultaId: { userId, consultaId } }
+    });
+
+    if (existing) {
+      await prisma.outfitLike.delete({ where: { id: existing.id } });
+      const count = await prisma.outfitLike.count({ where: { consultaId } });
+      return res.json({ liked: false, likesCount: count });
+    } else {
+      await prisma.outfitLike.create({ data: { userId, consultaId } });
+      const count = await prisma.outfitLike.count({ where: { consultaId } });
+      return res.json({ liked: true, likesCount: count });
+    }
+  } catch (err) {
+    console.error('Like error:', err);
+    res.status(500).json({ errorCode: '0x1074', error: 'Error al dar like' });
+  }
+});
+
+// ── FEATURE 5: Morning Alerts ─────────────────────────────────────────────────
+// POST /api/morning-alerts/trigger — called by a CRON job (secured with internal key)
+router.post('/morning-alerts/trigger', async (req, res) => {
+  try {
+    const key = req.headers['x-cron-key'];
+    if (key !== process.env.CRON_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const hour = parseInt(req.query.hour) || new Date().getHours();
+    
+    // Get all users who have morning alerts enabled for this hour + have at least one favorite city
+    const users = await prisma.user.findMany({
+      where: { morningAlerts: true, alertHour: hour },
+      include: { favoriteCities: { take: 1, orderBy: { createdAt: 'desc' } } }
+    });
+
+    let sent = 0;
+    for (const user of users) {
+      if (!user.favoriteCities || user.favoriteCities.length === 0) continue;
+      const city = user.favoriteCities[0];
+
+      try {
+        // Get weather for the city
+        let lat = city.lat, lon = city.lon;
+        if (!lat || !lon) {
+          const geoRes = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city.cityName)}&count=1&language=es&format=json`);
+          if (!geoRes.data.results?.length) continue;
+          lat = geoRes.data.results[0].latitude;
+          lon = geoRes.data.results[0].longitude;
+        }
+
+        const wRes = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,apparent_temperature,precipitation,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
+        const current = wRes.data.current;
+        const daily = wRes.data.daily;
+        const tempMax = daily.temperature_2m_max[0];
+        const tempMin = daily.temperature_2m_min[0];
+
+        // Send morning alert email
+        const { sendMorningAlertEmail } = require('../services/emailService');
+        await sendMorningAlertEmail(user, city.cityName, current, tempMax, tempMin);
+        sent++;
+      } catch (userErr) {
+        console.error(`Morning alert failed for user ${user.id}:`, userErr.message);
+      }
+    }
+
+    res.json({ ok: true, sent, total: users.length });
+  } catch (err) {
+    console.error('Morning alerts trigger error:', err);
+    res.status(500).json({ error: 'Error triggering morning alerts' });
+  }
+});
+
+// ── FEATURE 2: Wardrobe Photo Upload ─────────────────────────────────────────
+// POST /api/armario/upload-prenda-photo — upload a photo for a wardrobe item
+router.post('/armario/upload-prenda-photo', authMiddleware, async (req, res) => {
+  try {
+    const { prendaId, imageBase64 } = req.body;
+    if (!prendaId || !imageBase64) return res.status(400).json({ errorCode: '0x1075', error: 'Faltan datos.' });
+
+    const prenda = await prisma.prendaArmario.findUnique({ where: { id: parseInt(prendaId) } });
+    if (!prenda) return res.status(404).json({ errorCode: '0x1076', error: 'Prenda no encontrada.' });
+    if (prenda.userId !== req.user.id) return res.status(403).json({ errorCode: '0x1077', error: 'No autorizado.' });
+
+    const apiKey = process.env.IMGBB_API_KEY;
+    if (!apiKey) return res.status(500).json({ errorCode: '0x1078', error: 'El servicio de imágenes no está configurado.' });
+
+    const base64Data = imageBase64.includes('base64,') ? imageBase64.split('base64,')[1] : imageBase64;
+    const formData = new URLSearchParams();
+    formData.append('image', base64Data);
+
+    const imgRes = await axios.post(`https://api.imgbb.com/1/upload?key=${apiKey}`, formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+
+    if (!imgRes.data?.data?.url) return res.status(500).json({ errorCode: '0x1079', error: 'Error subiendo la imagen.' });
+
+    const imageUrl = imgRes.data.data.url;
+    await prisma.prendaArmario.update({ where: { id: prenda.id }, data: { imageUrl } });
+
+    res.json({ imageUrl });
+  } catch (err) {
+    console.error('Wardrobe photo upload error:', err);
+    res.status(500).json({ errorCode: '0x107A', error: 'Error al subir la foto.' });
+  }
+});
+
+// GET /api/armario/prendas — get all wardrobe items with photos
+router.get('/armario/prendas', authMiddleware, async (req, res) => {
+  try {
+    const prendas = await prisma.prendaArmario.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ prendas });
+  } catch (err) {
+    res.status(500).json({ errorCode: '0x107B', error: 'Error obteniendo armario.' });
   }
 });
 

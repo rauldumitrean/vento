@@ -12,6 +12,8 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [estiloPersonal, setEstiloPersonal] = useState('');
   const [estiloDetalles, setEstiloDetalles] = useState('');
   const [usaGorras, setUsaGorras] = useState(false);
+  const [morningAlerts, setMorningAlerts] = useState(false);
+  const [alertHour, setAlertHour] = useState(7);
   const [profilePicture, setProfilePicture] = useState(Cookies.get('userProfilePicture') || '');
   const [historyCount, setHistoryCount] = useState(0);
   const [dailyCount, setDailyCount] = useState(0);
@@ -40,6 +42,8 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
           setEstiloPersonal(res.data.user.estiloPersonal || '');
           setEstiloDetalles(res.data.user.estiloDetalles || '');
           setUsaGorras(res.data.user.usaGorras || false);
+          setMorningAlerts(res.data.user.morningAlerts || false);
+          setAlertHour(res.data.user.alertHour ?? 7);
           setProfilePicture(res.data.user.profilePicture || '');
           Cookies.set('userProfilePicture', res.data.user.profilePicture || '', { expires: 365 });
           setHistoryCount(res.data.user.historyCount || 0);
@@ -108,7 +112,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
     setLoading(true);
     setMessage('');
     try {
-      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles, usaGorras }, {
+      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles, usaGorras, morningAlerts, alertHour }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Cookies.set('userName', res.data.user.name, { expires: 365 });
@@ -359,6 +363,42 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
               </label>
             </div>
+          </div>
+        </WidgetSection>
+
+        {/* WIDGET 2b: Notificaciones Matutinas */}
+        <WidgetSection id="alertas" title="Alertas Matutinas" icon={Settings}>
+          <div className="space-y-4">
+            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
+              <div>
+                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>☀️ Email diario del clima</h4>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Recibe un resumen del tiempo y consejo de ropa cada mañana.</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={morningAlerts}
+                  onChange={(e) => setMorningAlerts(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+            {morningAlerts && (
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío</label>
+                <select 
+                  value={alertHour}
+                  onChange={e => setAlertHour(parseInt(e.target.value))}
+                  className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                  ))}
+                </select>
+                <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Necesitas tener al menos una ciudad favorita guardada. Usa la ciudad más reciente de tus favoritas.</p>
+              </div>
+            )}
           </div>
         </WidgetSection>
 

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, Users, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge, LayoutDashboard } from 'lucide-react';
+import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, Users, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge, LayoutDashboard, Luggage, Globe } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import AdModal from './AdModal';
 const AdminView = lazy(() => import('./AdminView'));
@@ -11,6 +11,8 @@ import ArmarioHistorial from './ArmarioHistorial';
 import ProfileSettings from './ProfileSettings';
 import FriendsView from './FriendsView';
 import FavoriteCitiesView from './FavoriteCitiesView';
+import TravelPackingView from './TravelPackingView';
+import CommunityView from './CommunityView';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import MobileNavBar from './MobileNavBar';
@@ -1348,6 +1350,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <FriendsView token={token} darkMode={true} onNavigate={setView} />
               ) : view === 'favorites' ? (
                 <FavoriteCitiesView token={token} onSelectCity={handleSelectFavoriteCity} />
+              ) : view === 'packing' ? (
+                <TravelPackingView token={token} />
+              ) : view === 'community' ? (
+                <CommunityView token={token} consultaId={consultaId} isCurrentOutfitPublic={false} />
               ) : view === 'chat' ? (
                 <div className="h-full flex flex-col pt-8 pb-[100px] lg:pb-0">
                   <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
@@ -1547,6 +1553,35 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                {/* Using the standard OutfitGrid */}
                                <OutfitGrid prendas={outfit.prendas} darkMode={true} token={token} />
 
+                               {/* Layering Timeline - Feature 3 */}
+                               {outfit.timeline && outfit.timeline.length > 0 && (
+                                 <div className="mt-6">
+                                   <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3 flex items-center gap-2">
+                                     <span className="w-4 h-0.5 bg-gray-700"></span>
+                                     Tu día en capas
+                                     <span className="flex-1 h-0.5 bg-gray-700"></span>
+                                   </h3>
+                                   <div className="relative flex gap-0 overflow-x-auto hide-scrollbar pb-2">
+                                     {outfit.timeline.map((slot, idx) => (
+                                       <div key={idx} className="flex-1 min-w-[90px] relative">
+                                         {/* Connector line */}
+                                         {idx < outfit.timeline.length - 1 && (
+                                           <div className="absolute top-5 left-1/2 right-0 h-0.5 bg-gradient-to-r from-indigo-500/40 to-purple-500/20 z-0" />
+                                         )}
+                                         <div className="flex flex-col items-center text-center relative z-10 px-2">
+                                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600/40 to-purple-600/40 border border-indigo-500/30 flex items-center justify-center text-lg mb-2 backdrop-blur-sm">
+                                             {slot.emoji}
+                                           </div>
+                                           <span className="text-xs font-bold text-indigo-300">{slot.hora}</span>
+                                           <span className="text-xs text-gray-400 mt-0.5">{slot.temp}°C</span>
+                                           <p className="text-[10px] text-gray-500 mt-1.5 leading-snug line-clamp-3">{slot.consejo}</p>
+                                         </div>
+                                       </div>
+                                     ))}
+                                   </div>
+                                 </div>
+                               )}
+
                                {outfit.consejo_extra && (
                                   <div className="mt-8 p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-sm relative overflow-hidden">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
@@ -1598,23 +1633,23 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           {/* Armario */}
           <button
             onClick={() => setView('armario')}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
+            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
               view === 'armario' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
-            <Archive size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Armario</span>
+            <Archive size={19} />
+            <span className="text-[8px] font-semibold uppercase tracking-wider">Armario</span>
           </button>
 
-          {/* Favoritos */}
+          {/* Comunidad */}
           <button
-            onClick={() => setView('favorites')}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'favorites' ? 'bg-yellow-500/20 text-yellow-400' : 'text-gray-500 hover:text-yellow-400'
+            onClick={() => setView('community')}
+            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
+              view === 'community' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-emerald-400'
             }`}
           >
-            <Star size={20} fill={view === 'favorites' ? 'currentColor' : 'none'} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Favoritos</span>
+            <Globe size={19} />
+            <span className="text-[8px] font-semibold uppercase tracking-wider">Feed</span>
           </button>
 
           {/* Buscar - center elevated button */}
@@ -1623,33 +1658,33 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             className="flex flex-col items-center gap-1 -mt-7 px-3 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <Search size={20} />
-            <span className="text-[9px] font-bold uppercase tracking-wider">Buscar</span>
+            <span className="text-[8px] font-bold uppercase tracking-wider">Buscar</span>
           </button>
 
-          {/* Amigos */}
+          {/* Maleta */}
           <button
-            onClick={() => setView('friends')}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'friends' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
+            onClick={() => setView('packing')}
+            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
+              view === 'packing' ? 'bg-amber-500/20 text-amber-400' : 'text-gray-500 hover:text-amber-400'
             }`}
           >
-            <Users size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Amigos</span>
+            <Luggage size={19} />
+            <span className="text-[8px] font-semibold uppercase tracking-wider">Maleta</span>
           </button>
 
           {/* Perfil */}
           <button
             onClick={() => setView('profile')}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 overflow-hidden ${
+            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 overflow-hidden ${
               view === 'profile' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             {Cookies.get('userProfilePicture') ? (
               <img src={Cookies.get('userProfilePicture')} alt="Profile" className="w-5 h-5 rounded-full object-cover border border-white/20" />
             ) : (
-              <User size={20} />
+              <User size={19} />
             )}
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Perfil</span>
+            <span className="text-[8px] font-semibold uppercase tracking-wider">Perfil</span>
           </button>
         </div>
       </div>

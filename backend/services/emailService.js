@@ -268,3 +268,65 @@ exports.sendNewTicketEmail = async (user, ticket) => {
     console.error('Error sending new ticket email:', err);
   }
 };
+/**
+ * Send a morning alert email with today's weather and outfit tip.
+ */
+exports.sendMorningAlertEmail = async (user, cityName, current, tempMax, tempMin) => {
+  if (!process.env.SMTP_HOST) return;
+
+  const hour = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const subject = `☀️ Buenos días${user.name ? `, ${user.name}` : ''} — Tu resumen del clima en ${cityName}`;
+  const preheader = `Hoy en ${cityName}: ${Math.round(current.temperature_2m)}°C. ¡Vístete con estilo!`;
+
+  const weatherCodeEmojis = { 0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️', 51: '🌦️', 61: '🌧️', 71: '🌨️', 80: '🌦️', 95: '⛈️' };
+  const emoji = weatherCodeEmojis[current.weather_code] || '🌡️';
+
+  const tempColor = current.temperature_2m >= 25 ? '#f97316' : current.temperature_2m <= 8 ? '#60a5fa' : '#a78bfa';
+
+  let clothingTip = '';
+  if (tempMax >= 28) clothingTip = 'Día de calor. Ropa ligera, lino o algodón. Hidratación clave. ☀️';
+  else if (tempMax >= 20) clothingTip = 'Temperatura ideal. Un look casual es perfecto para hoy. 😎';
+  else if (tempMax >= 12) clothingTip = 'Fresco. Lleva una chaqueta ligera o sudadera por si refresca. 🧥';
+  else clothingTip = 'Día frío. Abrígate bien, jersey grueso y abrigo son imprescindibles. 🧣';
+
+  const content = `
+    <h2>Buenos días${user.name ? `, ${user.name}` : ''} 👋</h2>
+    <p>Aquí tienes tu resumen meteorológico matutino para <strong>${cityName}</strong>.</p>
+    
+    <div style="text-align: center; margin: 30px 0; padding: 30px; background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(147,51,234,0.15)); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+      <div style="font-size: 56px; margin-bottom: 8px;">${emoji}</div>
+      <div style="font-size: 52px; font-weight: 900; color: ${tempColor}; margin-bottom: 4px;">${Math.round(current.temperature_2m)}°C</div>
+      <div style="color: #9ca3af; font-size: 14px;">Sensación: ${Math.round(current.apparent_temperature)}°C</div>
+    </div>
+
+    <div class="data-box">
+      <div class="data-row"><span class="data-label">🌡️ Máxima hoy</span><span class="data-value">${Math.round(tempMax)}°C</span></div>
+      <div class="data-row"><span class="data-label">🌙 Mínima hoy</span><span class="data-value">${Math.round(tempMin)}°C</span></div>
+      <div class="data-row"><span class="data-label">💧 Humedad</span><span class="data-value">${current.relative_humidity_2m || '—'}%</span></div>
+      <div class="data-row"><span class="data-label">💨 Viento</span><span class="data-value">${Math.round(current.wind_speed_10m || 0)} km/h</span></div>
+    </div>
+
+    <h2>🎽 Consejo de Vestuario</h2>
+    <p style="font-size: 16px; color: #e5e7eb;">${clothingTip}</p>
+    
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">✨ Generar Outfit Completo</a>
+    </div>
+    <p style="font-size: 12px; color: #4b5563; text-align: center; margin-top: 20px;">
+      Para dejar de recibir estas alertas, desactívalas en tus <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" style="color: #6366f1;">ajustes de perfil</a>.
+    </p>
+  `;
+
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: getFromEmail(),
+      to: user.email,
+      subject,
+      html: baseTemplate('Resumen Matutino de Ventoo', content, preheader)
+    });
+    console.log(`Morning alert email sent to ${user.email}`);
+  } catch (err) {
+    console.error('Error sending morning alert email:', err);
+  }
+};

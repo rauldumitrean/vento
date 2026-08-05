@@ -278,11 +278,18 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
-    const { name, gender, age, estiloPersonal, estiloDetalles, usaGorras } = req.body;
+    const { name, gender, age, estiloPersonal, estiloDetalles, usaGorras, morningAlerts, alertHour } = req.body;
     const updateData = { name, gender, estiloPersonal, estiloDetalles };
     
     if (usaGorras !== undefined) {
       updateData.usaGorras = usaGorras;
+    }
+    if (morningAlerts !== undefined) {
+      updateData.morningAlerts = morningAlerts;
+    }
+    if (alertHour !== undefined) {
+      const h = parseInt(alertHour);
+      if (!isNaN(h) && h >= 0 && h <= 23) updateData.alertHour = h;
     }
     if (age !== undefined && age !== null && age !== '') {
       const parsedAge = parseInt(age);
@@ -316,7 +323,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
       }
     });
 
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount, usaGorras: user.usaGorras } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ errorCode: '0x1069', error: 'Error al actualizar perfil.' });

@@ -29,6 +29,8 @@ model User {
   bannedUntil          DateTime?
   banReason            String?
   friendCode         String?  @unique
+  morningAlerts      Boolean  @default(false)
+  alertHour          Int      @default(7)
   createdAt  DateTime @default(now())
   lastActive DateTime @default(now())
   sessionVersion Int  @default(0)
@@ -42,6 +44,7 @@ model User {
   reportsSent         Report[] @relation("UserReportsSent")
   reportsReceived     Report[] @relation("UserReportsReceived")
   favoriteCities      FavoriteCity[]
+  outfitLikes         OutfitLike[]
 
   @@index([lastActive])
   @@index([isPremium])
@@ -56,12 +59,15 @@ model Consulta {
   createdAt          DateTime @default(now())
   isFavorite         Boolean  @default(false)
   isShared           Boolean  @default(false)
+  isPublic           Boolean  @default(false)
   user               User     @relation(fields: [userId], references: [id])
   mensajes           MensajeChat[]
   directMessages     DirectMessage[]
+  outfitLikes        OutfitLike[]
 
   @@index([userId, createdAt])
   @@index([userId, isFavorite])
+  @@index([isPublic, createdAt])
 }
 
 model MensajeChat {
@@ -81,6 +87,7 @@ model PrendaArmario {
   categoria   String   // ej. "top", "bottom", "calzado", "abrigo"
   descripcion String   // ej. "Camiseta básica manga corta"
   color       String?  // ej. "Blanca"
+  imageUrl    String?  // URL de la foto de la prenda subida por el usuario
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
 
@@ -170,5 +177,19 @@ model FavoriteCity {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, cityName])
+  @@index([userId])
+}
+
+model OutfitLike {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  consultaId Int
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consulta   Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, consultaId])
+  @@index([consultaId])
   @@index([userId])
 }
