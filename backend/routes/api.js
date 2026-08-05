@@ -831,7 +831,37 @@ router.post('/historial/save-shared/:id', authMiddleware, async (req, res) => {
 // ADMIN ROUTES
 // ==========================================
 
-// --- GESTIÓN DE OUTFITS ---
+// --- GESTIÓN DE OUTFITS Y COMUNIDAD ---
+router.get('/admin/community', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const posts = await prisma.consulta.findMany({
+      where: { isPublic: true },
+      orderBy: { createdAt: 'desc' },
+      take: 200, // Limitar a los últimos 200 posts
+      include: {
+        user: { select: { id: true, email: true, name: true, profilePicture: true } }
+      }
+    });
+    res.json(posts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ errorCode: '0x107A', error: 'Error al obtener publicaciones de la comunidad' });
+  }
+});
+
+router.delete('/admin/community/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.consulta.update({
+      where: { id },
+      data: { isPublic: false }
+    });
+    res.json({ success: true, message: 'Publicación restringida de la comunidad.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ errorCode: '0x107B', error: 'Error al eliminar la publicación' });
+  }
+});
 router.get('/admin/outfits', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { userId } = req.query;
