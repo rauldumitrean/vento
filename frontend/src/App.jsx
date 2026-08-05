@@ -156,6 +156,7 @@ function App() {
       Cookies.set('token', token, { expires: 365 });
     } else {
       Cookies.remove('token');
+      Cookies.remove('userId');
       Cookies.remove('userRole');
       Cookies.remove('userName');
       Cookies.remove('userGender');

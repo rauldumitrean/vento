@@ -98,22 +98,24 @@ const AdminView = ({ token }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersRes, statsRes, outfitsRes, ticketsRes, chatsRes, reportsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/outfits`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/chats`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/reports`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/api/admin/community`, { headers: { Authorization: `Bearer ${token}` } })
+      const safeGet = (url) => axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).catch(err => ({ data: err.response?.data?.reports ? { reports: [] } : [] }));
+      
+      const [usersRes, statsRes, outfitsRes, ticketsRes, chatsRes, reportsRes, communityRes] = await Promise.all([
+        safeGet(`${API_URL}/api/admin/users`),
+        safeGet(`${API_URL}/api/admin/stats`),
+        safeGet(`${API_URL}/api/admin/outfits`),
+        safeGet(`${API_URL}/api/admin/tickets`),
+        safeGet(`${API_URL}/api/admin/chats`),
+        safeGet(`${API_URL}/api/admin/reports`),
+        safeGet(`${API_URL}/api/admin/community`)
       ]);
-      setUsers(usersRes.data);
-      setStats(statsRes.data);
-      setOutfits(outfitsRes.data);
-      setTickets(ticketsRes.data);
-      setChats(chatsRes.data);
-      setReports(reportsRes.data.reports || []);
-      setCommunityPosts(communityRes.data);
+      setUsers(usersRes.data || []);
+      setStats(statsRes.data || {});
+      setOutfits(outfitsRes.data || []);
+      setTickets(ticketsRes.data || []);
+      setChats(chatsRes.data || []);
+      setReports(reportsRes.data?.reports || []);
+      setCommunityPosts(communityRes.data || []);
       setSelectedUserFilter(''); // Reset filter on full refresh
     } catch (error) {
       showAdminMsg('Error de conexión. Verifica tus permisos.');

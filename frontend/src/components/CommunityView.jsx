@@ -218,12 +218,12 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => fetchFeed(page)}
+              onClick={() => fetchFeed(1)}
               disabled={loading}
-              className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-              title="Actualizar"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-2"
             >
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+              Refrescar
             </button>
             {consultaId && (
               <button
