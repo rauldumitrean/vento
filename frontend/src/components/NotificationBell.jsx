@@ -24,7 +24,7 @@ export default function NotificationBell({ token }) {
     };
     fetchNotifications();
     
-    const interval = setInterval(fetchNotifications, 60000); // Polling every minute
+    const interval = setInterval(fetchNotifications, 15000); // Polling every 15 seconds
     return () => clearInterval(interval);
   }, [token]);
 
