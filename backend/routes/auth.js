@@ -37,6 +37,7 @@ router.post('/register', async (req, res) => {
     await prisma.notification.create({
       data: {
         userId: user.id,
+        type: 'system',
         content: `¡Bienvenido a Ventoo, ${user.name || 'explorador'}! Configura tu perfil para empezar a recibir recomendaciones de moda y clima.`
       }
     });

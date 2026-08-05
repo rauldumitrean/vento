@@ -80,6 +80,7 @@ router.post('/request', authMiddleware, async (req, res) => {
     await prisma.notification.create({
       data: {
         userId: friend.id,
+        type: 'friend_request',
         content: `${req.user.name || 'Alguien'} te ha enviado una solicitud de amistad.`
       }
     });
