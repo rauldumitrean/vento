@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, Users, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge, LayoutDashboard, Luggage, Globe } from 'lucide-react';
+import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, Users, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge, LayoutDashboard, Luggage, Globe, Moon, Flame } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import AdModal from './AdModal';
 const AdminView = lazy(() => import('./AdminView'));
@@ -1562,22 +1562,33 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                      <span className="flex-1 h-0.5 bg-gray-700"></span>
                                    </h3>
                                    <div className="relative flex gap-0 overflow-x-auto hide-scrollbar pb-2">
-                                     {outfit.timeline.map((slot, idx) => (
-                                       <div key={idx} className="flex-1 min-w-[90px] relative">
-                                         {/* Connector line */}
-                                         {idx < outfit.timeline.length - 1 && (
-                                           <div className="absolute top-5 left-1/2 right-0 h-0.5 bg-gradient-to-r from-indigo-500/40 to-purple-500/20 z-0" />
-                                         )}
-                                         <div className="flex flex-col items-center text-center relative z-10 px-2">
-                                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600/40 to-purple-600/40 border border-indigo-500/30 flex items-center justify-center text-lg mb-2 backdrop-blur-sm">
-                                             {slot.emoji}
+                                     {outfit.timeline.map((slot, idx) => {
+                                       const getTimelineIcon = (emojiString) => {
+                                         if (!emojiString) return <Cloud className="text-indigo-300 w-5 h-5" />;
+                                         if (emojiString.includes('☀️') || emojiString.includes('🌞')) return <Sun className="text-yellow-400 w-5 h-5" />;
+                                         if (emojiString.includes('🌙') || emojiString.includes('🌛') || emojiString.includes('🌜')) return <Moon className="text-yellow-200 w-5 h-5" />;
+                                         if (emojiString.includes('🌧') || emojiString.includes('🌦')) return <CloudRain className="text-blue-400 w-5 h-5" />;
+                                         if (emojiString.includes('❄️')) return <Snowflake className="text-blue-200 w-5 h-5" />;
+                                         if (emojiString.includes('🔥')) return <Flame className="text-orange-500 w-5 h-5" />;
+                                         return <Cloud className="text-indigo-300 w-5 h-5" />;
+                                       };
+                                       return (
+                                         <div key={idx} className="flex-1 min-w-[90px] relative">
+                                           {/* Connector line */}
+                                           {idx < outfit.timeline.length - 1 && (
+                                             <div className="absolute top-5 left-1/2 right-0 h-0.5 bg-gradient-to-r from-indigo-500/40 to-purple-500/20 z-0" />
+                                           )}
+                                           <div className="flex flex-col items-center text-center relative z-10 px-2">
+                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600/40 to-purple-600/40 border border-indigo-500/30 flex items-center justify-center text-lg mb-2 backdrop-blur-sm">
+                                               {getTimelineIcon(slot.emoji)}
+                                             </div>
+                                             <span className="text-xs font-bold text-indigo-300">{slot.hora}</span>
+                                             <span className="text-xs text-gray-400 mt-0.5">{slot.temp}°C</span>
+                                             <p className="text-[10px] text-gray-500 mt-1.5 leading-snug line-clamp-3">{slot.consejo}</p>
                                            </div>
-                                           <span className="text-xs font-bold text-indigo-300">{slot.hora}</span>
-                                           <span className="text-xs text-gray-400 mt-0.5">{slot.temp}°C</span>
-                                           <p className="text-[10px] text-gray-500 mt-1.5 leading-snug line-clamp-3">{slot.consejo}</p>
                                          </div>
-                                       </div>
-                                     ))}
+                                       );
+                                     })}
                                    </div>
                                  </div>
                                )}

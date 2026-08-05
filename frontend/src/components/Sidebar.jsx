@@ -45,9 +45,10 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsul
       <div className="flex flex-col gap-2 flex-1 relative z-10">
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-2">Features</p>
         <SidebarItem icon={LayoutDashboard} label="Dashboard" isActive={view === 'dashboard'} onClick={() => setView('dashboard')} />
-        <SidebarItem icon={Archive} label="Armario & Historial" isActive={view === 'armario'} onClick={() => setView('armario')} />
+        <SidebarItem icon={Cloud} label="Asistente de Maleta" isActive={view === 'packing'} onClick={() => setView('packing')} />
+        <SidebarItem icon={Archive} label="Mi Armario (Fotos)" isActive={view === 'armario'} onClick={() => setView('armario')} />
         <SidebarItem icon={Star} label="Ciudades Favoritas" isActive={view === 'favorites'} onClick={() => setView('favorites')} />
-        <SidebarItem icon={Activity} label="Comunidad" isActive={view === 'friends'} onClick={() => setView('friends')} />
+        <SidebarItem icon={Activity} label="Feed Comunidad" isActive={view === 'community'} onClick={() => setView('community')} />
       </div>
 
       {/* Upgrade Banner (if not premium) */}

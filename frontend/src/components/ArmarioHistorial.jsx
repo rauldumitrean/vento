@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 // FIX: Removed unused imports: Check, Shirt
-import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2 } from 'lucide-react';
+import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader2 } from 'lucide-react';
 
 // FIX: Use env variable instead of hardcoded localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -61,6 +61,32 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       setArmario(armario.filter(p => p.id !== id));
     } catch (error) {
       alert("Error al borrar prenda");
+    }
+  };
+
+  const handlePhotoUpload = async (prendaId, file) => {
+    if (!file) return;
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const imageBase64 = reader.result;
+        setArmario(armario.map(p => p.id === prendaId ? { ...p, uploading: true } : p));
+        try {
+          const res = await axios.post(`${API_URL}/api/armario/upload-prenda-photo`, {
+            prendaId,
+            imageBase64
+          }, { headers: { Authorization: `Bearer ${token}` } });
+          
+          setArmario(armario.map(p => p.id === prendaId ? { ...p, imageUrl: res.data.imageUrl, uploading: false } : p));
+        } catch (err) {
+          console.error(err);
+          alert('Error al subir la imagen');
+          setArmario(armario.map(p => p.id === prendaId ? { ...p, uploading: false } : p));
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -175,6 +201,13 @@ const ArmarioHistorial = ({ token, darkMode }) => {
         )
       ) : activeTab === 'armario' ? (
         <div>
+          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-indigo-200 text-sm flex items-start gap-3">
+            <Camera size={20} className="shrink-0 text-indigo-400" />
+            <div>
+              <p className="font-bold mb-0.5 text-indigo-300">¡NUEVO! Fotos de tu ropa real</p>
+              <p>Puedes subir fotos a las prendas de tu armario haciendo clic en el recuadro gris con icono de cámara que aparece al lado de cada prenda guardada.</p>
+            </div>
+          </div>
           <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
             <select 
               value={nuevaPrenda.categoria} 
@@ -212,15 +245,43 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                <p className="text-gray-500 col-span-full text-center py-8">Tu armario está vacío. Añade algunas prendas para que la IA las utilice en sus recomendaciones.</p>
             ) : (
               armario.map(prenda => (
-                <div key={prenda.id} className={`p-4 rounded-lg flex justify-between items-start border ${'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
-                  <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-white/10 px-2 py-1 rounded">{prenda.categoria}</span>
-                    <h3 className="font-medium mt-2">{prenda.descripcion}</h3>
-                    {prenda.color && <p className="text-sm text-gray-500">{prenda.color}</p>}
+                <div key={prenda.id} className={`p-4 rounded-lg flex flex-col justify-between border ${'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
+                  <div className="flex justify-between items-start w-full">
+                    <div className="flex gap-4">
+                      {prenda.imageUrl ? (
+                        <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-white/10">
+                          <img src={prenda.imageUrl} alt={prenda.descripcion} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <label className={`w-16 h-16 rounded-lg flex flex-col items-center justify-center shrink-0 border border-dashed cursor-pointer transition-colors ${darkMode ? 'border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-gray-500' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-400'}`}>
+                          {prenda.uploading ? (
+                            <Loader2 size={16} className="animate-spin text-indigo-500" />
+                          ) : (
+                            <>
+                              <Camera size={16} className="mb-1" />
+                              <span className="text-[9px] font-medium text-center leading-tight px-1">Subir Foto</span>
+                              <input 
+                                type="file" 
+                                accept="image/*" 
+                                className="hidden" 
+                                onChange={(e) => handlePhotoUpload(prenda.id, e.target.files[0])}
+                              />
+                            </>
+                          )}
+                        </label>
+                      )}
+                      
+                      <div className="flex-1">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-white/10 px-2 py-1 rounded">{prenda.categoria}</span>
+                        <h3 className="font-medium mt-2 leading-tight">{prenda.descripcion}</h3>
+                        {prenda.color && <p className="text-sm text-gray-500 mt-1">{prenda.color}</p>}
+                      </div>
+                    </div>
+                    
+                    <button onClick={() => handleDeletePrenda(prenda.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0 ml-2">
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <button onClick={() => handleDeletePrenda(prenda.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1">
-                    <Trash2 size={16} />
-                  </button>
                 </div>
               ))
             )}
