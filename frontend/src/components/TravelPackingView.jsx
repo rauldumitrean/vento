@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X } from 'lucide-react';
+import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X, Shirt, Footprints, Glasses, Umbrella, CloudSnow } from 'lucide-react';
 import Cookies from 'js-cookie';
+import CalendarPicker from './CalendarPicker';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -26,6 +27,43 @@ export default function TravelPackingView({ token }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [checkedItems, setCheckedItems] = useState({});
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    
+    const fetchSuggestions = async () => {
+      const loc = destination.trim();
+      if (loc.length < 2) {
+        if (isMounted) setSuggestions([]);
+        return;
+      }
+      try {
+        const res = await axios.get(`${API_URL}/api/autocomplete?q=${encodeURIComponent(loc)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (isMounted) {
+          if (res.data.results && res.data.results.length > 0) {
+            setSuggestions(res.data.results);
+          } else {
+            setSuggestions([{ name: 'No se encontraron resultados' }]);
+          }
+        }
+      } catch (e) {
+        if (isMounted) setSuggestions([{ name: 'Demasiadas búsquedas. Usa Enter.' }]);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      fetchSuggestions();
+    }, 300);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [destination, token]);
 
   const today = new Date().toISOString().split('T')[0];
   const maxDate = new Date();
@@ -91,7 +129,7 @@ export default function TravelPackingView({ token }) {
           {/* Form */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl space-y-5">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   <MapPin size={14} className="inline mr-1.5 text-amber-400" />
                   Destino
@@ -100,43 +138,68 @@ export default function TravelPackingView({ token }) {
                   type="text"
                   placeholder="Ej: París, Japón, Maldivas..."
                   value={destination}
-                  onChange={e => setDestination(e.target.value)}
+                  onChange={e => {
+                    setDestination(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   required
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 transition-all"
                 />
+                
+                {/* Autocomplete Dropdown */}
+                <AnimatePresence>
+                  {showSuggestions && destination.length >= 2 && suggestions.length > 0 && (
+                    <motion.ul 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute z-50 w-full mt-2 bg-[#1a1c23] border border-white/10 rounded-xl overflow-hidden shadow-2xl max-h-60 overflow-y-auto"
+                    >
+                      {suggestions.map((sugg, i) => (
+                        <li 
+                          key={i}
+                          onClick={() => {
+                            if (sugg.country) {
+                              setDestination(`${sugg.name}, ${sugg.country}`);
+                            } else {
+                              setDestination(sugg.name);
+                            }
+                            setShowSuggestions(false);
+                          }}
+                          className="px-4 py-3 hover:bg-white/5 cursor-pointer flex flex-col border-b border-white/5 last:border-0 transition-colors"
+                        >
+                          <span className="text-white font-medium">{sugg.name}</span>
+                          {sugg.country && (
+                            <span className="text-xs text-gray-400">
+                              {sugg.admin1 ? `${sugg.admin1}, ` : ''}{sugg.country}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <Calendar size={14} className="inline mr-1.5 text-amber-400" />
-                    Salida
-                  </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    min={today}
-                    max={maxDateStr}
-                    onChange={e => setStartDate(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all [color-scheme:dark]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <Calendar size={14} className="inline mr-1.5 text-amber-400" />
-                    Vuelta
-                  </label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    min={startDate || today}
-                    max={maxDateStr}
-                    onChange={e => setEndDate(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all [color-scheme:dark]"
-                  />
-                </div>
+                <CalendarPicker
+                  label="Salida"
+                  placeholder="DD/MM/YYYY"
+                  value={startDate}
+                  minDate={today}
+                  maxDate={maxDateStr}
+                  onChange={(date) => setStartDate(date)}
+                />
+                <CalendarPicker
+                  label="Vuelta"
+                  placeholder="DD/MM/YYYY"
+                  value={endDate}
+                  minDate={startDate || today}
+                  maxDate={maxDateStr}
+                  onChange={(date) => setEndDate(date)}
+                />
               </div>
 
               <div>
@@ -233,7 +296,24 @@ export default function TravelPackingView({ token }) {
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${checkedItems[`item-${i}`] ? 'bg-green-500 border-green-500' : 'border-gray-600'}`}>
                           {checkedItems[`item-${i}`] && <CheckCircle size={12} className="text-white" />}
                         </div>
-                        <span className="text-2xl">{item.emoji}</span>
+                        {(() => {
+                          const getCategoryIcon = (categoria) => {
+                            const cat = categoria.toLowerCase();
+                            if (cat.includes('camiseta') || cat.includes('top') || cat.includes('camisa')) return <Shirt size={24} className="text-amber-400" />;
+                            if (cat.includes('zapato') || cat.includes('calzado') || cat.includes('zapatilla')) return <Footprints size={24} className="text-amber-400" />;
+                            if (cat.includes('abrigo') || cat.includes('chaqueta')) return <CloudSnow size={24} className="text-amber-400" />;
+                            if (cat.includes('accesorio') || cat.includes('gafas')) return <Glasses size={24} className="text-amber-400" />;
+                            if (cat.includes('lluvia') || cat.includes('paraguas')) return <Umbrella size={24} className="text-amber-400" />;
+                            if (cat.includes('interior') || cat.includes('calcetin') || cat.includes('pantal')) return <Package size={24} className="text-amber-400" />;
+                            if (cat.includes('baño') || cat.includes('bikini') || cat.includes('bañador')) return <Sun size={24} className="text-amber-400" />;
+                            return <Package size={24} className="text-amber-400" />;
+                          };
+                          return (
+                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                              {getCategoryIcon(item.categoria)}
+                            </div>
+                          );
+                        })()}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className={`font-medium text-sm ${checkedItems[`item-${i}`] ? 'text-gray-500 line-through' : 'text-white'}`}>{item.categoria}</span>
