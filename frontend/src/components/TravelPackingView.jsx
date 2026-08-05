@@ -56,7 +56,7 @@ export default function TravelPackingView({ token }) {
   const checkedCount = Object.values(checkedItems).filter(Boolean).length;
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4">
+    <div className="max-w-4xl mx-auto py-6 px-4 pb-28 lg:pb-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex items-center gap-4 mb-2">

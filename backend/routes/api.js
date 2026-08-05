@@ -1278,7 +1278,7 @@ router.post('/travel-packing', authMiddleware, async (req, res) => {
 
     // Get forecast for the trip dates
     const weatherRes = await axios.get(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&start_date=${startDate}&end_date=${endDate}&forecast_days=16`
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&start_date=${startDate}&end_date=${endDate}`
     );
     const daily = weatherRes.data.daily;
 
