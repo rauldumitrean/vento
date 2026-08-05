@@ -1335,7 +1335,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                <Cloud className="w-6 h-6 text-white group-hover:text-indigo-400 transition-colors" />
                <span className="text-xl font-bold tracking-widest text-white group-hover:text-indigo-400 transition-colors">Ventoo</span>
              </button>
-             <div className="flex gap-2">
+             <div className="flex items-center gap-3">
+               <button onClick={() => setView('friends')} className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 transition-colors relative">
+                 <User size={18} className={view === 'friends' ? "text-indigo-400" : ""} />
+               </button>
                <NotificationBell token={token} />
              </div>
           </div>

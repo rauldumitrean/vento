@@ -15,7 +15,6 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
     { id: 'dashboard', icon: Search, label: 'Buscar' },
     { id: 'packing', icon: Luggage, label: 'Maleta' },
     { id: 'studio', icon: MessageSquare, label: 'Estudio' },
-    { id: 'friends', icon: User, label: 'Amigos' },
   ];
 
   return (

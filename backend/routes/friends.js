@@ -127,6 +127,14 @@ router.post('/accept', authMiddleware, async (req, res) => {
         where: { id: friendshipId },
         data: { status: 'accepted' }
       });
+      // Notificar al que envió la solicitud
+      await prisma.notification.create({
+        data: {
+          userId: friendship.user1Id,
+          type: 'friend_accept',
+          content: `${req.user.name || 'Un usuario'} ha aceptado tu solicitud de amistad.`
+        }
+      });
       res.json({ success: true, message: 'Solicitud aceptada' });
     } else {
       await prisma.friendship.delete({ where: { id: friendshipId } });
