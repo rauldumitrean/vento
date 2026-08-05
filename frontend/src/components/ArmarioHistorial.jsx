@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 // FIX: Removed unused imports: Check, Shirt
-import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader2 } from 'lucide-react';
+import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader2, Tag, Palette } from 'lucide-react';
 
 // FIX: Use env variable instead of hardcoded localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -141,16 +141,16 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className={`w-full max-w-4xl mx-auto rounded-xl shadow-sm p-6 ${darkMode ? 'bg-gray-900 text-white border-gray-800 border' : 'bg-white'}`}
     >
-      <div className="flex border-b mb-6">
+      <div className="flex bg-black/10 dark:bg-black/20 backdrop-blur-md p-1.5 rounded-2xl mb-8 max-w-sm mx-auto border border-white/5">
         <button 
           onClick={() => setActiveTab('armario')}
-          className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${activeTab === 'armario' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-gray-500 hover:text-gray-400'}`}
+          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeTab === 'armario' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
         >
           Mi Armario Virtual
         </button>
         <button 
           onClick={() => setActiveTab('historial')}
-          className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${activeTab === 'historial' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-gray-500 hover:text-gray-400'}`}
+          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeTab === 'historial' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
         >
           Historial de Outfits
         </button>
@@ -208,58 +208,86 @@ const ArmarioHistorial = ({ token, darkMode }) => {
               <p>Puedes subir fotos a las prendas de tu armario haciendo clic en el recuadro gris con icono de cámara que aparece al lado de cada prenda guardada.</p>
             </div>
           </div>
-          <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
-            <select 
-              value={nuevaPrenda.categoria} 
-              onChange={e => setNuevaPrenda({...nuevaPrenda, categoria: e.target.value})}
-              className={`p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${'bg-black/40 border-white/10 text-white'}`}
-            >
-              <option value="top">Parte superior (Top)</option>
-              <option value="bottom">Parte inferior (Bottom)</option>
-              <option value="abrigo">Abrigo / Chaqueta</option>
-              <option value="calzado">Calzado</option>
-              <option value="accesorio">Accesorio</option>
-            </select>
-            <input 
-              type="text" 
-              placeholder="Descripción (ej. Camiseta básica)" 
-              value={nuevaPrenda.descripcion}
-              onChange={e => setNuevaPrenda({...nuevaPrenda, descripcion: e.target.value})}
-              className={`flex-1 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto ${'bg-black/40 border-white/10 text-white placeholder-gray-500'}`}
-              required
-            />
-            <input 
-              type="text" 
-              placeholder="Color (opcional)" 
-              value={nuevaPrenda.color}
-              onChange={e => setNuevaPrenda({...nuevaPrenda, color: e.target.value})}
-              className={`w-full sm:w-32 p-2 rounded border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${'bg-black/40 border-white/10 text-white placeholder-gray-500'}`}
-            />
-            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded px-4 flex items-center justify-center gap-2 transition-colors w-full sm:w-auto">
-              <Plus size={16} /> Añadir
+          <form onSubmit={handleAddPrenda} className={`flex flex-col sm:flex-row gap-3 mb-8 p-5 rounded-2xl border shadow-xl ${'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
+            <div className="relative flex-1 sm:max-w-[200px]">
+              <select 
+                value={nuevaPrenda.categoria} 
+                onChange={e => setNuevaPrenda({...nuevaPrenda, categoria: e.target.value})}
+                className={`w-full p-3 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 ${'bg-black/40 border border-white/10 text-white'}`}
+              >
+                <option value="top">Parte superior (Top)</option>
+                <option value="bottom">Parte inferior (Bottom)</option>
+                <option value="abrigo">Abrigo / Chaqueta</option>
+                <option value="calzado">Calzado</option>
+                <option value="accesorio">Accesorio</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+            
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Tag size={16} className="text-gray-400" />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Ej: Camiseta básica blanca" 
+                value={nuevaPrenda.descripcion}
+                onChange={e => setNuevaPrenda({...nuevaPrenda, descripcion: e.target.value})}
+                className={`w-full pl-10 p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${'bg-black/40 border-white/10 text-white placeholder-gray-500'}`}
+                required
+              />
+            </div>
+            
+            <div className="relative w-full sm:w-32">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Palette size={16} className="text-gray-400" />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Color" 
+                value={nuevaPrenda.color}
+                onChange={e => setNuevaPrenda({...nuevaPrenda, color: e.target.value})}
+                className={`w-full pl-10 p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${'bg-black/40 border-white/10 text-white placeholder-gray-500'}`}
+              />
+            </div>
+            
+            <button type="submit" className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-3 rounded-xl px-6 font-bold flex items-center justify-center gap-2 transition-transform hover:scale-105 w-full sm:w-auto shadow-lg shadow-indigo-500/25">
+              <Plus size={18} /> Añadir
             </button>
           </form>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {armario.length === 0 ? (
-               <p className="text-gray-500 col-span-full text-center py-8">Tu armario está vacío. Añade algunas prendas para que la IA las utilice en sus recomendaciones.</p>
+               <div className="col-span-full flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
+                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                   <Tag size={32} className="text-gray-500" />
+                 </div>
+                 <h3 className="text-xl font-bold text-white mb-2">Tu armario está vacío</h3>
+                 <p className="text-gray-400 max-w-md">Añade algunas prendas arriba para que la IA las utilice en sus recomendaciones de equipaje.</p>
+               </div>
             ) : (
               armario.map(prenda => (
-                <div key={prenda.id} className={`p-4 rounded-lg flex flex-col justify-between border ${'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
+                <motion.div key={prenda.id} whileHover={{ y: -4 }} className={`p-4 rounded-2xl flex flex-col justify-between border shadow-lg transition-all ${'bg-white/5 border-white/10 backdrop-blur-xl hover:bg-white/10 hover:border-white/20 hover:shadow-xl'}`}>
                   <div className="flex justify-between items-start w-full">
                     <div className="flex gap-4">
                       {prenda.imageUrl ? (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-white/10">
-                          <img src={prenda.imageUrl} alt={prenda.descripcion} className="w-full h-full object-cover" />
+                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10 shadow-md relative group">
+                          <img src={prenda.imageUrl} alt={prenda.descripcion} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                          <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                            <Camera size={18} className="text-white" />
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(prenda.id, e.target.files[0])} />
+                          </label>
                         </div>
                       ) : (
-                        <label className={`w-16 h-16 rounded-lg flex flex-col items-center justify-center shrink-0 border border-dashed cursor-pointer transition-colors ${darkMode ? 'border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-gray-500' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-400'}`}>
+                        <label className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center shrink-0 border-2 border-dashed cursor-pointer transition-all ${'border-gray-600 bg-gray-800/40 hover:bg-gray-700/60 hover:border-indigo-400 text-gray-400'}`}>
                           {prenda.uploading ? (
-                            <Loader2 size={16} className="animate-spin text-indigo-500" />
+                            <Loader2 size={16} className="animate-spin text-indigo-400" />
                           ) : (
                             <>
-                              <Camera size={16} className="mb-1" />
-                              <span className="text-[9px] font-medium text-center leading-tight px-1">Subir Foto</span>
+                              <Camera size={18} className="mb-1 text-gray-500" />
+                              <span className="text-[10px] font-bold text-center leading-tight">Foto</span>
                               <input 
                                 type="file" 
                                 accept="image/*" 
@@ -271,36 +299,36 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                         </label>
                       )}
                       
-                      <div className="flex-1">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-white/10 px-2 py-1 rounded">{prenda.categoria}</span>
-                        <h3 className="font-medium mt-2 leading-tight">{prenda.descripcion}</h3>
-                        {prenda.color && <p className="text-sm text-gray-500 mt-1">{prenda.color}</p>}
+                      <div className="flex-1 mt-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">{prenda.categoria}</span>
+                        <h3 className="font-semibold mt-2 text-white leading-tight">{prenda.descripcion}</h3>
+                        {prenda.color && <p className="text-xs font-medium text-gray-400 mt-1 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block"></span>{prenda.color}</p>}
                       </div>
                     </div>
                     
-                    <button onClick={() => handleDeletePrenda(prenda.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0 ml-2">
+                    <button onClick={() => handleDeletePrenda(prenda.id)} className="text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors p-2 rounded-full shrink-0 ml-2">
                       <Trash2 size={16} />
                     </button>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </div>
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+          <div className="flex bg-black/10 dark:bg-black/20 backdrop-blur-md p-1.5 rounded-2xl mb-6 max-w-sm border border-white/5">
             <button
               onClick={() => setHistorialFilter('mis_generaciones')}
-              className={`pb-3 px-4 font-bold text-sm transition-colors border-b-2 ${historialFilter === 'mis_generaciones' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+              className={`flex-1 py-2 px-4 text-center text-sm font-bold rounded-xl transition-all ${historialFilter === 'mis_generaciones' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
             >
               Mis Generaciones
             </button>
             <button
               onClick={() => setHistorialFilter('compartidos')}
-              className={`pb-3 px-4 font-bold text-sm transition-colors border-b-2 flex items-center gap-2 ${historialFilter === 'compartidos' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+              className={`flex-1 py-2 px-4 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${historialFilter === 'compartidos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
             >
-              <Users size={16} /> De mis Amigos
+              <Users size={16} /> Amigos
             </button>
           </div>
 
@@ -309,11 +337,15 @@ const ArmarioHistorial = ({ token, darkMode }) => {
 
             if (displayHistorial.length === 0) {
               return (
-                <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-white/20 bg-white/5 backdrop-blur-md">
-                  <p className="text-gray-400">
+                <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <Clock size={32} className="text-gray-500" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">No hay historial</h3>
+                  <p className="text-gray-400 max-w-md">
                     {historialFilter === 'compartidos' 
-                      ? 'No tienes outfits guardados de tus amigos.' 
-                      : 'No tienes historial de consultas todavía.'}
+                      ? 'No tienes outfits guardados de tus amigos todavía. ¡Invítalos a compartir!' 
+                      : 'Cuando uses el Asistente de Maleta o guardes un outfit, aparecerá aquí.'}
                   </p>
                 </div>
               );

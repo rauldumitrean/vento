@@ -62,8 +62,17 @@ export default function TravelPackingView({ token }) {
   maxDate.setDate(maxDate.getDate() + 15);
   const maxDateStr = maxDate.toISOString().split('T')[0];
 
+  const [recentTrips, setRecentTrips] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vento_recent_trips');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!destination || !startDate || !endDate) return;
     setLoading(true);
     setError('');
@@ -74,6 +83,15 @@ export default function TravelPackingView({ token }) {
       }, { headers: { Authorization: `Bearer ${token}` } });
       setResult(res.data);
       setCheckedItems({});
+      
+      // Save to recent trips
+      const newTrip = { destination, startDate, endDate, activities };
+      setRecentTrips(prev => {
+        const filtered = prev.filter(t => t.destination !== destination);
+        const updated = [newTrip, ...filtered].slice(0, 5);
+        localStorage.setItem('vento_recent_trips', JSON.stringify(updated));
+        return updated;
+      });
     } catch (err) {
       setError(err.response?.data?.error || 'Error generando la lista de maleta.');
     } finally {
@@ -117,8 +135,32 @@ export default function TravelPackingView({ token }) {
           </button>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Form */}
+        <div className="flex flex-col gap-6">
+          {recentTrips.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-2">
+              <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                <MapPin size={14} /> Viajes Recientes
+              </h3>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {recentTrips.map((trip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setDestination(trip.destination);
+                      setStartDate(trip.startDate);
+                      setEndDate(trip.endDate);
+                      if (trip.activities) setActivities(trip.activities);
+                    }}
+                    className="flex-shrink-0 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm text-gray-300 transition-colors flex items-center gap-2"
+                  >
+                    <span className="font-medium text-white">{trip.destination.split(',')[0]}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Form */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl space-y-5">
               <div className="relative">
@@ -359,6 +401,7 @@ export default function TravelPackingView({ token }) {
               </motion.div>
             )}
           </div>
+        </div>
         </div>
       )}
     </div>
