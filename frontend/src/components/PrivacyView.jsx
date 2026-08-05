@@ -61,6 +61,15 @@ export default function PrivacyView() {
               <li><strong>No entrenamiento:</strong> Estos análisis de moderación son privados. Ningún texto interceptado por los filtros de moderación se compartirá públicamente ni se venderá a terceros bajo ninguna circunstancia.</li>
             </ul>
           </section>
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">7. Almacenamiento en la Nube y Notificaciones</h2>
+            <p className="mb-3">Con la introducción de nuevas funcionalidades premium, recopilamos y procesamos datos adicionales para mejorar tu experiencia:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Maleta en la Nube:</strong> El progreso de tus listas de equipaje (ítems marcados) se guarda en nuestra base de datos para garantizar la persistencia de tus datos en cualquier dispositivo. Esta información es estrictamente privada.</li>
+              <li><strong>Alertas Mañaneras:</strong> Si activas esta función, almacenaremos la hora de tu preferencia y tus ciudades favoritas para procesar correos electrónicos automáticos diarios.</li>
+              <li><strong>Mix & Match Studio:</strong> Las combinaciones de prendas que generes utilizando esta herramienta se guardan en tu cuenta personal y no se comparten con terceros ni con otros usuarios a menos que tú decidas hacerlas públicas en el Feed de la Comunidad.</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>

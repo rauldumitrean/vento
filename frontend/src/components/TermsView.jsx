@@ -82,6 +82,15 @@ export default function TermsView() {
               <li><strong>Contenido Apropiado:</strong> Está terminantemente prohibido subir imágenes de personas identificables sin su consentimiento, desnudos, o contenido ilegal. El sistema de moderación puede bloquear tu cuenta de forma permanente si detecta este tipo de contenido.</li>
             </ul>
           </section>
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">9. Funciones Premium y Sincronización en la Nube</h2>
+            <p className="mb-3">Los usuarios Premium disfrutan de capacidades extendidas como la persistencia de datos en la nube y notificaciones personalizadas:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Maleta en la Nube:</strong> El progreso de tus listas de equipaje se sincroniza automáticamente con nuestros servidores. Eres responsable de mantener la información actualizada.</li>
+              <li><strong>Alertas Mañaneras (Notificaciones):</strong> Al habilitar esta función, consientes recibir correos electrónicos y notificaciones dentro de la app (In-App) de forma automatizada. Puedes desactivarlo desde tu Perfil en cualquier momento.</li>
+              <li><strong>Mix & Match Studio:</strong> Esta herramienta utiliza las prendas guardadas en "Mi Armario" para crear combinaciones manuales de estilo.</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>

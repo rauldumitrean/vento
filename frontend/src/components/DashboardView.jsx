@@ -18,6 +18,7 @@ import FavoriteCitiesView from './FavoriteCitiesView';
 import TravelPackingView from './TravelPackingView';
 import CommunityView from './CommunityView';
 import EstudioEstiloView from './EstudioEstiloView';
+import NotificationBell from './NotificationBell';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import MobileNavBar from './MobileNavBar';
@@ -1334,13 +1335,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                <span className="text-xl font-bold tracking-widest text-white group-hover:text-indigo-400 transition-colors">Ventoo</span>
              </button>
              <div className="flex gap-2">
-               <button onClick={() => setView('profile')} className="p-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 overflow-hidden">
-                 {Cookies.get('userProfilePicture') ? (
-                   <img src={Cookies.get('userProfilePicture')} alt="Profile" className="w-5 h-5 rounded-full object-cover" />
-                 ) : (
-                   <User size={18} />
-                 )}
-               </button>
+               <NotificationBell token={token} />
              </div>
           </div>
 

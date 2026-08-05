@@ -423,33 +423,33 @@ export default function LandingView({ setToken }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               accent="indigo" delay={0}
-              icon={<AnimatedWeatherIcon />}
-              title="Clima Milimétrico"
-              desc="Cruzamos temperatura, humedad, viento y lluvia de tu ciudad exacta para evitar sorpresas meteorológicas."
+              icon={<AnimatedScannerIcon />}
+              title="Vístete con tu Armario"
+              desc="La IA escanea tus prendas subidas y genera outfits reales usando únicamente la ropa que ya tienes."
             />
             <FeatureCard
               accent="purple" delay={0.1}
-              icon={<AnimatedScannerIcon />}
-              title="Visión por IA"
-              desc="Sube una foto de tu propia ropa. Nuestra IA analiza colores y texturas para decirte con qué combina."
+              icon={<AnimatedWeatherIcon />}
+              title="Maleta en la Nube"
+              desc="Genera listas de equipaje según el clima de tu destino y guarda tu progreso en la nube con casillas interactivas."
             />
             <FeatureCard
               accent="pink" delay={0.2}
               icon={<AnimatedChatIcon />}
-              title="Chat Privado"
-              desc="Comparte outfits y chatea con tus amigos dentro de Ventoo. Recomendaciones de IA en tiempo real."
+              title="Alertas Mañaneras"
+              desc="Notificaciones in-app y por correo electrónico con el resumen del clima y outfits preparados para tu día."
             />
             <FeatureCard
               accent="indigo" delay={0.3}
               icon={<AnimatedCommunityIcon />}
-              title="Comunidad y Amigos"
-              desc="Añade a tus amigos usando tu código único o escaneando su código QR desde la app móvil."
+              title="Feed de Comunidad"
+              desc="Comparte tus mejores outfits, descubre estilos de otros usuarios y dale 'fuego' a los que más te gusten."
             />
             <FeatureCard
               accent="purple" delay={0.4}
               icon={<AnimatedShieldIcon />}
-              title="Entorno Seguro"
-              desc="Sistema de reportes y moderación automática para asegurar que la comunidad de Ventoo sea segura."
+              title="Mix & Match Studio"
+              desc="Una herramienta interactiva y visual para combinar tus partes de arriba y abajo antes de probártelas."
             />
             <FeatureCard
               accent="pink" delay={0.5}

@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import React from 'react';
-import { Search, Shirt, User, Users, Sun, Moon, LogOut, MessageSquare } from 'lucide-react';
+import { Search, Shirt, Users, Sun, Moon, LogOut, MessageSquare, Luggage } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,21 +10,21 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
   const profilePicture = Cookies.get('userProfilePicture');
 
   const navItems = [
-    { id: 'dashboard', icon: Search, label: 'Inicio' },
-    { id: 'chat', icon: MessageSquare, label: 'Chat' },
     { id: 'armario', icon: Shirt, label: 'Armario' },
-    { id: 'friends', icon: Users, label: 'Amigos' },
-    { id: 'profile', icon: User, label: 'Perfil' },
+    { id: 'community', icon: Users, label: 'Feed' },
+    { id: 'dashboard', icon: Search, label: 'Buscar' },
+    { id: 'packing', icon: Luggage, label: 'Maleta' },
+    { id: 'studio', icon: MessageSquare, label: 'Estudio' },
   ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[100] md:hidden flex justify-center"
       style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
-      <div className="px-4 w-full">
+      <div className="px-2 w-full">
         <div
           className={`
             flex items-center justify-between gap-1 p-1.5 rounded-2xl shadow-2xl border mx-auto
-            transition-all duration-300 max-w-sm
+            transition-all duration-300 max-w-md overflow-x-auto hide-scrollbar
             ${darkMode
               ? 'bg-gray-900/90 border-white/10 shadow-black/60'
               : 'bg-white/90 border-white/80 shadow-indigo-200/40'
@@ -42,7 +42,7 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
                   setView(id);
                   navigate('/app', { replace: true });
                 }}
-                className={`relative flex-1 flex items-center justify-center py-2.5 px-2 rounded-xl transition-all duration-300 ${
+                className={`relative flex-1 flex items-center justify-center py-2.5 px-2 rounded-xl transition-all duration-300 min-w-[3rem] ${
                   isActive ? '' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
@@ -58,38 +58,17 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
                   />
                 )}
                 <div className="relative flex items-center gap-1.5">
-                  {id === 'profile' && profilePicture ? (
-                    <img src={profilePicture} alt="Avatar" className={`w-[18px] h-[18px] rounded-full object-cover border ${isActive ? (darkMode ? 'border-indigo-400' : 'border-indigo-600') : 'border-transparent'}`} />
-                  ) : (
-                    <Icon
-                      size={18}
-                      className={isActive
-                        ? darkMode ? 'text-indigo-400' : 'text-indigo-600'
-                        : ''
-                      }
-                    />
-                  )}
-                  <AnimatePresence mode="wait">
-                    {isActive && (
-                      <motion.span
-                        key={id + '-label'}
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className={`text-xs font-semibold overflow-hidden whitespace-nowrap ${
-                          darkMode ? 'text-indigo-400' : 'text-indigo-600'
-                        }`}
-                      >
-                        {label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  <Icon
+                    size={20}
+                    className={isActive
+                      ? darkMode ? 'text-indigo-400' : 'text-indigo-600'
+                      : ''
+                    }
+                  />
                 </div>
               </button>
             );
           })}
-
           {/* Separator */}
           <div className={`h-6 w-px flex-shrink-0 ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
 
