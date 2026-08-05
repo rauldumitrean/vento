@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import React from 'react';
-import { Search, Shirt, Users, Sun, Moon, LogOut, MessageSquare, Luggage } from 'lucide-react';
+import { Search, Shirt, Users, Sun, Moon, LogOut, MessageSquare, Luggage, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +15,7 @@ const MobileNavBar = ({ view, setView, darkMode, setDarkMode, handleLogout }) =>
     { id: 'dashboard', icon: Search, label: 'Buscar' },
     { id: 'packing', icon: Luggage, label: 'Maleta' },
     { id: 'studio', icon: MessageSquare, label: 'Estudio' },
+    { id: 'friends', icon: User, label: 'Amigos' },
   ];
 
   return (

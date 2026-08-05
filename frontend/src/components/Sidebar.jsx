@@ -56,6 +56,9 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsul
         <SidebarItem icon={Star} label="Ciudades Favoritas" isActive={view === 'favorites'} onClick={() => setView('favorites')} />
         <SidebarItem icon={Activity} label="Feed Comunidad" isActive={view === 'community'} onClick={() => setView('community')} />
         <SidebarItem icon={MessageSquare} label="Mix & Match Studio" isActive={view === 'studio'} onClick={() => setView('studio')} />
+        
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-2 mt-2">Social</p>
+        <SidebarItem icon={User} label="Amigos y Chat" isActive={view === 'friends'} onClick={() => setView('friends')} />
       </div>
 
       {/* Upgrade Banner (if not premium) */}
