@@ -1,21 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X, Shirt, Footprints, Glasses, Umbrella, CloudSnow } from 'lucide-react';
+import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X, Shirt, Footprints, Glasses, Umbrella, CloudSnow, Layers, Briefcase, Archive } from 'lucide-react';
 import Cookies from 'js-cookie';
 import CalendarPicker from './CalendarPicker';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const weatherCodeLabel = (code) => {
-  if (code === 0) return 'Despejado ☀️';
-  if (code <= 3) return 'Nuboso ⛅';
-  if (code <= 48) return 'Niebla 🌫️';
-  if (code <= 67) return 'Lluvia 🌧️';
-  if (code <= 77) return 'Nieve 🌨️';
-  if (code <= 82) return 'Chubascos 🌦️';
-  return 'Tormenta ⛈️';
-};
+
 
 export default function TravelPackingView({ token }) {
   const isPremium = Cookies.get('isPremium') === 'true';
@@ -106,8 +98,8 @@ export default function TravelPackingView({ token }) {
             <p className="text-gray-400 text-sm">La IA crea tu lista perfecta según el clima exacto de tu viaje</p>
           </div>
           {isPremium && (
-            <span className="ml-auto px-3 py-1 text-xs font-bold bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30 rounded-full text-purple-300">
-              ✨ Premium
+            <span className="ml-auto px-3 py-1 text-xs font-bold bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30 rounded-full text-purple-300 flex items-center gap-1">
+              <Sparkles size={12} /> Premium
             </span>
           )}
         </div>
@@ -120,8 +112,8 @@ export default function TravelPackingView({ token }) {
           </div>
           <h2 className="text-2xl font-bold text-white mb-3">Función Premium</h2>
           <p className="text-gray-400 max-w-md mb-8 leading-relaxed">El Asistente de Maleta analiza el pronóstico real de tu destino para generar una lista de equipaje perfectamente optimizada. Activa Premium para usarlo.</p>
-          <button className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 hover:scale-105 transition-transform">
-            ✨ Desbloquear Premium
+          <button className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 hover:scale-105 transition-transform flex items-center justify-center gap-2">
+            <Sparkles size={18} /> Desbloquear Premium
           </button>
         </motion.div>
       ) : (
@@ -249,7 +241,9 @@ export default function TravelPackingView({ token }) {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col items-center justify-center py-16 bg-white/5 border border-white/10 rounded-3xl">
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-12 h-12 border-2 border-amber-500 border-t-transparent rounded-full mb-4" />
                 <p className="text-white font-medium">Consultando el clima de tu destino...</p>
-                <p className="text-gray-400 text-sm mt-1">La IA está preparando tu maleta perfecta ✨</p>
+                <p className="text-gray-400 text-sm mt-1 flex items-center gap-1 justify-center">
+                  La IA está preparando tu maleta perfecta <Sparkles size={14} className="text-amber-400" />
+                </p>
               </motion.div>
             )}
 
@@ -260,7 +254,14 @@ export default function TravelPackingView({ token }) {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h2 className="text-lg font-bold text-white">{result.destination}, {result.country}</h2>
-                      <p className="text-amber-300 text-sm">{result.totalDays} días · {result.avgMin}°C–{result.avgMax}°C · {result.hasRain ? '🌧️ Posible lluvia' : '☀️ Sin lluvia prevista'}</p>
+                      <p className="text-amber-300 text-sm flex items-center gap-1 mt-1">
+                        {result.totalDays} días · {result.avgMin}°C–{result.avgMax}°C · 
+                        {result.hasRain ? (
+                          <><CloudRain size={14} className="text-amber-400" /> Posible lluvia</>
+                        ) : (
+                          <><Sun size={14} className="text-amber-400" /> Sin lluvia prevista</>
+                        )}
+                      </p>
                     </div>
                     <Package size={24} className="text-amber-400 shrink-0 mt-1" />
                   </div>
@@ -300,12 +301,14 @@ export default function TravelPackingView({ token }) {
                           const getCategoryIcon = (categoria) => {
                             const cat = categoria.toLowerCase();
                             if (cat.includes('camiseta') || cat.includes('top') || cat.includes('camisa')) return <Shirt size={24} className="text-amber-400" />;
-                            if (cat.includes('zapato') || cat.includes('calzado') || cat.includes('zapatilla')) return <Footprints size={24} className="text-amber-400" />;
-                            if (cat.includes('abrigo') || cat.includes('chaqueta')) return <CloudSnow size={24} className="text-amber-400" />;
-                            if (cat.includes('accesorio') || cat.includes('gafas')) return <Glasses size={24} className="text-amber-400" />;
-                            if (cat.includes('lluvia') || cat.includes('paraguas')) return <Umbrella size={24} className="text-amber-400" />;
-                            if (cat.includes('interior') || cat.includes('calcetin') || cat.includes('pantal')) return <Package size={24} className="text-amber-400" />;
-                            if (cat.includes('baño') || cat.includes('bikini') || cat.includes('bañador')) return <Sun size={24} className="text-amber-400" />;
+                            if (cat.includes('pantalon') || cat.includes('jeans') || cat.includes('short') || cat.includes('bermuda')) return <Layers size={24} className="text-amber-400" />;
+                            if (cat.includes('zapato') || cat.includes('calzado') || cat.includes('zapatilla') || cat.includes('sneaker')) return <Footprints size={24} className="text-amber-400" />;
+                            if (cat.includes('abrigo') || cat.includes('chaqueta') || cat.includes('sudadera') || cat.includes('jersey')) return <CloudSnow size={24} className="text-amber-400" />;
+                            if (cat.includes('accesorio') || cat.includes('gafas') || cat.includes('sombrero') || cat.includes('gorra')) return <Glasses size={24} className="text-amber-400" />;
+                            if (cat.includes('lluvia') || cat.includes('paraguas') || cat.includes('impermeable')) return <Umbrella size={24} className="text-amber-400" />;
+                            if (cat.includes('interior') || cat.includes('calcetin') || cat.includes('ropa interior')) return <Archive size={24} className="text-amber-400" />;
+                            if (cat.includes('baño') || cat.includes('bikini') || cat.includes('bañador') || cat.includes('playa')) return <Sun size={24} className="text-amber-400" />;
+                            if (cat.includes('neceser') || cat.includes('aseo')) return <Briefcase size={24} className="text-amber-400" />;
                             return <Package size={24} className="text-amber-400" />;
                           };
                           return (
