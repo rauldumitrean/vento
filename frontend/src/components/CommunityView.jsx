@@ -145,6 +145,7 @@ function OutfitCard({ outfit, token, currentUserId, onDelete, onClickCard }) {
             </button>
           )}
         </div>
+      </div>
     </motion.div>
   );
 }
