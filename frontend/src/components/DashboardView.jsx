@@ -5,14 +5,19 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, Users, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge, LayoutDashboard, Luggage, Globe, Moon, Flame } from 'lucide-react';
 import { lazy, Suspense } from 'react';
-import AdModal from './AdModal';
-const AdminView = lazy(() => import('./AdminView'));
+import SupportView from './SupportView';
+import TermsView from './TermsView';
+import PrivacyView from './PrivacyView';
 import ArmarioHistorial from './ArmarioHistorial';
+import AdminView from './AdminView';
 import ProfileSettings from './ProfileSettings';
+import BanView from './BanView';
+import AdModal from './AdModal';
 import FriendsView from './FriendsView';
 import FavoriteCitiesView from './FavoriteCitiesView';
 import TravelPackingView from './TravelPackingView';
 import CommunityView from './CommunityView';
+import EstudioEstiloView from './EstudioEstiloView';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import MobileNavBar from './MobileNavBar';
@@ -56,8 +61,9 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
       
       if (isMounted) setImgStatus('loading');
       
-      let url = prenda.imgUrl;
-      if (!url || loadAttempt > 0) {
+      let url = prenda.imgUrl || prenda.imageUrl;
+      // If we have a user uploaded image, skip generation
+      if (!url || (loadAttempt > 0 && !prenda.imageUrl)) {
         const queryText = prenda.english_query || prenda.nombre_corto || (prenda.descripcion || '').substring(0, 60);
         const simplePrompt = `a single ${queryText} garment, product photography, white background, no people, flat lay, strictly clothing`;
         
@@ -1352,6 +1358,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <FavoriteCitiesView token={token} onSelectCity={handleSelectFavoriteCity} />
               ) : view === 'packing' ? (
                 <TravelPackingView token={token} />
+              ) : view === 'studio' ? (
+                <EstudioEstiloView token={token} />
               ) : view === 'community' ? (
                 <CommunityView token={token} consultaId={consultaId} isCurrentOutfitPublic={false} />
               ) : view === 'chat' ? (

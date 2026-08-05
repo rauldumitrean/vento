@@ -368,7 +368,7 @@ router.post('/recomendacion', authMiddleware, async (req, res) => {
 
     let armarioText = "";
     if (armario.length > 0) {
-      armarioText = "El usuario TIENE las siguientes prendas en su armario:\n" + armario.map(p => `- [${p.categoria}] ${p.descripcion} (${p.color || ''})`).join('\n') + "\nIMPORTANTE: PRIORIZA usar estas prendas exactas en tu recomendación si son adecuadas para el clima. Si necesitas algo que no tiene, recomiéndalo normalmente.";
+      armarioText = "El usuario TIENE las siguientes prendas en su armario:\n" + armario.map(p => `- ID [${p.id}]: [${p.categoria}] ${p.descripcion} (${p.color || ''})`).join('\n') + "\nIMPORTANTE: PRIORIZA usar estas prendas exactas en tu recomendación si son adecuadas para el clima. Si usas una de estas prendas, incluye obligatoriamente su ID en el campo 'id_armario'. Si necesitas algo que no tiene, recomiéndalo normalmente (id_armario = null).";
     }
 
     const amazonTag = process.env.AMAZON_AFFILIATE_TAG || 'ventoo-21';
@@ -440,9 +440,9 @@ IMPORTANTE: Basa el outfit en las condiciones de TODO el día, no solo en la act
 3. El "resumen" debe sonar experto, cálido y persuasivo.
 4. El "consejo_extra" debe ser un "pro-tip" de estilismo útil y avanzado aplicable al outfit recomendado.
 5. CRÍTICO PARA LA IA DE IMÁGENES:
-   - "descripcion": DEBE ser extremadamente detallada, altamente visual y fotográfica. Especifica el tejido, el corte (fit), el tono exacto del color, y detalles de diseño (ej. "Jersey oversize de punto grueso en lana merino color verde musgo con cuello perkins").
-   - "english_query": DEBE ser la traducción al inglés exacta, corta y optimizada para un generador de imágenes de la descripción de la prenda. (Ej: "vintage blue baggy denim jeans, product photography, white background, flat lay"). Es súper importante que esta traducción sea precisa para que el sistema encuentre/genere la imagen correcta.
-   - "nombre_corto": debe ser el título simple de la prenda para mostrar en grande en la app (ej. "Camiseta Básica (Blanca)").
+   - "descripcion": DEBE ser extremadamente detallada, altamente visual y fotográfica. Especifica el tejido, el corte (fit), el tono exacto del color, y detalles de diseño.
+   - "english_query": DEBE ser la traducción al inglés exacta, corta y optimizada para un generador de imágenes.
+   - "nombre_corto": debe ser el título simple de la prenda para mostrar en grande en la app.
 
 Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloques de código markdown ni explicaciones adicionales:
 {
@@ -455,7 +455,8 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       "english_query": "English translation optimized for image generation (e.g. 'white oversized t-shirt')",
       "razon": "Justificación técnica o estilística para incluir esta prenda",
       "tienda_recomendada": "Amazon",
-      "enlace_compra": "https://www.amazon.es/s?k=busqueda+de+la+prenda&tag=${amazonTag}"
+      "enlace_compra": "https://www.amazon.es/s?k=busqueda+de+la+prenda&tag=${amazonTag}",
+      "id_armario": 123 // OBLIGATORIO incluir el número de ID si usaste una prenda del armario del usuario. Si es una prenda nueva o inventada, pon null.
     }
   ],
   "timeline": [
@@ -481,6 +482,18 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
     } catch(e) {
       console.error("Error parseando JSON de Gemini:", textResult);
       return res.status(500).json({ errorCode: '0x1018', error: 'Error procesando respuesta de IA' });
+    }
+
+    // --- HYDRATE ARMARIO IMAGES ---
+    if (recomendacionJSON.prendas) {
+      for (let prenda of recomendacionJSON.prendas) {
+        if (prenda.id_armario) {
+          const prendaArmario = armario.find(p => p.id === prenda.id_armario);
+          if (prendaArmario && prendaArmario.imageUrl) {
+            prenda.imageUrl = prendaArmario.imageUrl; // Enviar la URL real de la prenda al frontend
+          }
+        }
+      }
     }
 
     // --- AUTO-MODERATOR: Check for violations ---
@@ -1472,6 +1485,17 @@ router.post('/morning-alerts/trigger', async (req, res) => {
         // Send morning alert email
         const { sendMorningAlertEmail } = require('../services/emailService');
         await sendMorningAlertEmail(user, city.cityName, current, tempMax, tempMin);
+        
+        // Create in-app notification
+        const notificationContent = `¡Buenos días! En ${city.cityName} hace ${current.temperature_2m}°C. Máxima de ${tempMax}°C y mínima de ${tempMin}°C. ¡Prepárate para un gran día!`;
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            type: 'morning_alert',
+            content: notificationContent
+          }
+        });
+        
         sent++;
       } catch (userErr) {
         console.error(`Morning alert failed for user ${user.id}:`, userErr.message);
@@ -1529,6 +1553,125 @@ router.get('/armario/prendas', authMiddleware, async (req, res) => {
     res.json({ prendas });
   } catch (err) {
     res.status(500).json({ errorCode: '0x107B', error: 'Error obteniendo armario.' });
+  }
+});
+
+// ── FEATURE: VIAJES GUARDADOS (PROGRESO DE MALETA) ──────────────────────────
+
+// Guardar un nuevo viaje
+router.post('/viajes', authMiddleware, async (req, res) => {
+  try {
+    const { destination, startDate, endDate, packingListJson, checkedItemsJson } = req.body;
+    if (!destination || !packingListJson) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    const newViaje = await prisma.viajeGuardado.create({
+      data: {
+        userId: req.user.id,
+        destination,
+        startDate,
+        endDate,
+        packingListJson: JSON.stringify(packingListJson),
+        checkedItemsJson: JSON.stringify(checkedItemsJson || {}),
+      }
+    });
+
+    res.json(newViaje);
+  } catch (error) {
+    console.error("Error saving viaje:", error);
+    res.status(500).json({ error: 'Error al guardar el viaje' });
+  }
+});
+
+// Obtener los viajes del usuario
+router.get('/viajes', authMiddleware, async (req, res) => {
+  try {
+    const viajes = await prisma.viajeGuardado.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' }
+    });
+    // Parse json
+    const parsed = viajes.map(v => ({
+      ...v,
+      packingListJson: JSON.parse(v.packingListJson),
+      checkedItemsJson: JSON.parse(v.checkedItemsJson)
+    }));
+    res.json(parsed);
+  } catch (error) {
+    console.error("Error fetching viajes:", error);
+    res.status(500).json({ error: 'Error al obtener viajes' });
+  }
+});
+
+// Actualizar el progreso de la maleta
+router.put('/viajes/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { checkedItemsJson } = req.body;
+    
+    // Check ownership
+    const viaje = await prisma.viajeGuardado.findUnique({ where: { id: parseInt(id) } });
+    if (!viaje || viaje.userId !== req.user.id) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    const updated = await prisma.viajeGuardado.update({
+      where: { id: parseInt(id) },
+      data: { checkedItemsJson: JSON.stringify(checkedItemsJson) }
+    });
+    
+    res.json({ ...updated, checkedItemsJson: JSON.parse(updated.checkedItemsJson) });
+  } catch (error) {
+    console.error("Error updating viaje:", error);
+    res.status(500).json({ error: 'Error al actualizar viaje' });
+  }
+});
+
+// Eliminar un viaje
+router.delete('/viajes/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const viaje = await prisma.viajeGuardado.findUnique({ where: { id: parseInt(id) } });
+    if (!viaje || viaje.userId !== req.user.id) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    await prisma.viajeGuardado.delete({ where: { id: parseInt(id) } });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting viaje:", error);
+    res.status(500).json({ error: 'Error al eliminar viaje' });
+  }
+});
+
+// ── FEATURE: IN-APP NOTIFICATIONS ──────────────────────────────────────────────
+
+router.get('/notifications', authMiddleware, async (req, res) => {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+    res.json(notifications);
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ error: 'Error al obtener notificaciones' });
+  }
+});
+
+router.put('/notifications/read', authMiddleware, async (req, res) => {
+  try {
+    await prisma.notification.updateMany({
+      where: { userId: req.user.id, isRead: false },
+      data: { isRead: true }
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating notifications:", error);
+    res.status(500).json({ error: 'Error al actualizar notificaciones' });
   }
 });
 

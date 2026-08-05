@@ -45,6 +45,8 @@ model User {
   reportsReceived     Report[] @relation("UserReportsReceived")
   favoriteCities      FavoriteCity[]
   outfitLikes         OutfitLike[]
+  viajes              ViajeGuardado[]
+  notifications       Notification[]
 
   @@index([lastActive])
   @@index([isPremium])
@@ -192,4 +194,34 @@ model OutfitLike {
   @@unique([userId, consultaId])
   @@index([consultaId])
   @@index([userId])
+}
+
+model ViajeGuardado {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  destination      String
+  startDate        String
+  endDate          String
+  packingListJson  String   @db.Text
+  checkedItemsJson String   @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String   // e.g. "morning_alert", "friend_request"
+  content   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
 }

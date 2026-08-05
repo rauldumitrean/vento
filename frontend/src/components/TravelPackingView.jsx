@@ -21,10 +21,28 @@ export default function TravelPackingView({ token }) {
   const [checkedItems, setCheckedItems] = useState({});
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [viajesGuardados, setViajesGuardados] = useState([]);
+  const [activeViajeId, setActiveViajeId] = useState(null);
+  const [isSavingViaje, setIsSavingViaje] = useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
     
+    // Fetch Viajes Guardados
+    const fetchViajes = async () => {
+      if (!isPremium) return;
+      try {
+        const res = await axios.get(`${API_URL}/api/viajes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (isMounted) setViajesGuardados(res.data);
+      } catch (err) {
+        console.error("Error fetching saved trips:", err);
+      }
+    };
+    
+    fetchViajes();
+
     const fetchSuggestions = async () => {
       const loc = destination.trim();
       if (loc.length < 2) {
@@ -99,7 +117,39 @@ export default function TravelPackingView({ token }) {
     }
   };
 
-  const toggleCheck = (key) => setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
+  const handleSaveViaje = async () => {
+    if (!result?.packingList) return;
+    setIsSavingViaje(true);
+    try {
+      const res = await axios.post(`${API_URL}/api/viajes`, {
+        destination, startDate, endDate,
+        packingListJson: result.packingList,
+        checkedItemsJson: checkedItems
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setActiveViajeId(res.data.id);
+      setViajesGuardados([res.data, ...viajesGuardados]);
+    } catch (err) {
+      console.error("Error guardando el viaje:", err);
+    } finally {
+      setIsSavingViaje(false);
+    }
+  };
+
+  const toggleCheck = async (key) => {
+    const newChecked = { ...checkedItems, [key]: !checkedItems[key] };
+    setCheckedItems(newChecked);
+    
+    // Sync if it's a saved trip
+    if (activeViajeId) {
+      try {
+        await axios.put(`${API_URL}/api/viajes/${activeViajeId}`, {
+          checkedItemsJson: newChecked
+        }, { headers: { Authorization: `Bearer ${token}` } });
+      } catch(e) {
+        console.error("Error syncing checked items", e);
+      }
+    }
+  };
   const totalItems = result?.packingList?.maleta?.length || 0;
   const checkedCount = Object.values(checkedItems).filter(Boolean).length;
 
@@ -136,6 +186,33 @@ export default function TravelPackingView({ token }) {
         </motion.div>
       ) : (
         <div className="flex flex-col gap-6">
+          {viajesGuardados.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-2">
+              <h3 className="text-sm font-medium text-amber-400 mb-3 flex items-center gap-2">
+                <Cloud size={14} /> Mis Maletas Guardadas
+              </h3>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {viajesGuardados.map((viaje) => (
+                  <button
+                    key={viaje.id}
+                    onClick={() => {
+                      setDestination(viaje.destination);
+                      setStartDate(viaje.startDate);
+                      setEndDate(viaje.endDate);
+                      setResult({ packingList: viaje.packingListJson });
+                      setCheckedItems(viaje.checkedItemsJson);
+                      setActiveViajeId(viaje.id);
+                    }}
+                    className={`flex-shrink-0 px-4 py-3 border rounded-xl text-sm transition-colors flex flex-col items-start gap-1 ${activeViajeId === viaje.id ? 'bg-emerald-500/20 border-emerald-500/50 text-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-300'}`}
+                  >
+                    <span className="font-bold text-white flex items-center gap-2"><MapPin size={12}/> {viaje.destination.split(',')[0]}</span>
+                    <span className="text-xs opacity-70 flex items-center gap-1"><Calendar size={10}/> {new Date(viaje.startDate).toLocaleDateString()}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {recentTrips.length > 0 && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-2">
               <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
@@ -388,6 +465,22 @@ export default function TravelPackingView({ token }) {
                         </motion.button>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Save Trip Button */}
+                {!activeViajeId ? (
+                  <button 
+                    onClick={handleSaveViaje}
+                    disabled={isSavingViaje}
+                    className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-transform hover:scale-105 shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    {isSavingViaje ? <Loader2 size={20} className="animate-spin" /> : <Cloud size={20} />}
+                    {isSavingViaje ? 'Guardando...' : 'Guardar Viaje en Nube'}
+                  </button>
+                ) : (
+                  <div className="w-full mt-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3 rounded-2xl font-medium flex items-center justify-center gap-2">
+                    <CheckCircle size={18} /> Progreso sincronizado en la nube
                   </div>
                 )}
 
