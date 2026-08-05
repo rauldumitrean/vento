@@ -33,6 +33,14 @@ router.post('/register', async (req, res) => {
     // Send async welcome email (must await in Vercel serverless)
     await emailService.sendWelcomeEmail(user).catch(console.error);
 
+    // Create a welcome in-app notification
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        content: `¡Bienvenido a Ventoo, ${user.name || 'explorador'}! Configura tu perfil para empezar a recibir recomendaciones de moda y clima.`
+      }
+    });
+
     const token = jwt.sign({ id: user.id, sessionVersion: user.sessionVersion || 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras } });
   } catch (error) {

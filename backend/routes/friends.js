@@ -76,6 +76,14 @@ router.post('/request', authMiddleware, async (req, res) => {
       }
     });
 
+    // Create a notification for the receiver
+    await prisma.notification.create({
+      data: {
+        userId: friend.id,
+        content: `${req.user.name || 'Alguien'} te ha enviado una solicitud de amistad.`
+      }
+    });
+
     res.json({ success: true, message: 'Solicitud enviada correctamente' });
   } catch (err) {
     console.error(err);

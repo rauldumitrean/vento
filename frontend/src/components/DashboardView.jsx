@@ -1324,6 +1324,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             setOutfit(null);
             setLocation('');
           }}
+          token={token}
         />
 
         {/* Main Content */}
