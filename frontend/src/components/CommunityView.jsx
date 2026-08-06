@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Heart, MapPin, Loader2, RefreshCw, Share2, ChevronLeft, ChevronRight, User as UserIcon, Sparkles, Shirt, Layers, Footprints, CloudSnow, Crown, Trash2, X } from 'lucide-react';
+import { Globe, Heart, MapPin, Loader2, RefreshCw, Share2, ChevronLeft, ChevronRight, User as UserIcon, Sparkles, Shirt, Layers, Footprints, CloudSnow, Crown, Trash2, X, Plus } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -160,6 +160,9 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
   const [shareStatus, setShareStatus] = useState(isCurrentOutfitPublic);
   const currentUserId = parseInt(Cookies.get('userId'));
   const [selectedOutfit, setSelectedOutfit] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [historyOutfits, setHistoryOutfits] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const handleDeletePost = (deletedId) => {
     setOutfits(prev => prev.filter(o => o.id !== deletedId));
@@ -201,6 +204,27 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
     }
   };
 
+  const openUploadModal = async () => {
+    setShowUploadModal(true);
+    setLoadingHistory(true);
+    try {
+      const res = await axios.get(`${API_URL}/api/historial`, { headers: { Authorization: `Bearer ${token}` } });
+      setHistoryOutfits(res.data.historial || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const toggleHistoryShare = async (id, currentPublicState) => {
+    try {
+      const res = await axios.post(`${API_URL}/api/community/${id}/share`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setHistoryOutfits(prev => prev.map(o => o.id === id ? { ...o, isPublic: res.data.isPublic } : o));
+      fetchFeed(1);
+    } catch(e) {}
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-6 px-4">
       {/* Header */}
@@ -217,6 +241,13 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={openUploadModal}
+              className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-emerald-500/20"
+              title="Subir mi outfit a la comunidad"
+            >
+              <Plus size={20} />
+            </button>
             <button
               onClick={() => fetchFeed(1)}
               disabled={loading}
@@ -353,6 +384,56 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Upload Modal (Share from History) */}
+      <AnimatePresence>
+        {showUploadModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-[#1A1A24] border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl relative max-h-[85vh] flex flex-col">
+              <button onClick={() => setShowUploadModal(false)} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+                <X size={20} />
+              </button>
+              
+              <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <Plus className="text-emerald-400" />
+                Subir tu Outfit
+              </h2>
+              <p className="text-sm text-gray-400 mb-6">Elige un outfit de tu historial para compartirlo con la comunidad o hacerlo privado.</p>
+              
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+                {loadingHistory ? (
+                  <div className="flex justify-center py-10"><Loader2 className="animate-spin text-emerald-400" /></div>
+                ) : historyOutfits.length === 0 ? (
+                  <p className="text-gray-500 text-center py-10">No tienes outfits en tu historial. ¡Genera uno primero!</p>
+                ) : (
+                  historyOutfits.map(o => {
+                    const rec = typeof o.recomendacion_json === 'string' ? JSON.parse(o.recomendacion_json) : o.recomendacion_json;
+                    return (
+                      <div key={o.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-900/50 to-purple-900/50 rounded-lg flex items-center justify-center">
+                            <Shirt size={20} className="text-indigo-400" />
+                          </div>
+                          <div>
+                            <p className="text-white text-sm font-medium">{o.ubicacion}</p>
+                            <p className="text-gray-400 text-xs">{new Date(o.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => toggleHistoryShare(o.id, o.isPublic)}
+                          className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors ${o.isPublic ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}`}
+                        >
+                          {o.isPublic ? 'Público' : 'Privado'}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

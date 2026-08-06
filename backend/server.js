@@ -50,6 +50,10 @@ try {
   prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "usaGorras" BOOLEAN;')
     .catch(() => {});
 
+  // Auto-migrate alertCityName
+  prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "alertCityName" TEXT;')
+    .catch(() => {});
+
   // Create FavoriteCity table if it doesn't exist
   prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "FavoriteCity" (

@@ -70,21 +70,24 @@ export default function NotificationBell({ token }) {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-12 right-0 md:left-0 md:right-auto w-72 bg-[#1a1c23] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-3 w-80 bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
             <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center">
               <h4 className="text-sm font-bold text-white">Notificaciones</h4>
             </div>
-            <div className="max-h-80 overflow-y-auto hide-scrollbar">
+            <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-1">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-sm text-gray-400">
                   No tienes notificaciones nuevas
                 </div>
               ) : (
-                notifications.map(notif => (
-                  <div key={notif.id} className={`p-4 border-b border-white/5 transition-colors ${!notif.isRead ? 'bg-indigo-500/10' : 'hover:bg-white/5'}`}>
-                    <p className="text-xs text-gray-300 leading-relaxed mb-1">{notif.content}</p>
-                    <span className="text-[10px] text-gray-500">{new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                notifications.map(n => (
+                  <div key={n.id} className="p-3 rounded-xl hover:bg-white/10 transition-colors">
+                    <p className="text-sm text-gray-200">{n.content}</p>
+                    <span className="text-xs text-gray-500 mt-2 block">
+                      {new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
                   </div>
                 ))
               )}

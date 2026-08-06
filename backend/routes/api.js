@@ -1492,13 +1492,17 @@ router.all('/morning-alerts/trigger', async (req, res) => {
     // Hobby Vercel plan only allows once-a-day cron, so we send to all users with morningAlerts enabled
     const users = await prisma.user.findMany({
       where: { morningAlerts: true },
-      include: { favoriteCities: { take: 1, orderBy: { createdAt: 'desc' } } }
+      include: { favoriteCities: { orderBy: { createdAt: 'desc' } } }
     });
-
+    
     let sent = 0;
+
     for (const user of users) {
       if (!user.favoriteCities || user.favoriteCities.length === 0) continue;
-      const city = user.favoriteCities[0];
+      // Prefer the selected alertCityName, or fallback to the most recent favorite city
+      const city = user.alertCityName 
+        ? user.favoriteCities.find(c => c.cityName === user.alertCityName) || user.favoriteCities[0]
+        : user.favoriteCities[0];
 
       try {
         // Get weather for the city

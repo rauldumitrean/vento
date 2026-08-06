@@ -14,6 +14,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [usaGorras, setUsaGorras] = useState(false);
   const [morningAlerts, setMorningAlerts] = useState(false);
   const [alertHour, setAlertHour] = useState(7);
+  const [alertCityName, setAlertCityName] = useState('');
   const [profilePicture, setProfilePicture] = useState(Cookies.get('userProfilePicture') || '');
   const [historyCount, setHistoryCount] = useState(0);
   const [dailyCount, setDailyCount] = useState(0);
@@ -23,6 +24,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [message, setMessage] = useState('');
   const [reportMessage, setReportMessage] = useState('');
   const [reportStatus, setReportStatus] = useState('idle'); // idle | loading | success | error
+  const [favoriteCities, setFavoriteCities] = useState([]);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isPremium, setIsPremium] = useState(Cookies.get('isPremium') === 'true');
   const [premiumPlan, setPremiumPlan] = useState(Cookies.get('premiumPlan') || null);
@@ -44,6 +46,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
           setUsaGorras(res.data.user.usaGorras || false);
           setMorningAlerts(res.data.user.morningAlerts || false);
           setAlertHour(res.data.user.alertHour ?? 7);
+          setAlertCityName(res.data.user.alertCityName || '');
           setProfilePicture(res.data.user.profilePicture || '');
           Cookies.set('userProfilePicture', res.data.user.profilePicture || '', { expires: 365 });
           setHistoryCount(res.data.user.historyCount || 0);
@@ -57,6 +60,16 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
             Cookies.set('premiumPlan', res.data.user.premiumPlan, { expires: 365 });
           } else {
             Cookies.remove('premiumPlan');
+          }
+
+          try {
+            const favRes = await axios.get(`${API_URL}/api/favorites`, { headers: { Authorization: `Bearer ${token}` } });
+            setFavoriteCities(favRes.data.favorites || []);
+            if (!res.data.user.alertCityName && favRes.data.favorites?.length > 0) {
+              setAlertCityName(favRes.data.favorites[0].cityName);
+            }
+          } catch (e) {
+            console.error("Error fetching favorites:", e);
           }
         }
       } catch (err) {
@@ -112,7 +125,17 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
     setLoading(true);
     setMessage('');
     try {
-      const res = await axios.put(`${API_URL}/api/auth/profile`, { name, gender, age, estiloPersonal, estiloDetalles, usaGorras, morningAlerts, alertHour }, {
+      const res = await axios.put(`${API_URL}/api/auth/profile`, { 
+        name, 
+        gender, 
+        age, 
+        estiloPersonal, 
+        estiloDetalles, 
+        usaGorras, 
+        morningAlerts, 
+        alertHour,
+        alertCityName 
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Cookies.set('userName', res.data.user.name, { expires: 365 });
@@ -388,11 +411,32 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
               </label>
             </div>
             {morningAlerts && (
-              <div>
-                <p className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío: 08:00</p>
-                <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Debido a límites del plan gratuito, los correos se envían a todos los usuarios a las 08:00. Necesitas tener al menos una ciudad favorita guardada (se usará la más reciente).
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <p className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío: 09:00 (Hora Peninsular)</p>
+                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Debido a límites del plan gratuito, los correos se envían a todos los usuarios simultáneamente.
+                  </p>
+                </div>
+                
+                {favoriteCities.length > 0 ? (
+                  <div>
+                    <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ciudad para las alertas</label>
+                    <select 
+                      value={alertCityName}
+                      onChange={e => setAlertCityName(e.target.value)}
+                      className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
+                    >
+                      {favoriteCities.map(c => (
+                        <option key={c.id} value={c.cityName}>{c.cityName}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Necesitas tener al menos una ciudad favorita guardada.
+                  </p>
+                )}
               </div>
             )}
           </div>

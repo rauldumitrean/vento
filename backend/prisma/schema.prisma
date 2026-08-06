@@ -31,6 +31,7 @@ model User {
   friendCode         String?  @unique
   morningAlerts      Boolean  @default(false)
   alertHour          Int      @default(7)
+  alertCityName      String?
   createdAt  DateTime @default(now())
   lastActive DateTime @default(now())
   sessionVersion Int  @default(0)
