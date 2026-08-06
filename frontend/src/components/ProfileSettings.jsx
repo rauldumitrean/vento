@@ -389,17 +389,10 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
             </div>
             {morningAlerts && (
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío</label>
-                <select 
-                  value={alertHour}
-                  onChange={e => setAlertHour(parseInt(e.target.value))}
-                  className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                >
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
-                  ))}
-                </select>
-                <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Necesitas tener al menos una ciudad favorita guardada. Usa la ciudad más reciente de tus favoritas.</p>
+                <p className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío: 08:00</p>
+                <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                  Debido a límites del plan gratuito, los correos se envían a todos los usuarios a las 08:00. Necesitas tener al menos una ciudad favorita guardada (se usará la más reciente).
+                </p>
               </div>
             )}
           </div>

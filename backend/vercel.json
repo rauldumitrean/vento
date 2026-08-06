@@ -15,7 +15,7 @@
   "crons": [
     {
       "path": "/api/morning-alerts/trigger",
-      "schedule": "0 * * * *"
+      "schedule": "0 8 * * *"
     }
   ]
 }

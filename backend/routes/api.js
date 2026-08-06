@@ -1489,9 +1489,9 @@ router.all('/morning-alerts/trigger', async (req, res) => {
 
     const hour = parseInt(req.query.hour) || new Date().getHours();
     
-    // Get all users who have morning alerts enabled for this hour + have at least one favorite city
+    // Hobby Vercel plan only allows once-a-day cron, so we send to all users with morningAlerts enabled
     const users = await prisma.user.findMany({
-      where: { morningAlerts: true, alertHour: hour },
+      where: { morningAlerts: true },
       include: { favoriteCities: { take: 1, orderBy: { createdAt: 'desc' } } }
     });
 
