@@ -27,6 +27,9 @@ try {
 
   app = express();
 
+  // Vercel Proxy Trust para que express-rate-limit funcione correctamente
+  app.set('trust proxy', 1);
+
   // Seguridad HTTP y Compresión
   app.use(helmet());
   app.use(compression());
@@ -34,17 +37,21 @@ try {
   // CORS estricto (Ajustar según dominios permitidos, de momento mantenemos '*' pero se debe cerrar en prod)
   app.use(cors({ origin: '*' }));
   
-  // Rate Limiting Global
-  app.use('/api/', limiter);
-
+  // IMPORTANTE: Los parsers sincrónicos deben ir ANTES de cualquier middleware asíncrono (como el limiter).
+  // Si el limiter (asíncrono) va primero en Vercel, cede el Event Loop y el stream de la petición
+  // HTTP se agota/cierra antes de que express.json() pueda leerlo, resultando en un req.body vacío ({}).
   app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+  // Rate Limiting Global (Asíncrono)
+  app.use('/api/', limiter);
 
   app.use('/api/auth', authRoutes);
   app.use('/api/payments', paymentsRoutes);
   app.use('/api/friends', friendsRoutes);
   app.use('/api/favorites', favoritesRoutes);
+
   app.use('/api', apiRoutes);
 
   // Middleware Global de Errores (Siempre debe ir al final de las rutas)
