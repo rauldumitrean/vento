@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft } from 'lucide-react';
+import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -371,9 +371,9 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
           <div className="space-y-4">
             <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
               <div>
-                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  ☀️ Email diario del clima 
-                  <span className={`ml-2 text-xs ${morningAlerts ? 'text-indigo-400' : 'text-gray-500'}`}>{morningAlerts ? '(Activado)' : '(Desactivado)'}</span>
+                <h4 className={`font-medium flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <Sun size={18} className="text-yellow-500" /> Email diario del clima 
+                  <span className={`text-xs ${morningAlerts ? 'text-indigo-400' : 'text-gray-500'}`}>{morningAlerts ? '(Activado)' : '(Desactivado)'}</span>
                 </h4>
                 <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{morningAlerts ? 'Recibirás' : 'No recibirás'} un resumen del tiempo y consejo de ropa cada mañana.</p>
               </div>

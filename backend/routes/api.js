@@ -1475,11 +1475,15 @@ router.post('/community/:id/like', authMiddleware, async (req, res) => {
 });
 
 // ── FEATURE 5: Morning Alerts ─────────────────────────────────────────────────
-// POST /api/morning-alerts/trigger — called by a CRON job (secured with internal key)
-router.post('/morning-alerts/trigger', async (req, res) => {
+// GET/POST /api/morning-alerts/trigger — called by a CRON job (secured with internal key)
+router.all('/morning-alerts/trigger', async (req, res) => {
   try {
+    const authHeader = req.headers.authorization;
     const key = req.headers['x-cron-key'];
-    if (key !== process.env.CRON_SECRET) {
+    const expectedToken = process.env.CRON_SECRET;
+    
+    const isAuthorized = key === expectedToken || (authHeader && authHeader === `Bearer ${expectedToken}`);
+    if (!isAuthorized) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
