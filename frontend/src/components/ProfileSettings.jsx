@@ -415,7 +415,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                 <div>
                   <p className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío: 09:00 (Hora Peninsular)</p>
                   <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    Debido a límites del plan gratuito, los correos se envían a todos los usuarios simultáneamente.
+                    Tu reporte del clima y recomendaciones de outfits se preparan y envían a esta hora para que empieces el día de la mejor manera.
                   </p>
                 </div>
                 

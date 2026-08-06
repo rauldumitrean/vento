@@ -70,10 +70,10 @@ export default function NotificationBell({ token }) {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-3 w-80 bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="absolute right-0 mt-3 w-80 bg-gray-900/40 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
-            <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
               <h4 className="text-sm font-bold text-white">Notificaciones</h4>
             </div>
             <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-1">

@@ -128,8 +128,10 @@ function App() {
             }
             // If the token is invalid or the user was deleted, log them out
             setToken(null);
+            setAdminToken(null);
             setBannedData(null);
             Cookies.remove('bannedData');
+            Cookies.remove('adminToken');
           } else if (error.response.status === 403 && error.response.data?.error === 'BANNED') {
             // Real-time ban enforcement
             const banInfo = {
