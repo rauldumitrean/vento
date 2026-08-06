@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
     "@tailwindcss/postcss": "^4.3.2",
+    "@tanstack/react-query": "^5.101.4",
     "@yudiel/react-qr-scanner": "^2.6.0",
     "axios": "^1.18.1",
     "axios-cache-interceptor": "^1.12.0",

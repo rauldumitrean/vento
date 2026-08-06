@@ -2,6 +2,17 @@ import Cookies from 'js-cookie';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import React, { useState, useEffect, Component } from 'react';
 import axios from 'axios';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Mejorar UX evitando refetch en móviles al cambiar de tab
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutos de caché por defecto
+    },
+  },
+});
 import LandingView from './components/LandingView';
 import BanView from './components/BanView';
 
@@ -185,9 +196,10 @@ function App() {
   }, [adminToken]);
 
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <GlobalBanOverlay 
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <GlobalBanOverlay 
         token={token} 
         bannedData={bannedData} 
         setBannedData={setBannedData} 
@@ -229,12 +241,13 @@ function App() {
             <Route path="/privacy" element={<PrivacyView />} />
             <Route path="/faq" element={<FaqView />} />
           </Routes>
-        {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
-        {token && <IosInstallPrompt />}
-        <CookieBanner />
-      </div>
-      </BrowserRouter>
-    </ErrorBoundary>
+          {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
+          {token && <IosInstallPrompt />}
+          <CookieBanner />
+        </div>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </QueryClientProvider>
   );
 }
 

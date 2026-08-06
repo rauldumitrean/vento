@@ -3,6 +3,10 @@ try {
   const express = require('express');
   const cors = require('cors');
   const dotenv = require('dotenv');
+  const helmet = require('helmet');
+  const compression = require('compression');
+  const rateLimit = require('express-rate-limit');
+  const { errorHandler } = require('./middleware/errorHandler');
 
   dotenv.config();
 
@@ -10,10 +14,29 @@ try {
   const apiRoutes = require('./routes/api');
   const paymentsRoutes = require('./routes/payments');
   const friendsRoutes = require('./routes/friends');
+  const favoritesRoutes = require('./routes/favorites');
+
+  // Configuración de Rate Limiting (Prevención DDoS básica)
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 1000, // Límite de 1000 peticiones por ventana por IP (algo permisivo para no romper la app)
+    message: { errorCode: '0x429', error: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo más tarde.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
 
   app = express();
 
+  // Seguridad HTTP y Compresión
+  app.use(helmet());
+  app.use(compression());
+  
+  // CORS estricto (Ajustar según dominios permitidos, de momento mantenemos '*' pero se debe cerrar en prod)
   app.use(cors({ origin: '*' }));
+  
+  // Rate Limiting Global
+  app.use('/api/', limiter);
+
   app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -21,7 +44,11 @@ try {
   app.use('/api/auth', authRoutes);
   app.use('/api/payments', paymentsRoutes);
   app.use('/api/friends', friendsRoutes);
+  app.use('/api/favorites', favoritesRoutes);
   app.use('/api', apiRoutes);
+
+  // Middleware Global de Errores (Siempre debe ir al final de las rutas)
+  app.use(errorHandler);
 
   const PORT = process.env.PORT || 3000;
   if (process.env.NODE_ENV !== 'production') {
