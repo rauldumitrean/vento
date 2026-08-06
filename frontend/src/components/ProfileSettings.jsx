@@ -212,77 +212,68 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
     }
   };
 
-  // Helper para renderizar Widgets/Acordeones
-  const WidgetSection = ({ id, title, icon: Icon, children }) => {
-    const isOpen = activeAccordion === id;
-    return (
-      <div className={`rounded-2xl border overflow-hidden transition-all ${darkMode ? 'bg-gray-900/40 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'}`}>
-        <button 
-          type="button"
-          onClick={() => setActiveAccordion(isOpen ? null : id)}
-          className="w-full flex items-center justify-between p-4 md:pointer-events-none md:cursor-default"
-        >
-          <div className="flex items-center gap-3">
-             <div className={`p-2 rounded-xl ${darkMode ? 'bg-indigo-900/40' : 'bg-indigo-50'}`}>
-               <Icon className={`w-5 h-5 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
-             </div>
-             <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
-          </div>
-          <div className="md:hidden">
-            {isOpen ? <ChevronUp size={20} className={darkMode ? 'text-gray-400' : 'text-gray-500'}/> : <ChevronDown size={20} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />}
-          </div>
-        </button>
-        
-        <div className={`${isOpen ? 'block' : 'hidden'} md:block p-4 pt-0 md:pt-0`}>
-          {children}
+  const BentoCard = ({ title, icon: Icon, children, className = '' }) => (
+    <div className={`rounded-3xl border p-5 md:p-7 transition-all flex flex-col ${darkMode ? 'bg-[#15151e]/80 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/40' : 'bg-white/90 backdrop-blur-xl border-gray-200/80 shadow-xl shadow-indigo-900/5'} ${className}`}>
+      <div className="flex items-center gap-4 mb-6">
+        <div className={`p-3 rounded-2xl shadow-inner ${darkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'}`}>
+          <Icon size={24} />
         </div>
+        <h3 className={`font-bold text-xl tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
       </div>
-    );
-  };
+      <div className="space-y-5 flex-1 flex flex-col">
+        {children}
+      </div>
+    </div>
+  );
+
+  const inputClass = `w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/10 text-white placeholder-gray-500 focus:bg-black/40' : 'bg-gray-50/50 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white'} border`;
+  const labelClass = `block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`;
 
   return (
-    <div className={`p-4 md:p-8 max-w-6xl mx-auto rounded-3xl`}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div className={`p-4 md:p-8 max-w-7xl mx-auto`}>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
           {onBack && (
-            <button onClick={onBack} className={`p-2 rounded-xl transition-colors ${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'}`}>
+            <button type="button" onClick={onBack} className={`p-3 rounded-2xl transition-all ${darkMode ? 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 shadow-sm'}`}>
               <ArrowLeft size={20} />
             </button>
           )}
           <div>
-            <h2 className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Ajustes de Perfil</h2>
-            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gestiona tu cuenta, estilo y suscripción</p>
+            <h2 className={`text-3xl md:text-4xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Ajustes de Perfil</h2>
+            <p className={`text-sm md:text-base mt-2 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gestiona tu cuenta, estilo personal y suscripción</p>
           </div>
         </div>
         {message && (
-          <div className={`px-4 py-2 rounded-lg text-sm font-medium ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+          <div className={`px-5 py-3 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-2 ${message.includes('Error') ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
+            {message.includes('Error') ? <AlertTriangle size={18} /> : <Save size={18} />}
             {message}
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* WIDGET 1: Información Personal */}
-        <WidgetSection id="personal" title="Información Personal" icon={User}>
-          <div className="space-y-4">
-            {/* Avatar Upload */}
-            <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 pb-2">
-              <div className="relative group cursor-pointer">
-                <div className={`w-20 h-20 rounded-full overflow-hidden border-2 ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'} flex items-center justify-center relative`}>
+        {/* COLUMNA IZQUIERDA (Info y Estilo) */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          
+          <BentoCard title="Información Personal" icon={User}>
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              {/* Avatar Upload */}
+              <div className="relative group cursor-pointer shrink-0">
+                <div className={`w-28 h-28 rounded-full overflow-hidden border-4 transition-all duration-300 ${darkMode ? 'border-gray-800 bg-gray-900 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_20px_rgba(99,102,241,0.3)]' : 'border-gray-100 bg-gray-50 group-hover:border-indigo-200 group-hover:shadow-lg'} flex items-center justify-center relative`}>
                   {profilePicture ? (
                     <img src={profilePicture} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={32} className={darkMode ? 'text-gray-500' : 'text-gray-400'} />
+                    <User size={40} className={darkMode ? 'text-gray-600' : 'text-gray-300'} />
                   )}
                   {uploadingAvatar && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 group-hover:scale-110 transition-transform">
-                  <Camera size={14} />
+                <div className="absolute bottom-0 right-0 p-2.5 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 group-hover:scale-110 transition-transform">
+                  <Camera size={16} />
                 </div>
                 <input 
                   type="file" 
@@ -292,187 +283,142 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                   disabled={uploadingAvatar}
                 />
               </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h4 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Foto de perfil</h4>
-                <p className={`text-xs mt-1 max-w-[200px] mx-auto sm:mx-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sube una imagen para tu avatar (máx 5MB). Aparecerá en tu menú y consultas.</p>
+              
+              <div className="flex-1 space-y-4 w-full">
+                <div>
+                  <label className={labelClass}>Nombre</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Género</label>
+                    <select value={gender} onChange={e => setGender(e.target.value)} className={inputClass}>
+                      <option value="Mujer">Mujer</option>
+                      <option value="Hombre">Hombre</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Edad</label>
+                    <input type="number" min="1" max="120" value={age} onChange={e => setAge(e.target.value)} className={inputClass} placeholder="Ej: 25" />
+                  </div>
+                </div>
               </div>
             </div>
+          </BentoCard>
 
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nombre</label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Género</label>
-                <select 
-                  value={gender}
-                  onChange={e => setGender(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                >
-                  <option value="Mujer">Mujer</option>
-                  <option value="Hombre">Hombre</option>
-                  <option value="Otro">Otro</option>
+          <BentoCard title="Tu Estilo de Moda" icon={Shirt} className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className={labelClass}>Estilo Principal</label>
+                <select value={estiloPersonal} onChange={e => setEstiloPersonal(e.target.value)} className={inputClass}>
+                  <option value="">No especificado</option>
+                  <option value="Urbano / Streetwear">Urbano / Streetwear</option>
+                  <option value="Casual">Casual</option>
+                  <option value="Elegante / Formal">Elegante / Formal</option>
+                  <option value="Minimalista">Minimalista</option>
+                  <option value="Deportivo">Deportivo</option>
+                  <option value="Vintage / Retro">Vintage / Retro</option>
+                  <option value="Bohemio / Boho">Bohemio / Boho</option>
+                  <option value="Gótico / Dark">Gótico / Dark</option>
+                  <option value="Y2K">Y2K</option>
+                  <option value="Preppy">Preppy</option>
                 </select>
               </div>
-              <div>
-                <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Edad</label>
-                <input 
-                  type="number" 
-                  min="1" max="120"
-                  value={age}
-                  onChange={e => setAge(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                  placeholder="Ej: 25"
+              <div className="md:col-span-2">
+                <label className={labelClass}>Detalles específicos (Opcional)</label>
+                <textarea 
+                  value={estiloDetalles} onChange={e => setEstiloDetalles(e.target.value)} 
+                  placeholder="Ej: Colores oscuros, ropa muy ancha..." rows={2} 
+                  className={`${inputClass} resize-none`}
                 />
               </div>
-            </div>
-          </div>
-        </WidgetSection>
-
-        {/* WIDGET 2: Tu Estilo de Moda */}
-        <WidgetSection id="estilo" title="Tu Estilo de Moda" icon={Shirt}>
-          <div className="space-y-4">
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estilo Principal</label>
-              <select 
-                value={estiloPersonal}
-                onChange={e => setEstiloPersonal(e.target.value)}
-                className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-              >
-                <option value="">No especificado</option>
-                <option value="Urbano / Streetwear">Urbano / Streetwear</option>
-                <option value="Casual">Casual</option>
-                <option value="Elegante / Formal">Elegante / Formal</option>
-                <option value="Minimalista">Minimalista</option>
-                <option value="Deportivo">Deportivo</option>
-                <option value="Vintage / Retro">Vintage / Retro</option>
-                <option value="Bohemio / Boho">Bohemio / Boho</option>
-                <option value="Gótico / Dark">Gótico / Dark</option>
-                <option value="Y2K">Y2K</option>
-                <option value="Preppy">Preppy</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Detalles específicos (Opcional)</label>
-              <textarea 
-                value={estiloDetalles}
-                onChange={e => setEstiloDetalles(e.target.value)}
-                placeholder="Ej: Colores oscuros, ropa muy ancha..."
-                rows={3}
-                className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'} border resize-none`}
-              />
-              <p className="mt-2 text-xs text-gray-500">La IA tendrá en cuenta esto para recomendarte prendas.</p>
             </div>
             
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
+            <div className={`mt-4 p-4 rounded-2xl border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'} flex items-center justify-between`}>
               <div>
-                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Gorras y Sombreros</h4>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>La IA considerará incluir gorras en tus outfits.</p>
+                <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Gorras y Sombreros</h4>
+                <p className={`text-xs mt-0.5 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Incluir accesorios de cabeza en los outfits.</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={usaGorras}
-                  onChange={(e) => setUsaGorras(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                <input type="checkbox" className="sr-only peer" checked={usaGorras} onChange={(e) => setUsaGorras(e.target.checked)} />
+                <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
               </label>
             </div>
-          </div>
-        </WidgetSection>
+          </BentoCard>
+          
+        </div>
 
-        {/* WIDGET 2b: Notificaciones Matutinas */}
-        <WidgetSection id="alertas" title="Alertas Matutinas" icon={Settings}>
-          <div className="space-y-4">
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
+        {/* COLUMNA DERECHA (Plan, Alertas, Save) */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+
+          <BentoCard title="Alertas Matutinas" icon={Settings}>
+            <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'} flex items-center justify-between`}>
               <div>
-                <h4 className={`font-medium flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  <Sun size={18} className="text-yellow-500" /> Email diario del clima 
-                  <span className={`text-xs ${morningAlerts ? 'text-indigo-400' : 'text-gray-500'}`}>{morningAlerts ? '(Activado)' : '(Desactivado)'}</span>
+                <h4 className={`font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <Sun size={18} className="text-yellow-500" /> Email diario
                 </h4>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{morningAlerts ? 'Recibirás' : 'No recibirás'} un resumen del tiempo y consejo de ropa cada mañana.</p>
+                <p className={`text-xs mt-0.5 font-medium ${darkMode ? 'text-indigo-200/70' : 'text-indigo-600/70'}`}>{morningAlerts ? 'Activado a las 09:00' : 'Actualmente desactivado'}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={morningAlerts}
-                  onChange={(e) => setMorningAlerts(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                <input type="checkbox" className="sr-only peer" checked={morningAlerts} onChange={(e) => setMorningAlerts(e.target.checked)} />
+                <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600 shadow-inner"></div>
               </label>
             </div>
+            
             {morningAlerts && (
-              <div className="space-y-4">
+              <div className={`p-4 rounded-2xl border mt-2 space-y-4 ${darkMode ? 'bg-black/20 border-white/5' : 'bg-white border-gray-100'}`}>
                 <div>
-                  <p className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío: 09:00 (Hora Peninsular)</p>
-                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                  <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Hora de envío</p>
+                  <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>09:00 (Hora Peninsular)</p>
+                  <p className={`text-xs mt-1 leading-relaxed ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                     Tu reporte del clima y recomendaciones de outfits se preparan y envían a esta hora para que empieces el día de la mejor manera.
                   </p>
                 </div>
                 
                 {favoriteCities.length > 0 ? (
                   <div>
-                    <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ciudad para las alertas</label>
-                    <select 
-                      value={alertCityName}
-                      onChange={e => setAlertCityName(e.target.value)}
-                      className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                    >
-                      {favoriteCities.map(c => (
-                        <option key={c.id} value={c.cityName}>{c.cityName}</option>
-                      ))}
+                    <label className={labelClass}>Ciudad para el pronóstico</label>
+                    <select value={alertCityName} onChange={e => setAlertCityName(e.target.value)} className={inputClass}>
+                      {favoriteCities.map(c => <option key={c.id} value={c.cityName}>{c.cityName}</option>)}
                     </select>
                   </div>
                 ) : (
-                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    Necesitas tener al menos una ciudad favorita guardada.
+                  <p className={`text-xs font-medium px-3 py-2 rounded-lg ${darkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                    ⚠️ Necesitas guardar al menos una ciudad favorita en el mapa.
                   </p>
                 )}
               </div>
             )}
-          </div>
-        </WidgetSection>
+          </BentoCard>
 
-        {/* WIDGET 3: Suscripción y Límites */}
-        <WidgetSection id="plan" title="Plan y Consumo" icon={CreditCard}>
-          <div className="space-y-5">
+          <BentoCard title="Plan y Consumo" icon={CreditCard}>
             {/* Plan Actual */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'}`}>
-              <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Tu Plan Actual</h4>
+            <div className={`p-5 rounded-2xl border relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border-indigo-500/30' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100'}`}>
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <CreditCard size={80} />
+              </div>
+              <h4 className={`text-xs font-black uppercase tracking-wider mb-2 ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Plan Actual</h4>
               {isPremium ? (
-                <div className="flex flex-col gap-1">
-                  <span className="text-indigo-500 font-bold">
-                    {premiumPlan === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
+                <div className="flex flex-col gap-2 relative z-10">
+                  <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                    {premiumPlan === 'lifetime' ? 'Premium de por vida' : 'Premium Mensual'}
                   </span>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
+                  <p className={`text-sm font-medium ${darkMode ? 'text-indigo-200' : 'text-indigo-800'}`}>Disfrutando de todas las funciones PRO.</p>
                   {premiumPlan !== 'lifetime' && (
-                    <button 
-                      type="button" 
-                      onClick={() => setShowCancelModal(true)} 
-                      disabled={checkoutLoading}
-                      className="mt-2 w-max px-3 py-1.5 border border-red-500/50 text-red-500 hover:bg-red-500/10 text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
-                    >
+                    <button type="button" onClick={() => setShowCancelModal(true)} disabled={checkoutLoading} className="mt-3 w-max px-4 py-2 border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50">
                       Cancelar Suscripción
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
-                  <span className="text-gray-500 font-bold">Básico (Gratis)</span>
-                  <div className="flex flex-col sm:flex-row gap-2 mt-1">
-                    <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('monthly')} className="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors">
+                <div className="flex flex-col gap-4 relative z-10">
+                  <span className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-gray-900'}`}>Básico (Gratis)</span>
+                  <div className="flex gap-3 mt-1">
+                    <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('monthly')} className="flex-1 px-3 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/30 active:scale-95">
                       1,99€ / mes
                     </button>
-                    <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('lifetime')} className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors">
+                    <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('lifetime')} className="flex-1 px-3 py-2.5 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-purple-600/30 active:scale-95">
                       Único 20€
                     </button>
                   </div>
@@ -480,135 +426,83 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
               )}
             </div>
 
-            {/* Outfits Hoy */}
-            <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Outfits Generados Hoy</span>
-                <span className={`font-bold ${dailyCount >= (isPremium ? 999999 : 5) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
-                  {isPremium ? 'Ilimitado' : `${dailyCount} / 5`}
-                </span>
-              </div>
-              {!isPremium && (
-                <div className={`w-full h-1.5 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                  <div className={`h-1.5 rounded-full transition-all duration-500 ${dailyCount >= 5 ? 'bg-red-500' : dailyCount >= 3 ? 'bg-orange-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min((dailyCount / 5) * 100, 100)}%` }}></div>
+            <div className="space-y-5 mt-2">
+              <div>
+                <div className="flex justify-between text-xs font-bold uppercase tracking-wider mb-2">
+                  <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Outfits Hoy</span>
+                  <span className={dailyCount >= (isPremium ? 999999 : 5) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}>
+                    {isPremium ? 'Ilimitado' : `${dailyCount} / 5`}
+                  </span>
                 </div>
+                {!isPremium && (
+                  <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
+                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${dailyCount >= 5 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : dailyCount >= 3 ? 'bg-orange-500' : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'}`} style={{ width: `${Math.min((dailyCount / 5) * 100, 100)}%` }}></div>
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="flex justify-between text-xs font-bold uppercase tracking-wider mb-2">
+                  <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Historial</span>
+                  <span className={historyCount >= (isPremium ? 50 : 15) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}>
+                    {historyCount} / {isPremium ? 50 : 15}
+                  </span>
+                </div>
+                <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
+                  <div className={`h-full rounded-full transition-all duration-1000 ease-out ${historyCount >= (isPremium ? 50 : 15) ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : historyCount >= (isPremium ? 40 : 10) ? 'bg-orange-500' : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'}`} style={{ width: `${Math.min((historyCount / (isPremium ? 50 : 15)) * 100, 100)}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+
+          {/* Botón Guardar - Destacado en la columna derecha */}
+          <div className="mt-2 relative group cursor-pointer">
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-fuchsia-600 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <button type="submit" disabled={loading} className={`relative w-full flex items-center justify-center gap-3 py-5 rounded-3xl font-black text-lg transition-all ${darkMode ? 'bg-gray-900 text-white border border-white/10 hover:bg-gray-800' : 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50'}`}>
+              {loading ? (
+                <><div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></div> Guardando...</>
+              ) : (
+                <><Save size={24} className="text-indigo-500" /> Guardar Cambios</>
               )}
-            </div>
-
-            {/* Historial */}
-            <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Espacio en Historial</span>
-                <span className={`font-bold ${historyCount >= (isPremium ? 50 : 15) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
-                  {historyCount} / {isPremium ? 50 : 15}
-                </span>
-              </div>
-              <div className={`w-full h-1.5 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                <div className={`h-1.5 rounded-full transition-all duration-500 ${historyCount >= (isPremium ? 50 : 15) ? 'bg-red-500' : historyCount >= (isPremium ? 40 : 10) ? 'bg-orange-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min((historyCount / (isPremium ? 50 : 15)) * 100, 100)}%` }}></div>
-              </div>
-            </div>
+            </button>
           </div>
-        </WidgetSection>
 
-        {/* WIDGET 4: Ajustes Extra */}
-        <WidgetSection id="extra" title="Más Opciones" icon={Settings}>
-          <div className="space-y-4">
-            
-            {/* Soporte */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'}`}>
-              <h4 className={`flex items-center gap-2 text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                <AlertTriangle size={16} className="text-orange-500" /> Reportar un problema
-              </h4>
-              <div className="flex flex-col gap-2">
-                <textarea 
-                  value={reportMessage}
-                  onChange={(e) => setReportMessage(e.target.value)}
-                  placeholder="Describe el error..."
-                  className={`w-full p-2.5 rounded-lg text-sm border focus:ring-2 focus:ring-indigo-500 transition-colors resize-none ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
-                  rows="2"
-                ></textarea>
-                <button 
-                  type="button"
-                  onClick={handleReportSubmit}
-                  disabled={reportStatus === 'loading' || !reportMessage.trim()}
-                  className={`w-full py-2 rounded-lg text-sm font-bold transition-all ${reportStatus === 'success' ? 'bg-green-500 text-white' : reportStatus === 'error' ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 disabled:opacity-50'}`}
-                >
-                  {reportStatus === 'loading' ? 'Enviando...' : reportStatus === 'success' ? 'Enviado' : 'Enviar Reporte'}
-                </button>
-              </div>
-            </div>
-
-            {/* iOS App Install */}
+          {/* Más Opciones */}
+          <div className="flex gap-4 mt-2">
             {(() => {
-              const userAgent = window.navigator.userAgent.toLowerCase();
-              const isMacWithTouch = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-              const isIos = /iphone|ipad|ipod/.test(userAgent) || isMacWithTouch;
+              const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
               return isIos ? (
-                <button 
-                  type="button"
-                  onClick={() => window.dispatchEvent(new Event('show-ios-prompt'))}
-                  className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all border ${darkMode ? 'border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50'}`}
-                >
-                  <Smartphone size={16} /> Instalar App en el Móvil
+                <button type="button" onClick={() => window.dispatchEvent(new Event('show-ios-prompt'))} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-xs font-bold transition-all border ${darkMode ? 'border-white/10 text-gray-300 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                  <Smartphone size={16} /> Instalar iOS
                 </button>
               ) : null;
             })()}
-
-            {/* Cerrar Sesión */}
             {onLogout && (
-              <button 
-                type="button" 
-                onClick={onLogout}
-                className={`w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl border transition-all ${darkMode ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}
-              >
+              <button type="button" onClick={onLogout} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-xs font-bold transition-all border ${darkMode ? 'border-red-500/20 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}>
                 <LogOut size={16} /> Cerrar Sesión
               </button>
             )}
-
           </div>
-        </WidgetSection>
 
-        {/* Action Button */}
-        <div className="md:col-span-2 mt-4 md:mt-2">
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full md:max-w-md mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-2xl shadow-xl transition-all"
-          >
-            {loading ? 'Guardando...' : <><Save size={20} /> Guardar todos los cambios</>}
-          </button>
         </div>
-
       </form>
 
       {/* Modal Cancelar Suscripción */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className={`w-full max-w-sm p-6 rounded-3xl shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-100'}`}>
-            <div className="flex items-center gap-3 mb-4 text-red-500">
-              <AlertTriangle size={24} />
-              <h3 className="text-xl font-bold">Cancelar Suscripción</h3>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className={`w-full max-w-sm p-8 rounded-[2rem] shadow-2xl ${darkMode ? 'bg-[#15151e] border border-white/10' : 'bg-white border border-gray-200'}`}>
+            <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle size={32} />
             </div>
-            <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              ¿Estás seguro de que quieres cancelar tu suscripción mensual? 
-              Stripe dejará de cobrarte 1,99€ al mes inmediatamente y perderás el acceso a todas las funciones Premium.
+            <h3 className={`text-2xl font-black text-center mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Cancelar Suscripción</h3>
+            <p className={`text-sm text-center mb-8 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              ¿Estás seguro de que quieres cancelar? Dejarás de disfrutar de generaciones ilimitadas y 50 espacios de historial.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button 
-                type="button" 
-                onClick={() => setShowCancelModal(false)}
-                disabled={checkoutLoading}
-                className={`flex-1 px-4 py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-              >
-                No, mantener
+            <div className="flex flex-col gap-3">
+              <button type="button" onClick={handleCancelSubscription} disabled={checkoutLoading} className="w-full py-4 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white transition-all active:scale-95 disabled:opacity-50">
+                {checkoutLoading ? 'Procesando...' : 'Sí, cancelar plan'}
               </button>
-              <button 
-                type="button" 
-                onClick={handleCancelSubscription}
-                disabled={checkoutLoading}
-                className="flex-1 px-4 py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white transition-colors flex items-center justify-center disabled:opacity-50"
-              >
-                {checkoutLoading ? 'Cancelando...' : 'Sí, cancelar'}
+              <button type="button" onClick={() => setShowCancelModal(false)} disabled={checkoutLoading} className={`w-full py-4 rounded-xl font-bold transition-all ${darkMode ? 'bg-white/5 text-white hover:bg-white/10' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
+                No, mantener Premium
               </button>
             </div>
           </div>
