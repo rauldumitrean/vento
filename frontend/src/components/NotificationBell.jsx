@@ -85,7 +85,7 @@ export default function NotificationBell({ token }) {
               )}
             </div>
             
-            <div className="max-h-[350px] overflow-y-auto hide-scrollbar relative z-10 bg-[#15151e]/80">
+            <div className="max-h-[350px] overflow-y-auto relative z-10 bg-[#15151e]/80">
               {notifications.length === 0 ? (
                 <div className="p-8 flex flex-col items-center justify-center text-center">
                   <div className="w-16 h-16 mb-4 rounded-full bg-white/5 flex items-center justify-center">
@@ -103,8 +103,8 @@ export default function NotificationBell({ token }) {
                     <div className="shrink-0 pt-0.5">
                       <div className={`w-2 h-2 rounded-full mt-1.5 ${!notif.isRead ? 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]' : 'bg-transparent'}`} />
                     </div>
-                    <div>
-                      <p className={`text-sm leading-snug mb-1.5 ${!notif.isRead ? 'text-white font-medium' : 'text-gray-300'}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm leading-snug mb-1.5 ${!notif.isRead ? 'text-white font-medium' : 'text-gray-300'} break-words whitespace-pre-wrap`}>
                         {notif.content}
                       </p>
                       <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
