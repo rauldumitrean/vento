@@ -404,7 +404,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                           <span className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-gray-900'}`}>Plan Básico</span>
                           <p className={`text-sm font-medium mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Límite de 5 outfits diarios y 15 guardados.</p>
                        </div>
-                       <div className="grid grid-cols-2 gap-3">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                          <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('monthly')} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-600/30 active:scale-95">
                            1,99€ / mes
                          </button>

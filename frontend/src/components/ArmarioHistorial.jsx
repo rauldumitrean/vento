@@ -299,7 +299,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                         </label>
                       )}
                       
-                      <div className="flex-1 mt-0.5">
+                      <div className="flex-1 mt-0.5 min-w-0">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">{prenda.categoria}</span>
                         <h3 className="font-semibold mt-2 text-white leading-tight">{prenda.descripcion}</h3>
                         {prenda.color && <p className="text-xs font-medium text-gray-400 mt-1 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block"></span>{prenda.color}</p>}

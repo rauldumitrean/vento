@@ -209,7 +209,7 @@ function App() {
         sessionExpired={sessionExpired} 
         setSessionExpired={setSessionExpired} 
       />
-      <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden">
+      <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden" style={{ touchAction: 'pan-y', overscrollBehavior: 'none', overscrollBehaviorX: 'none' }}>
           <Routes>
             <Route 
               path="/" 

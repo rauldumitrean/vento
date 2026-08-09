@@ -404,9 +404,9 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
                             <User size={20} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
                           </div>
                         )}
-                        <div>
-                          <p className="font-bold">{friend.name || 'Usuario'}</p>
-                          <p className={`text-xs font-mono ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>#{friend.friendCode}</p>
+                        <div className="min-w-0">
+                          <p className="font-bold truncate">{friend.name || 'Usuario'}</p>
+                          <p className={`text-xs font-mono truncate ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>#{friend.friendCode}</p>
                         </div>
                       </div>
                       <MessageCircle size={20} className="text-indigo-500" />

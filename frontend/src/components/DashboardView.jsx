@@ -1286,7 +1286,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   return (
-    <div className="flex min-h-[100dvh] font-sans overflow-hidden text-white bg-black">
+    <div className="flex min-h-[100dvh] font-sans overflow-hidden overflow-x-hidden text-white bg-black w-full max-w-full" style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none' }}>
       {/* Immersive Glassmorphism Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[#0A0A0B]" />
@@ -1310,7 +1310,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 flex w-full h-[100dvh] p-2 sm:p-4 gap-4">
+      <div className="relative z-10 flex w-full h-[100dvh] p-2 sm:p-4 gap-2 sm:gap-4 overflow-hidden">
         {/* Sidebar */}
         <Sidebar 
           view={view} 
@@ -1328,7 +1328,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         />
 
         {/* Main Content */}
-        <div className="flex-1 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/40">
+        <div className="flex-1 min-w-0 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/40">
           {/* Mobile Top Bar */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
              <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 group">
@@ -1343,8 +1343,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
              </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col relative pb-24 lg:pb-0">
-            <main className="flex-1 p-4 sm:p-8 lg:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full">
+          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0">
+            <main className="flex-1 p-4 sm:p-6 lg:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full overflow-x-hidden">
               {view === 'armario' ? (
                 <ArmarioHistorial token={token} darkMode={true} />
               ) : view === 'admin' && Cookies.get('userRole') === 'ADMIN' ? (
@@ -1497,7 +1497,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                        </div>
 
                        {weather && (
-                           <div className="w-full xl:w-[calc(100%-450px)] mb-8">
+                           <div className="w-full mb-8">
                              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={() => setShowWeatherModal(true)} className="w-full bg-white/5 border border-white/10 rounded-3xl p-4 sm:p-8 backdrop-blur-xl cursor-pointer hover:bg-white/10 transition-colors flex justify-between items-center relative overflow-hidden shadow-lg shadow-black/20">
                                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full filter blur-[60px]" />
                                <div className="relative z-10">
