@@ -15,7 +15,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export default function TravelPackingView({ token }) {
   const isPremium = Cookies.get('isPremium') === 'true';
   const { showToast } = useToast();
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
