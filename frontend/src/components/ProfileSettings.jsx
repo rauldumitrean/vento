@@ -218,353 +218,237 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   };
 
   return (
-    <div className={`p-4 md:p-8 max-w-6xl mx-auto rounded-3xl`}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          {onBack && (
-            <button onClick={onBack} className={`p-2 rounded-xl transition-colors ${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'}`}>
-              <ArrowLeft size={20} />
-            </button>
-          )}
-          <div>
-            <h2 className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Ajustes de Perfil</h2>
-            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gestiona tu cuenta, estilo y suscripción</p>
-          </div>
-        </div>
-        {message && (
-          <div className={`px-4 py-2 rounded-lg text-sm font-medium ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-            {message}
-          </div>
-        )}
+    <div className={`p-4 md:p-8 max-w-4xl mx-auto pb-24`}>
+      {/* 1. PROFILE HEADER */}
+      <div className={`relative rounded-[2rem] overflow-hidden mb-10 ${darkMode ? 'bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-black/40 border border-white/10 shadow-2xl' : 'bg-gradient-to-br from-indigo-50 via-white to-purple-50 shadow-xl border border-indigo-100'} p-8 md:p-10 flex flex-col md:flex-row items-center gap-8`}>
+         <div className="relative group cursor-pointer shrink-0">
+            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 transition-all duration-300 ${darkMode ? 'border-indigo-500/30 bg-gray-900 group-hover:border-indigo-400' : 'border-white shadow-lg bg-gray-50 group-hover:border-indigo-200'} flex items-center justify-center relative`}>
+               {profilePicture ? (
+                 <img src={profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+               ) : (
+                 <User size={48} className={darkMode ? 'text-gray-600' : 'text-gray-300'} />
+               )}
+               {uploadingAvatar && (
+                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                   <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                 </div>
+               )}
+            </div>
+            <div className="absolute bottom-2 right-2 p-3 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 group-hover:scale-110 transition-transform">
+               <Camera size={20} />
+            </div>
+            <input 
+               type="file" 
+               accept="image/*" 
+               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+               onChange={handleAvatarUpload}
+               disabled={uploadingAvatar}
+            />
+         </div>
+         <div className="flex-1 text-center md:text-left">
+            <h2 className={`text-4xl md:text-5xl font-black tracking-tight mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name || 'Usuario'}</h2>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+               {isPremium ? (
+                 <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/30 flex items-center gap-2">
+                   <Settings size={14} /> PRO
+                 </span>
+               ) : (
+                 <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
+                   Básico (Gratis)
+                 </span>
+               )}
+               <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${darkMode ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700'}`}>
+                 {dailyCount} Outfits Hoy
+               </span>
+            </div>
+         </div>
+         <div className="shrink-0 mt-4 md:mt-0">
+           {onBack && (
+             <button onClick={onBack} className={`px-6 py-3 rounded-2xl font-bold transition-all ${darkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-white text-gray-900 shadow-md hover:shadow-lg'}`}>
+               Volver
+             </button>
+           )}
+         </div>
       </div>
 
-      <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {message && (
+        <div className={`mb-8 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-3 animate-fade-in ${message.includes('Error') ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
+          {message.includes('Error') ? <AlertTriangle size={20} /> : <Save size={20} />}
+          {message}
+        </div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-8">
         
-        {/* WIDGET 1: Información Personal */}
-        <WidgetSection id="personal" title="Información Personal" icon={User}>
-          <div className="space-y-4">
-            {/* Avatar Upload */}
-            <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 pb-2">
-              <div className="relative group cursor-pointer">
-                <div className={`w-20 h-20 rounded-full overflow-hidden border-2 ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'} flex items-center justify-center relative`}>
-                  {profilePicture ? (
-                    <img src={profilePicture} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <User size={32} className={darkMode ? 'text-gray-500' : 'text-gray-400'} />
-                  )}
-                  {uploadingAvatar && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 group-hover:scale-110 transition-transform">
-                  <Camera size={14} />
-                </div>
+        {/* SECCIÓN 1: DATOS PERSONALES */}
+        <div className={`p-6 md:p-8 rounded-[2rem] border ${darkMode ? 'bg-[#15151e]/80 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-xl'}`}>
+           <h3 className={`text-xl font-bold mb-6 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+             <User className="text-indigo-500" /> Datos Personales
+           </h3>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nombre</label>
                 <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onChange={handleAvatarUpload}
-                  disabled={uploadingAvatar}
+                  type="text" value={name} onChange={e => setName(e.target.value)} 
+                  className={`w-full rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/5 text-white focus:bg-black/40' : 'bg-gray-50/50 border-gray-200 text-gray-900 focus:bg-white'} border`} required 
                 />
               </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h4 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Foto de perfil</h4>
-                <p className={`text-xs mt-1 max-w-[200px] mx-auto sm:mx-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sube una imagen para tu avatar (máx 5MB). Aparecerá en tu menú y consultas.</p>
-              </div>
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nombre</label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Género</label>
-                <select 
-                  value={gender}
-                  onChange={e => setGender(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                >
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Género</label>
+                <select value={gender} onChange={e => setGender(e.target.value)} className={`w-full rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/5 text-white focus:bg-black/40' : 'bg-gray-50/50 border-gray-200 text-gray-900 focus:bg-white'} border`}>
                   <option value="Mujer">Mujer</option>
                   <option value="Hombre">Hombre</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
               <div>
-                <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Edad</label>
-                <input 
-                  type="number" 
-                  min="1" max="120"
-                  value={age}
-                  onChange={e => setAge(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-                  placeholder="Ej: 25"
-                />
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Edad</label>
+                <input type="number" min="1" max="120" value={age} onChange={e => setAge(e.target.value)} className={`w-full rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/5 text-white focus:bg-black/40' : 'bg-gray-50/50 border-gray-200 text-gray-900 focus:bg-white'} border`} placeholder="Ej: 25" />
               </div>
-            </div>
-          </div>
-        </WidgetSection>
+           </div>
+        </div>
 
-        {/* WIDGET 2: Tu Estilo de Moda */}
-        <WidgetSection id="estilo" title="Tu Estilo de Moda" icon={Shirt}>
-          <div className="space-y-4">
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Estilo Principal</label>
-              <select 
-                value={estiloPersonal}
-                onChange={e => setEstiloPersonal(e.target.value)}
-                className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} border`}
-              >
-                <option value="">No especificado</option>
-                <option value="Urbano / Streetwear">Urbano / Streetwear</option>
-                <option value="Casual">Casual</option>
-                <option value="Elegante / Formal">Elegante / Formal</option>
-                <option value="Minimalista">Minimalista</option>
-                <option value="Deportivo">Deportivo</option>
-                <option value="Vintage / Retro">Vintage / Retro</option>
-                <option value="Bohemio / Boho">Bohemio / Boho</option>
-                <option value="Gótico / Dark">Gótico / Dark</option>
-                <option value="Y2K">Y2K</option>
-                <option value="Preppy">Preppy</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Detalles específicos (Opcional)</label>
-              <textarea 
-                value={estiloDetalles}
-                onChange={e => setEstiloDetalles(e.target.value)}
-                placeholder="Ej: Colores oscuros, ropa muy ancha..."
-                rows={3}
-                className={`w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'} border resize-none`}
-              />
-              <p className="mt-2 text-xs text-gray-500">La IA tendrá en cuenta esto para recomendarte prendas.</p>
-            </div>
-            
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
+        {/* SECCIÓN 2: ESTILO */}
+        <div className={`p-6 md:p-8 rounded-[2rem] border ${darkMode ? 'bg-[#15151e]/80 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-xl'}`}>
+           <h3 className={`text-xl font-bold mb-6 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+             <Shirt className="text-indigo-500" /> Tu Estilo de Moda
+           </h3>
+           <div className="space-y-6">
               <div>
-                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Gorras y Sombreros</h4>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>La IA considerará incluir gorras en tus outfits.</p>
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Estilo Principal</label>
+                <select value={estiloPersonal} onChange={e => setEstiloPersonal(e.target.value)} className={`w-full rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/5 text-white focus:bg-black/40' : 'bg-gray-50/50 border-gray-200 text-gray-900 focus:bg-white'} border`}>
+                  <option value="">No especificado</option>
+                  <option value="Urbano / Streetwear">Urbano / Streetwear</option>
+                  <option value="Casual">Casual</option>
+                  <option value="Elegante / Formal">Elegante / Formal</option>
+                  <option value="Minimalista">Minimalista</option>
+                  <option value="Deportivo">Deportivo</option>
+                  <option value="Vintage / Retro">Vintage / Retro</option>
+                  <option value="Bohemio / Boho">Bohemio / Boho</option>
+                  <option value="Gótico / Dark">Gótico / Dark</option>
+                  <option value="Y2K">Y2K</option>
+                  <option value="Preppy">Preppy</option>
+                </select>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={usaGorras}
-                  onChange={(e) => setUsaGorras(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-          </div>
-        </WidgetSection>
-
-        {/* WIDGET 2b: Notificaciones Matutinas */}
-        <WidgetSection id="alertas" title="Alertas Matutinas" icon={Settings}>
-          <div className="space-y-4">
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'} flex items-center justify-between`}>
               <div>
-                <h4 className={`font-medium flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  <Sun size={18} className="text-yellow-500" /> Email diario del clima 
-                  <span className={`text-xs ${morningAlerts ? 'text-indigo-400' : 'text-gray-500'}`}>{morningAlerts ? '(Activado)' : '(Desactivado)'}</span>
-                </h4>
-                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{morningAlerts ? 'Recibirás' : 'No recibirás'} un resumen del tiempo y consejo de ropa cada mañana.</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={morningAlerts}
-                  onChange={(e) => setMorningAlerts(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-            {morningAlerts && (
-              <div>
-                <p className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hora de envío: 08:00</p>
-                <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Debido a límites del plan gratuito, los correos se envían a todos los usuarios a las 08:00. Necesitas tener al menos una ciudad favorita guardada (se usará la más reciente).
-                </p>
-              </div>
-            )}
-          </div>
-        </WidgetSection>
-
-        {/* WIDGET 3: Suscripción y Límites */}
-        <WidgetSection id="plan" title="Plan y Consumo" icon={CreditCard}>
-          <div className="space-y-5">
-            {/* Plan Actual */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'}`}>
-              <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Tu Plan Actual</h4>
-              {isPremium ? (
-                <div className="flex flex-col gap-1">
-                  <span className="text-indigo-500 font-bold">
-                    {premiumPlan === 'lifetime' ? 'Premium (De por vida)' : 'Premium (Mensual)'}
-                  </span>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Disfrutando de todas las funciones PRO.</p>
-                  {premiumPlan !== 'lifetime' && (
-                    <button 
-                      type="button" 
-                      onClick={() => setShowCancelModal(true)} 
-                      disabled={checkoutLoading}
-                      className="mt-2 w-max px-3 py-1.5 border border-red-500/50 text-red-500 hover:bg-red-500/10 text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
-                    >
-                      Cancelar Suscripción
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <span className="text-gray-500 font-bold">Básico (Gratis)</span>
-                  <div className="flex flex-col sm:flex-row gap-2 mt-1">
-                    <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('monthly')} className="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors">
-                      1,99€ / mes
-                    </button>
-                    <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('lifetime')} className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors">
-                      Único 20€
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Outfits Hoy */}
-            <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Outfits Generados Hoy</span>
-                <span className={`font-bold ${dailyCount >= (isPremium ? 999999 : 5) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
-                  {isPremium ? 'Ilimitado' : `${dailyCount} / 5`}
-                </span>
-              </div>
-              {!isPremium && (
-                <div className={`w-full h-1.5 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                  <div className={`h-1.5 rounded-full transition-all duration-500 ${dailyCount >= 5 ? 'bg-red-500' : dailyCount >= 3 ? 'bg-orange-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min((dailyCount / 5) * 100, 100)}%` }}></div>
-                </div>
-              )}
-            </div>
-
-            {/* Historial */}
-            <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Espacio en Historial</span>
-                <span className={`font-bold ${historyCount >= (isPremium ? 50 : 15) ? 'text-red-500' : (darkMode ? 'text-white' : 'text-gray-900')}`}>
-                  {historyCount} / {isPremium ? 50 : 15}
-                </span>
-              </div>
-              <div className={`w-full h-1.5 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                <div className={`h-1.5 rounded-full transition-all duration-500 ${historyCount >= (isPremium ? 50 : 15) ? 'bg-red-500' : historyCount >= (isPremium ? 40 : 10) ? 'bg-orange-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min((historyCount / (isPremium ? 50 : 15)) * 100, 100)}%` }}></div>
-              </div>
-            </div>
-          </div>
-        </WidgetSection>
-
-        {/* WIDGET 4: Ajustes Extra */}
-        <WidgetSection id="extra" title="Más Opciones" icon={Settings}>
-          <div className="space-y-4">
-            
-            {/* Soporte */}
-            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800/40 border-gray-700/50' : 'bg-gray-50/80 border-gray-200'}`}>
-              <h4 className={`flex items-center gap-2 text-sm font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                <AlertTriangle size={16} className="text-orange-500" /> Reportar un problema
-              </h4>
-              <div className="flex flex-col gap-2">
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Detalles Específicos (Opcional)</label>
                 <textarea 
-                  value={reportMessage}
-                  onChange={(e) => setReportMessage(e.target.value)}
-                  placeholder="Describe el error..."
-                  className={`w-full p-2.5 rounded-lg text-sm border focus:ring-2 focus:ring-indigo-500 transition-colors resize-none ${darkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
-                  rows="2"
-                ></textarea>
-                <button 
-                  type="button"
-                  onClick={handleReportSubmit}
-                  disabled={reportStatus === 'loading' || !reportMessage.trim()}
-                  className={`w-full py-2 rounded-lg text-sm font-bold transition-all ${reportStatus === 'success' ? 'bg-green-500 text-white' : reportStatus === 'error' ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 disabled:opacity-50'}`}
-                >
-                  {reportStatus === 'loading' ? 'Enviando...' : reportStatus === 'success' ? 'Enviado' : 'Enviar Reporte'}
-                </button>
+                  value={estiloDetalles} onChange={e => setEstiloDetalles(e.target.value)} 
+                  placeholder="Ej: Prefiero ropa ancha, estilo oversize, colores pastel..." rows={3} 
+                  className={`w-full rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/5 text-white focus:bg-black/40 placeholder-gray-600' : 'bg-gray-50/50 border-gray-200 text-gray-900 focus:bg-white placeholder-gray-400'} border resize-none`}
+                />
               </div>
-            </div>
+              <div className={`p-5 rounded-2xl flex items-center justify-between border ${darkMode ? 'bg-black/20 border-white/5' : 'bg-gray-50/50 border-gray-100'}`}>
+                <div>
+                  <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Gorras y Sombreros</h4>
+                  <p className={`text-sm mt-1 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Incluir accesorios de cabeza en las recomendaciones</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={usaGorras} onChange={(e) => setUsaGorras(e.target.checked)} />
+                  <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                </label>
+              </div>
+           </div>
+        </div>
 
-            {/* iOS App Install */}
-            {(() => {
-              const userAgent = window.navigator.userAgent.toLowerCase();
-              const isMacWithTouch = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-              const isIos = /iphone|ipad|ipod/.test(userAgent) || isMacWithTouch;
-              return isIos ? (
-                <button 
-                  type="button"
-                  onClick={() => window.dispatchEvent(new Event('show-ios-prompt'))}
-                  className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all border ${darkMode ? 'border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10' : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50'}`}
-                >
-                  <Smartphone size={16} /> Instalar App en el Móvil
-                </button>
-              ) : null;
-            })()}
+        {/* SECCIÓN 3: PREFERENCIAS Y SUSCRIPCIÓN */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           
+           <div className={`p-6 md:p-8 rounded-[2rem] border flex flex-col ${darkMode ? 'bg-[#15151e]/80 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-xl'}`}>
+              <h3 className={`text-xl font-bold mb-6 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <Sun className="text-yellow-500" /> Alertas Matutinas
+              </h3>
+              <div className="flex-1 space-y-6">
+                 <div className={`p-5 rounded-2xl flex items-center justify-between border ${darkMode ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'}`}>
+                   <div>
+                     <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Email Diario</h4>
+                     <p className={`text-sm mt-1 font-medium ${darkMode ? 'text-indigo-200' : 'text-indigo-700'}`}>{morningAlerts ? 'Activado a las 08:00' : 'Desactivado'}</p>
+                   </div>
+                   <label className="relative inline-flex items-center cursor-pointer">
+                     <input type="checkbox" className="sr-only peer" checked={morningAlerts} onChange={(e) => setMorningAlerts(e.target.checked)} />
+                     <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                   </label>
+                 </div>
+                 {morningAlerts && (
+                   <div className="animate-fade-in">
+                     <p className={`text-sm leading-relaxed font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                       Recibirás un resumen del tiempo y consejos de ropa cada mañana a las 08:00. Necesitas tener al menos una ciudad favorita guardada en el mapa para que esto funcione.
+                     </p>
+                   </div>
+                 )}
+              </div>
+           </div>
 
-            {/* Cerrar Sesión */}
-            {onLogout && (
-              <button 
-                type="button" 
-                onClick={onLogout}
-                className={`w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl border transition-all ${darkMode ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}
-              >
-                <LogOut size={16} /> Cerrar Sesión
-              </button>
-            )}
+           <div className={`p-6 md:p-8 rounded-[2rem] border flex flex-col ${darkMode ? 'bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border-white/5 shadow-2xl' : 'bg-gradient-to-br from-indigo-50/50 to-purple-50/50 border-indigo-100 shadow-xl'}`}>
+              <h3 className={`text-xl font-bold mb-6 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <CreditCard className="text-indigo-500" /> Tu Suscripción
+              </h3>
+              <div className="flex-1 space-y-6">
+                 {isPremium ? (
+                    <div className="space-y-4">
+                       <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-black/30 border-indigo-500/30' : 'bg-white border-indigo-200'}`}>
+                          <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">
+                            {premiumPlan === 'lifetime' ? 'Premium de por vida' : 'Premium Mensual'}
+                          </span>
+                          <p className={`text-sm font-medium mt-2 ${darkMode ? 'text-indigo-200' : 'text-indigo-700'}`}>Disfrutando de funciones ilimitadas.</p>
+                       </div>
+                       {premiumPlan !== 'lifetime' && (
+                         <button type="button" onClick={() => setShowCancelModal(true)} disabled={checkoutLoading} className="w-full py-4 border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-bold rounded-2xl transition-all disabled:opacity-50">
+                           Cancelar Suscripción
+                         </button>
+                       )}
+                    </div>
+                 ) : (
+                    <div className="space-y-4">
+                       <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-black/30 border-white/5' : 'bg-white border-gray-100'}`}>
+                          <span className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-gray-900'}`}>Plan Básico</span>
+                          <p className={`text-sm font-medium mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Límite de 5 outfits diarios y 15 guardados.</p>
+                       </div>
+                       <div className="grid grid-cols-2 gap-3">
+                         <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('monthly')} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-600/30 active:scale-95">
+                           1,99€ / mes
+                         </button>
+                         <button type="button" disabled={checkoutLoading} onClick={() => handleDirectCheckout('lifetime')} className="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-purple-600/30 active:scale-95">
+                           Único 20€
+                         </button>
+                       </div>
+                    </div>
+                 )}
+              </div>
+           </div>
+        </div>
 
-          </div>
-        </WidgetSection>
-
-        {/* Action Button */}
-        <div className="md:col-span-2 mt-4 md:mt-2">
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full md:max-w-md mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-2xl shadow-xl transition-all"
-          >
-            {loading ? 'Guardando...' : <><Save size={20} /> Guardar todos los cambios</>}
+        {/* ACCIONES FINALES */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center gap-4">
+          <button type="submit" disabled={loading} className="w-full sm:w-auto flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-lg transition-all shadow-xl shadow-indigo-600/30 active:scale-95">
+            {loading ? <><div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></div> Guardando...</> : <><Save size={24} /> Guardar Cambios</>}
           </button>
+          {onLogout && (
+            <button type="button" onClick={onLogout} className={`w-full sm:w-auto px-8 py-5 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all border ${darkMode ? 'border-red-500/20 text-red-400 hover:bg-red-500/10' : 'border-red-200 text-red-500 hover:bg-red-50'}`}>
+              <LogOut size={20} /> Salir
+            </button>
+          )}
         </div>
 
       </form>
 
       {/* Modal Cancelar Suscripción */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className={`w-full max-w-sm p-6 rounded-3xl shadow-2xl ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-100'}`}>
-            <div className="flex items-center gap-3 mb-4 text-red-500">
-              <AlertTriangle size={24} />
-              <h3 className="text-xl font-bold">Cancelar Suscripción</h3>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className={`w-full max-w-sm p-8 rounded-[2rem] shadow-2xl ${darkMode ? 'bg-[#15151e] border border-white/10' : 'bg-white border border-gray-200'}`}>
+            <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle size={40} />
             </div>
-            <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              ¿Estás seguro de que quieres cancelar tu suscripción mensual? 
-              Stripe dejará de cobrarte 1,99€ al mes inmediatamente y perderás el acceso a todas las funciones Premium.
+            <h3 className={`text-3xl font-black text-center mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Cancelar Suscripción</h3>
+            <p className={`text-base text-center mb-8 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              ¿Estás seguro de que quieres cancelar? Dejarás de disfrutar de generaciones ilimitadas al instante.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button 
-                type="button" 
-                onClick={() => setShowCancelModal(false)}
-                disabled={checkoutLoading}
-                className={`flex-1 px-4 py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-              >
-                No, mantener
+            <div className="flex flex-col gap-3">
+              <button type="button" onClick={handleCancelSubscription} disabled={checkoutLoading} className="w-full py-4 rounded-2xl font-bold bg-red-500 hover:bg-red-600 text-white transition-all active:scale-95 disabled:opacity-50 text-lg">
+                {checkoutLoading ? 'Procesando...' : 'Sí, cancelar plan'}
               </button>
-              <button 
-                type="button" 
-                onClick={handleCancelSubscription}
-                disabled={checkoutLoading}
-                className="flex-1 px-4 py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white transition-colors flex items-center justify-center disabled:opacity-50"
-              >
-                {checkoutLoading ? 'Cancelando...' : 'Sí, cancelar'}
+              <button type="button" onClick={() => setShowCancelModal(false)} disabled={checkoutLoading} className={`w-full py-4 rounded-2xl font-bold transition-all text-lg ${darkMode ? 'bg-white/5 text-white hover:bg-white/10' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
+                No, mantener Premium
               </button>
             </div>
           </div>
