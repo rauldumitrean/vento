@@ -744,10 +744,13 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   return (
     <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-md border-white/10 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
-        <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md">
+        <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md flex items-center justify-between">
            <h2 className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
              <Sparkles size={14} className="text-indigo-400" /> Asistente de Estilo
            </h2>
+           <button onClick={() => setView('dashboard')} className="lg:hidden p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+             <ArrowLeft size={20} />
+           </button>
          </div>
         
         <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
@@ -1612,8 +1615,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                     <span className="font-bold block mb-1">Consejo:</span>
                                     {outfit.consejo_extra}
                                   </div>
-                               )}
-                             </motion.div>
+                                )}
+                                
+                                {/* Mobile Chat Button */}
+                                <div className="lg:hidden mt-8">
+                                  <button onClick={() => setView('chat')} className="w-full flex items-center justify-center gap-3 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-600/30">
+                                    <MessageSquare size={20} />
+                                    Chatear con la IA Asistente
+                                  </button>
+                                </div>
+                              </motion.div>
                           )}
                        </div>
                        
