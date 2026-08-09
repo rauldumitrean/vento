@@ -237,7 +237,7 @@ export default function LandingView({ setToken }) {
   const goAuth = (opts = {}) => navigate(Cookies.get('token') ? '/app' : '/login', { state: opts });
 
   return (
-    <div className="min-h-[100dvh] bg-[#0A0A0B] text-white selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden flex justify-center">
+    <div className="min-h-[100dvh] bg-[#0A0A0B] text-white selection:bg-indigo-500/30 selection:text-indigo-200 overflow-clip flex justify-center">
       
       {/* Left Ad - Solo si no es premium */}
       {!isPremium && (

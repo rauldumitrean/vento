@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X, Shirt, Footprints, Glasses, Umbrella, CloudSnow, Layers, Briefcase, Archive } from 'lucide-react';
+import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X, Shirt, Footprints, Glasses, Umbrella, CloudSnow, Layers, Briefcase, Archive, Trash2 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import CalendarPicker from './CalendarPicker';
 import Skeleton from './ui/Skeleton';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -12,6 +14,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function TravelPackingView({ token }) {
   const isPremium = Cookies.get('isPremium') === 'true';
+  const { showToast } = useToast();
+  const confirm = useConfirm();
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -194,21 +198,29 @@ export default function TravelPackingView({ token }) {
               </h3>
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                 {viajesGuardados.map((viaje) => (
-                  <button
-                    key={viaje.id}
-                    onClick={() => {
-                      setDestination(viaje.destination);
-                      setStartDate(viaje.startDate);
-                      setEndDate(viaje.endDate);
-                      setResult({ packingList: viaje.packingListJson });
-                      setCheckedItems(viaje.checkedItemsJson);
-                      setActiveViajeId(viaje.id);
-                    }}
-                    className={`flex-shrink-0 px-4 py-3 border rounded-xl text-sm transition-colors flex flex-col items-start gap-1 ${activeViajeId === viaje.id ? 'bg-emerald-500/20 border-emerald-500/50 text-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-300'}`}
-                  >
-                    <span className="font-bold text-white flex items-center gap-2"><MapPin size={12}/> {viaje.destination.split(',')[0]}</span>
-                    <span className="text-xs opacity-70 flex items-center gap-1"><Calendar size={10}/> {new Date(viaje.startDate).toLocaleDateString()}</span>
-                  </button>
+                  <div key={viaje.id} className="relative group">
+                    <button
+                      onClick={() => {
+                        setDestination(viaje.destination);
+                        setStartDate(viaje.startDate);
+                        setEndDate(viaje.endDate);
+                        setResult({ packingList: viaje.packingListJson });
+                        setCheckedItems(viaje.checkedItemsJson);
+                        setActiveViajeId(viaje.id);
+                      }}
+                      className={`flex-shrink-0 px-4 py-3 border rounded-xl text-sm transition-colors flex flex-col items-start gap-1 pr-10 ${activeViajeId === viaje.id ? 'bg-emerald-500/20 border-emerald-500/50 text-white' : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-300'}`}
+                    >
+                      <span className="font-bold text-white flex items-center gap-2"><MapPin size={12}/> {viaje.destination.split(',')[0]}</span>
+                      <span className="text-xs opacity-70 flex items-center gap-1"><Calendar size={10}/> {new Date(viaje.startDate).toLocaleDateString()}</span>
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteViaje(e, viaje.id)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                      title="Eliminar maleta"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 ))}
               </div>
             </motion.div>
