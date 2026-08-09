@@ -1386,7 +1386,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                         ¿Listo para crear algo nuevo?
                       </h1>
                       
-                      <div className="w-full relative z-50">
+                      <div className="w-full relative z-10">
                         <form onSubmit={handleSearch} className="flex-1 flex items-center px-6 py-4 rounded-3xl relative transition-all duration-300 shadow-2xl border bg-black/40 border-white/20 focus-within:border-indigo-500/50 focus-within:bg-black/60 backdrop-blur-xl">
                           <Search className="w-6 h-6 mr-4 text-gray-400" />
                           <input 

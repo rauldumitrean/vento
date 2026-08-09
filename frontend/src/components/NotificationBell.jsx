@@ -71,7 +71,7 @@ export default function NotificationBell({ token }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="absolute top-[calc(100%+12px)] right-0 md:left-0 md:right-auto w-80 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden z-[100]"
+            className="absolute top-[calc(100%+12px)] right-0 md:left-0 md:right-auto w-80 bg-black/60 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden z-[100]"
           >
             {/* Glossy top highlight */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none h-24" />
@@ -85,7 +85,7 @@ export default function NotificationBell({ token }) {
               )}
             </div>
             
-            <div className="max-h-[350px] overflow-y-auto relative z-10 bg-[#15151e]/80">
+            <div className="max-h-[350px] overflow-y-auto relative z-10 bg-transparent">
               {notifications.length === 0 ? (
                 <div className="p-8 flex flex-col items-center justify-center text-center">
                   <div className="w-16 h-16 mb-4 rounded-full bg-white/5 flex items-center justify-center">

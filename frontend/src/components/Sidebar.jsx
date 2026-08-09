@@ -23,7 +23,7 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsul
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className={`hidden lg:flex flex-col ${isCollapsed ? 'w-[88px]' : 'w-[280px]'} transition-all duration-300 h-full bg-black/40 border border-white/10 rounded-[2rem] shadow-2xl relative shrink-0 z-20`}>
+    <div className={`hidden lg:flex flex-col ${isCollapsed ? 'w-[88px]' : 'w-[280px]'} transition-all duration-300 h-full bg-black/40 border border-white/10 rounded-[2rem] shadow-2xl relative shrink-0 z-50`}>
       {/* Decorative top glow */}
       <div className="absolute inset-0 overflow-hidden rounded-[2rem] pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[50px]" />
