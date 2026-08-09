@@ -109,7 +109,7 @@ router.post('/login', async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
 
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ errorCode: '0x105E', error: 'Error al iniciar sesión.', details: error.message, stack: error.stack });
@@ -194,7 +194,7 @@ router.post('/google', async (req, res) => {
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
 
     // FIX A-10: Never return raw Prisma object — whitelist safe fields only
-    res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour } });
+    res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
     console.error('Google Auth Error:', error);
     res.status(401).json({ errorCode: '0x1061', error: 'Token de Google inválido o caducado.', details: error.message, stack: error.stack });
@@ -241,7 +241,7 @@ router.post('/apple', async (req, res) => {
     });
     const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
     // FIX A-10: Never return raw Prisma object — whitelist safe fields only
-    res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour } });
+    res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
     console.error('Apple Auth Error:', error);
     res.status(401).json({ errorCode: '0x1065', error: 'Token de Apple inválido.' });
@@ -278,7 +278,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       }
     });
 
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ errorCode: '0x1067', error: 'Error al obtener perfil' });
@@ -287,7 +287,7 @@ router.get('/me', authMiddleware, async (req, res) => {
 
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
-    const { name, gender, age, estiloPersonal, estiloDetalles, usaGorras, morningAlerts, alertHour } = req.body;
+    const { name, gender, age, estiloPersonal, estiloDetalles, usaGorras, morningAlerts, alertHour, alertCityName } = req.body;
     const updateData = { name, gender, estiloPersonal, estiloDetalles };
     
     if (usaGorras !== undefined) {
@@ -299,6 +299,9 @@ router.put('/profile', authMiddleware, async (req, res) => {
     if (alertHour !== undefined) {
       const h = parseInt(alertHour);
       if (!isNaN(h) && h >= 0 && h <= 23) updateData.alertHour = h;
+    }
+    if (alertCityName !== undefined) {
+      updateData.alertCityName = alertCityName;
     }
     if (age !== undefined && age !== null && age !== '') {
       const parsedAge = parseInt(age);
@@ -332,7 +335,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
       }
     });
 
-    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour } });
+    res.json({ user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, historyCount: user._count.consultas, dailyCount: consultasHoyCount, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ errorCode: '0x1069', error: 'Error al actualizar perfil.' });

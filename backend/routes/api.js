@@ -43,59 +43,6 @@ router.post('/ping', authMiddleware, async (req, res) => {
   }
 });
 
-// ── Favorite Cities ──────────────────────────────────────────────────────────
-// GET /api/favorites — list user's favorite cities
-router.get('/favorites', authMiddleware, async (req, res) => {
-  try {
-    const favorites = await prisma.favoriteCity.findMany({
-      where: { userId: req.user.id },
-      orderBy: { createdAt: 'desc' }
-    });
-    res.json({ favorites });
-  } catch (err) {
-    console.error('Error fetching favorites:', err);
-    res.status(500).json({ errorCode: '0x1003', error: 'Error al obtener ciudades favoritas' });
-  }
-});
-
-// POST /api/favorites — add a city to favorites
-router.post('/favorites', authMiddleware, async (req, res) => {
-  try {
-    const { cityName, lat, lon } = req.body;
-    if (!cityName) return res.status(400).json({ errorCode: '0x1004', error: 'cityName es requerido' });
-
-    const latFloat = lat ? parseFloat(lat) : null;
-    const lonFloat = lon ? parseFloat(lon) : null;
-
-    const favorite = await prisma.favoriteCity.upsert({
-      where: { userId_cityName: { userId: req.user.id, cityName } },
-      update: { lat: latFloat, lon: lonFloat },
-      create: { userId: req.user.id, cityName, lat: latFloat, lon: lonFloat }
-    });
-    res.json({ favorite });
-  } catch (err) {
-    console.error('Error saving favorite:', err);
-    res.status(500).json({ errorCode: '0x1005', error: 'Error al guardar ciudad favorita' });
-  }
-});
-
-// DELETE /api/favorites/:id — remove a city from favorites
-router.delete('/favorites/:id', authMiddleware, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    // Verify ownership before deleting
-    const fav = await prisma.favoriteCity.findUnique({ where: { id } });
-    if (!fav || fav.userId !== req.user.id) {
-      return res.status(404).json({ errorCode: '0x1006', error: 'Favorito no encontrado' });
-    }
-    await prisma.favoriteCity.delete({ where: { id } });
-    res.json({ ok: true });
-  } catch (err) {
-    console.error('Error deleting favorite:', err);
-    res.status(500).json({ errorCode: '0x1007', error: 'Error al eliminar ciudad favorita' });
-  }
-});
-
 // Upload avatar to ImgBB
 router.post('/upload-avatar', authMiddleware, async (req, res) => {
   try {
@@ -1492,13 +1439,17 @@ router.all('/morning-alerts/trigger', async (req, res) => {
     // Hobby Vercel plan only allows once-a-day cron, so we send to all users with morningAlerts enabled
     const users = await prisma.user.findMany({
       where: { morningAlerts: true },
-      include: { favoriteCities: { take: 1, orderBy: { createdAt: 'desc' } } }
+      include: { favoriteCities: { orderBy: { createdAt: 'desc' } } }
     });
-
+    
     let sent = 0;
+
     for (const user of users) {
       if (!user.favoriteCities || user.favoriteCities.length === 0) continue;
-      const city = user.favoriteCities[0];
+      // Prefer the selected alertCityName, or fallback to the most recent favorite city
+      const city = user.alertCityName 
+        ? user.favoriteCities.find(c => c.cityName === user.alertCityName) || user.favoriteCities[0]
+        : user.favoriteCities[0];
 
       try {
         // Get weather for the city

@@ -31,6 +31,7 @@ model User {
   friendCode         String?  @unique
   morningAlerts      Boolean  @default(false)
   alertHour          Int      @default(7)
+  alertCityName      String?
   createdAt  DateTime @default(now())
   lastActive DateTime @default(now())
   sessionVersion Int  @default(0)
@@ -67,6 +68,7 @@ model Consulta {
   directMessages     DirectMessage[]
   outfitLikes        OutfitLike[]
 
+  @@index([userId])
   @@index([userId, createdAt])
   @@index([userId, isFavorite])
   @@index([isPublic, createdAt])
@@ -93,6 +95,7 @@ model PrendaArmario {
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
 
+  @@index([userId])
   @@index([userId, categoria])
   @@index([userId, createdAt])
 }
