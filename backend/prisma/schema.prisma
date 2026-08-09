@@ -70,6 +70,7 @@ model Consulta {
   mensajes           MensajeChat[]
   directMessages     DirectMessage[]
   outfitLikes        OutfitLike[]
+  outfitCalendar     OutfitCalendar[]
 
   @@index([userId])
   @@index([userId, createdAt])
