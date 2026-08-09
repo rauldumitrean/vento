@@ -1616,38 +1616,41 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                     {outfit.consejo_extra}
                                   </div>
                                 )}
-                                
-                                {/* Mobile Chat Button */}
-                                <div className="lg:hidden mt-8">
-                                  <button onClick={() => setView('chat')} className="w-full flex items-center justify-center gap-3 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-600/30">
-                                    <MessageSquare size={20} />
-                                    Chatear con la IA Asistente
-                                  </button>
-                                </div>
                               </motion.div>
                           )}
                        </div>
                        
-                       {/* Floating Chat Widget for Desktop */}
+                       {/* Floating Chat Widget */}
                        {outfit && (
-                         <div className="hidden lg:block fixed bottom-6 right-6 z-[100]">
+                         <div className="fixed bottom-[100px] lg:bottom-6 right-4 lg:right-6 z-[100]">
                            <AnimatePresence>
                              {isChatOpen && (
                                <motion.div
                                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
                                  animate={{ opacity: 1, y: 0, scale: 1 }}
                                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                                 className="absolute bottom-16 right-0 w-[400px] h-[600px] mb-4 origin-bottom-right"
+                                 className="hidden lg:block absolute bottom-16 right-0 w-[400px] h-[600px] mb-4 origin-bottom-right"
                                >
                                  <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
                                </motion.div>
                              )}
                            </AnimatePresence>
                            <button
-                             onClick={() => setIsChatOpen(!isChatOpen)}
+                             onClick={() => {
+                               if (window.innerWidth < 1024) {
+                                 setView('chat');
+                               } else {
+                                 setIsChatOpen(!isChatOpen);
+                               }
+                             }}
                              className="w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/40 flex items-center justify-center transition-transform hover:scale-110"
                            >
-                             {isChatOpen ? <X size={24} /> : <MessageSquare size={24} />}
+                             <span className="hidden lg:flex items-center justify-center">
+                               {isChatOpen ? <X size={24} /> : <MessageSquare size={24} />}
+                             </span>
+                             <span className="flex lg:hidden items-center justify-center">
+                               <MessageSquare size={24} />
+                             </span>
                            </button>
                          </div>
                        )}
