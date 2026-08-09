@@ -231,21 +231,25 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
           />
         )}
 
-        {/* Amazon Button - Circular expandable */}
-        {(prenda.enlace_compra && prenda.tienda_recomendada) && (
-          <a
-            href={prenda.enlace_compra}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="group/amazon absolute bottom-3 right-3 z-30 flex items-center justify-center bg-indigo-600 text-white rounded-full h-10 w-10 hover:w-auto hover:px-4 transition-all duration-300 shadow-lg shadow-indigo-500/30 overflow-hidden"
-          >
-            <ShoppingCart size={18} className="shrink-0" />
-            <span className="w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover/amazon:w-auto group-hover/amazon:opacity-100 group-hover/amazon:ml-2 font-semibold text-sm transition-all duration-300">
-              Buscar en {prenda.tienda_recomendada}
-            </span>
-          </a>
-        )}
+        {/* Shopping Button - Circular expandable */}
+        {(() => {
+          const searchUrl = prenda.enlace_compra || `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(prenda.descripcion || prenda.nombre_corto || 'ropa')}`;
+          const storeName = prenda.tienda_recomendada || "Google Shopping";
+          return (
+            <a
+              href={searchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="group/shop absolute bottom-3 right-3 z-30 flex items-center justify-center bg-black/60 backdrop-blur-xl border border-white/20 text-white rounded-full h-10 w-10 hover:w-auto hover:px-4 transition-all duration-300 shadow-lg shadow-black/50 overflow-hidden"
+            >
+              <ShoppingCart size={18} className="shrink-0 group-hover/shop:text-indigo-400 transition-colors" />
+              <span className="w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover/shop:w-auto group-hover/shop:opacity-100 group-hover/shop:ml-2 font-semibold text-sm transition-all duration-300">
+                Buscar en {storeName}
+              </span>
+            </a>
+          );
+        })()}
 
         {imgStatus === 'loaded' && (
           <button
