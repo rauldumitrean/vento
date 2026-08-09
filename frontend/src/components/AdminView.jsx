@@ -299,10 +299,9 @@ const AdminView = ({ token }) => {
   };
 
   const handleDeleteAllOutfits = async () => {
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    const prompt = window.prompt(`¡PELIGRO! Vas a borrar TODOS los outfits y chats de TODOS los usuarios.\n\nEscribe el código ${code} para confirmar:`);
-    if (prompt !== code) {
-      if (prompt !== null) showToast('Código incorrecto. Cancelado.', 'error');
+    if (!await confirm("¡PELIGRO! Vas a borrar TODOS los outfits y chats de TODOS los usuarios. ¿Continuar?")) return;
+    if (!await confirm("¡ÚLTIMO AVISO! Esta acción es IRREVERSIBLE. ¿Estás ABSOLUTAMENTE seguro?")) {
+      showToast('Cancelado.', 'error');
       return;
     }
     
