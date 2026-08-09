@@ -20,7 +20,7 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
 
 const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsulta, token }) => {
   return (
-    <div className="hidden lg:flex flex-col w-[280px] h-full bg-black/40 border border-white/10 rounded-[2rem] p-6 shadow-2xl relative shrink-0 z-20">
+    <div className="hidden lg:flex flex-col w-[280px] h-full bg-black/40 border border-white/10 rounded-[2rem] p-6 shadow-2xl relative shrink-0 z-20 overflow-y-auto hide-scrollbar">
       {/* Decorative top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[50px] pointer-events-none" />
 

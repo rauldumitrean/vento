@@ -5,6 +5,7 @@
 @layer base {
   html, body {
     @apply w-full;
+    overflow-x: hidden;
     background-color: #0A0A0B;
     /* Improve Safari rendering performance */
     -webkit-overflow-scrolling: touch;
@@ -12,6 +13,7 @@
   body {
     @apply text-neutral-900 font-sans antialiased;
     background-color: #0A0A0B;
+    overflow-x: hidden;
   }
 }
 
