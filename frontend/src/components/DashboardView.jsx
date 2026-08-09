@@ -1339,14 +1339,14 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                <span className="text-xl font-bold tracking-widest text-white group-hover:text-indigo-400 transition-colors">Ventoo</span>
              </button>
              <div className="flex items-center gap-3">
-               <button onClick={() => setView('friends')} className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 transition-colors relative">
-                 <User size={18} className={view === 'friends' ? "text-indigo-400" : ""} />
+               <button onClick={() => setView('friends')} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 relative shadow-sm ${view === 'friends' ? 'bg-indigo-500 text-white shadow-indigo-500/30' : 'bg-white/10 hover:bg-white/20 text-gray-200 border border-white/5'}`}>
+                 <User size={20} />
                </button>
                <NotificationBell token={token} />
              </div>
           </div>
 
-          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0 bg-[#0A0A0B]/60">
+          <div className={`flex-1 min-w-0 overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0 bg-[#0A0A0B]/60 ${view === 'dashboard' && !weather && !loading ? 'overflow-hidden' : 'overflow-y-auto'}`}>
             <main className="flex-1 p-4 sm:p-6 lg:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full overflow-x-hidden">
               {view === 'armario' ? (
                 <ArmarioHistorial token={token} darkMode={true} />
