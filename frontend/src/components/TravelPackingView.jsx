@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Luggage, MapPin, Calendar, CheckCircle, ChevronDown, ChevronUp, Sparkles, Lock, Cloud, Sun, CloudRain, Loader2, Package, X, Shirt, Footprints, Glasses, Umbrella, CloudSnow, Layers, Briefcase, Archive } from 'lucide-react';
 import Cookies from 'js-cookie';
 import CalendarPicker from './CalendarPicker';
+import Skeleton from './ui/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -357,13 +358,14 @@ export default function TravelPackingView({ token }) {
             )}
 
             {loading && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col items-center justify-center py-16 bg-white/5 border border-white/10 rounded-3xl">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-12 h-12 border-2 border-amber-500 border-t-transparent rounded-full mb-4" />
-                <p className="text-white font-medium">Consultando el clima de tu destino...</p>
-                <p className="text-gray-400 text-sm mt-1 flex items-center gap-1 justify-center">
-                  La IA está preparando tu maleta perfecta <Sparkles size={14} className="text-amber-400" />
-                </p>
-              </motion.div>
+              <div className="h-full space-y-5 bg-white/5 border border-white/10 rounded-3xl p-6">
+                <Skeleton className="h-24 w-full" rounded="rounded-2xl" variant="dark" />
+                <div className="space-y-3">
+                  <Skeleton className="h-10 w-full" rounded="rounded-xl" variant="dark" />
+                  <Skeleton className="h-10 w-3/4" rounded="rounded-xl" variant="dark" />
+                  <Skeleton className="h-10 w-5/6" rounded="rounded-xl" variant="dark" />
+                </div>
+              </div>
             )}
 
             {result && (

@@ -5,6 +5,7 @@ import { Globe, Heart, MapPin, Loader2, RefreshCw, Share2, ChevronLeft, ChevronR
 import Cookies from 'js-cookie';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import Skeleton from './ui/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -319,8 +320,10 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
         <>
           {/* Feed */}
       {loading && outfits.length === 0 ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-emerald-400" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <Skeleton key={i} className="h-80 w-full" rounded="rounded-2xl" variant="dark" />
+          ))}
         </div>
       ) : outfits.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center">
@@ -363,8 +366,10 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
         /* LEADERBOARD VIEW */
         <div className="flex flex-col gap-3">
           {loadingLeaderboard ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 size={32} className="animate-spin text-yellow-400" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Skeleton key={i} className="h-24 w-full" rounded="rounded-2xl" variant="dark" />
+              ))}
             </div>
           ) : (
             leaderboard.map((user, idx) => (
@@ -509,7 +514,11 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
               
               <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
                 {loadingHistory ? (
-                  <div className="flex justify-center py-10"><Loader2 className="animate-spin text-emerald-400" /></div>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => (
+                      <Skeleton key={i} className="h-20 w-full" rounded="rounded-xl" variant="dark" />
+                    ))}
+                  </div>
                 ) : historyOutfits.length === 0 ? (
                   <p className="text-gray-500 text-center py-10">No tienes outfits en tu historial. ¡Genera uno primero!</p>
                 ) : (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Sparkles, Shirt, Layers, Save, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import Skeleton from './ui/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -46,8 +47,12 @@ export default function EstudioEstiloView({ token }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full" />
+      <div className="max-w-4xl mx-auto py-12 px-4 space-y-8">
+        <Skeleton className="h-10 w-64 mx-auto mb-10" rounded="rounded-xl" variant="dark" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Skeleton className="h-72 w-full" rounded="rounded-3xl" variant="dark" />
+          <Skeleton className="h-72 w-full" rounded="rounded-3xl" variant="dark" />
+        </div>
       </div>
     );
   }
