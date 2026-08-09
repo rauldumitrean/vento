@@ -1289,7 +1289,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   return (
-    <div className="flex h-[100dvh] font-sans overflow-hidden text-white bg-[#0A0A0B] w-full max-w-full" style={{ touchAction: 'pan-y', overscrollBehavior: 'none' }}>
+    <div className="flex fixed inset-0 font-sans overflow-hidden text-white bg-[#0A0A0B] w-full max-w-full" style={{ overscrollBehavior: 'none' }}>
       {/* Immersive Glassmorphism Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[#0A0A0B]" />
@@ -1313,7 +1313,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 flex w-full h-[100dvh] p-2 sm:p-4 gap-2 sm:gap-4 overflow-hidden">
+      <div className="relative z-10 flex w-full h-full p-2 sm:p-4 gap-2 sm:gap-4 overflow-hidden">
         {/* Sidebar */}
         <Sidebar 
           view={view} 
