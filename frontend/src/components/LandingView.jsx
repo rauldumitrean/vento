@@ -4,6 +4,7 @@ import { Cloud, ArrowRight, Sparkles, Camera, MessageSquare, Zap, Star, Crown, C
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import VerticalAd from './VerticalAd';
+import Skeleton from './ui/Skeleton';
 
 // ─── Animated Icons (preserved) ───────────────────────────────────────────────
 const AnimatedWeatherIcon = () => (
@@ -101,9 +102,9 @@ const AppPreviewAnimation = () => {
       <div className="flex-1 flex gap-3">
         {step < 2 ? (
           <>
-            <div className="flex-1 bg-gray-800 rounded-xl animate-pulse relative overflow-hidden"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div>
-            <div className="flex-1 bg-gray-800 rounded-xl animate-pulse relative overflow-hidden delay-75"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div>
-            <div className="flex-1 bg-gray-800 rounded-xl animate-pulse relative overflow-hidden delay-150"><div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div>
+            <Skeleton className="flex-1 h-full" rounded="rounded-xl" />
+            <Skeleton className="flex-1 h-full delay-75" rounded="rounded-xl" />
+            <Skeleton className="flex-1 h-full delay-150" rounded="rounded-xl" />
           </>
         ) : (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full flex gap-3 h-full">

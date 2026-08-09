@@ -3,6 +3,8 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Heart, MapPin, Loader2, RefreshCw, Share2, ChevronLeft, ChevronRight, User as UserIcon, Sparkles, Shirt, Layers, Footprints, CloudSnow, Crown, Trash2, X, Plus } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -18,10 +20,12 @@ const timeAgo = (dateStr) => {
 
 const categoriaIcon = { TOP: Shirt, BOTTOM: Layers, CALZADO: Footprints, ABRIGO: CloudSnow, ACCESORIO: Crown, CALCETINES: Layers };
 
-function OutfitCard({ outfit, token, currentUserId, onDelete, onClickCard }) {
-  const [liked, setLiked] = useState(outfit.likedByMe);
-  const [likesCount, setLikesCount] = useState(outfit.likesCount);
+const OutfitCard = ({ outfit, token, currentUserId, onDelete, onClickCard }) => {
+  const [liked, setLiked] = useState(outfit.hasLiked || false);
+  const [likesCount, setLikesCount] = useState(outfit._count?.likes || 0);
   const [liking, setLiking] = useState(false);
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const rec = outfit.outfit;
 
   const handleLike = async (e) => {
@@ -43,14 +47,16 @@ function OutfitCard({ outfit, token, currentUserId, onDelete, onClickCard }) {
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta publicación de la comunidad?')) return;
+    if (!await confirm('¿Estás seguro de que quieres eliminar esta publicación de la comunidad?')) return;
     try {
       await axios.post(`${API_URL}/api/community/${outfit.id}/share`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (onDelete) onDelete(outfit.id);
+      showToast('Publicación eliminada', 'success');
     } catch (err) {
       console.error('Delete error:', err);
+      showToast('Error al eliminar publicación', 'error');
     }
   };
 

@@ -4,6 +4,9 @@ import axios from 'axios';
 import { Trash2, Star, UserPlus, Shield, Edit2, Save, X, Activity, Users, MessageSquare, ArrowLeft, BarChart2, Radio, Database, RefreshCw, Ban, AlertCircle, Check, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Skeleton from './ui/Skeleton';
 
 const AdminView = ({ token }) => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits' | 'tickets'
@@ -33,12 +36,9 @@ const AdminView = ({ token }) => {
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  // FIX: Added adminMsg state to replace all alert() calls
-  const [adminMsg, setAdminMsg] = useState({ text: '', type: '' });
-  const showAdminMsg = (text, type = 'error') => {
-    setAdminMsg({ text, type });
-    setTimeout(() => setAdminMsg({ text: '', type: '' }), 4000);
-  };
+  
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   const fetchStats = async () => {
     try {
@@ -67,7 +67,7 @@ const AdminView = ({ token }) => {
       const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       setOutfits(res.data);
     } catch (err) {
-      showAdminMsg('Error obteniendo outfits filtrados');
+      showToast('Error obteniendo outfits filtrados', 'error');
     }
   };
 
@@ -77,7 +77,7 @@ const AdminView = ({ token }) => {
       const res = await axios.get(`${API_URL}/api/admin/chats`, { headers: { Authorization: `Bearer ${token}` } });
       setChats(res.data);
     } catch (err) {
-      showAdminMsg('Error obteniendo chats');
+      showToast('Error obteniendo chats', 'error');
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);
     }
@@ -89,7 +89,7 @@ const AdminView = ({ token }) => {
       const res = await axios.get(`${API_URL}/api/admin/reports`, { headers: { Authorization: `Bearer ${token}` } });
       setReports(res.data.reports || []);
     } catch (err) {
-      showAdminMsg('Error obteniendo reportes');
+      showToast('Error obteniendo reportes', 'error');
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);
     }
@@ -118,7 +118,7 @@ const AdminView = ({ token }) => {
       setCommunityPosts(communityRes.data || []);
       setSelectedUserFilter(''); // Reset filter on full refresh
     } catch (error) {
-      showAdminMsg('Error de conexión. Verifica tus permisos.');
+      showToast('Error de conexión. Verifica tus permisos.', 'error');
     } finally {
       setLoading(false);
     }
@@ -130,23 +130,23 @@ const AdminView = ({ token }) => {
       const res = await axios.get(`${API_URL}/api/admin/tickets`, { headers: { Authorization: `Bearer ${token}` } });
       setTickets(res.data);
     } catch (err) {
-      showAdminMsg('Error obteniendo tickets');
+      showToast('Error obteniendo tickets', 'error');
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 
   const handleDeleteAllTickets = async () => {
-    if (!window.confirm('¿Estás SEGURO de que quieres borrar todos los tickets? Esto no se puede deshacer.')) return;
+    if (!await confirm('¿Estás SEGURO de que quieres borrar todos los tickets? Esto no se puede deshacer.')) return;
     try {
       await axios.delete(`${API_URL}/api/admin/tickets`, { 
         data: { confirmDelete: 'DELETE_ALL_TICKETS' },
         headers: { Authorization: `Bearer ${token}` } 
       });
       setTickets([]);
-      showAdminMsg('Todos los tickets borrados', 'success');
+      showToast('Todos los tickets borrados', 'success');
     } catch (error) {
-      showAdminMsg('Error al borrar tickets');
+      showToast('Error al borrar tickets', 'error');
     }
   };
 
@@ -157,31 +157,31 @@ const AdminView = ({ token }) => {
       const res = await axios.get(`${API_URL}/api/admin/community`, { headers: { Authorization: `Bearer ${token}` } });
       setCommunityPosts(res.data);
     } catch (err) {
-      showAdminMsg('Error obteniendo comunidad');
+      showToast('Error obteniendo comunidad', 'error');
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 
   const handleDeleteCommunityPost = async (id) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta publicación de la comunidad?')) return;
+    if (!await confirm('¿Estás seguro de que quieres eliminar esta publicación de la comunidad?')) return;
     try {
       await axios.delete(`${API_URL}/api/admin/community/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      showAdminMsg('Publicación eliminada de la comunidad', 'success');
+      showToast('Publicación eliminada de la comunidad', 'success');
       setCommunityPosts(prev => prev.filter(o => o.id !== id));
     } catch (err) {
-      showAdminMsg('Error al eliminar publicación');
+      showToast('Error al eliminar publicación', 'error');
     }
   };
 
   const handleCloseTicket = async (id) => {
-    if (!window.confirm('¿Estás seguro de cerrar este ticket?')) return;
+    if (!await confirm('¿Estás seguro de cerrar este ticket?')) return;
     try {
       await axios.put(`${API_URL}/api/admin/tickets/${id}/close`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setTickets(tickets.map(t => t.id === id ? { ...t, estado: 'CERRADO' } : t));
-      showAdminMsg('Ticket cerrado con éxito', 'success');
+      showToast('Ticket cerrado con éxito', 'success');
     } catch (err) {
-      showAdminMsg('Error al cerrar ticket');
+      showToast('Error al cerrar ticket', 'error');
     }
   };
 
@@ -189,9 +189,9 @@ const AdminView = ({ token }) => {
     try {
       await axios.put(`${API_URL}/api/admin/reports/${id}/resolve`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setReports(reports.map(r => r.id === id ? { ...r, status: 'resolved' } : r));
-      showAdminMsg('Reporte resuelto', 'success');
+      showToast('Reporte resuelto', 'success');
     } catch (err) {
-      showAdminMsg('Error al resolver reporte');
+      showToast('Error al resolver reporte', 'error');
     }
   };
 
@@ -203,7 +203,7 @@ const AdminView = ({ token }) => {
       setShowAdd(false);
       setNewUser({ email: '', password: '', name: '', gender: 'Mujer', role: 'USER', isPremium: false });
     } catch (error) {
-      showAdminMsg('Error creando usuario');
+      showToast('Error creando usuario', 'error');
     }
   };
 
@@ -213,18 +213,18 @@ const AdminView = ({ token }) => {
       setUsers(users.map(u => u.id === id ? { ...u, isPremium: !currentStatus } : u));
       fetchData(); // refresh stats
     } catch (error) {
-      showAdminMsg('Error actualizando estado premium');
+      showToast('Error actualizando estado premium', 'error');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que quieres borrar este usuario y TODOS sus datos (incluyendo armarios y chats)?")) return;
+    if (!await confirm("¿Seguro que quieres borrar este usuario y TODOS sus datos (incluyendo armarios y chats)?")) return;
     try {
       await axios.delete(`${API_URL}/api/admin/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(users.filter(u => u.id !== id));
       fetchData(); // refresh stats
     } catch (error) {
-      showAdminMsg('Error eliminando usuario');
+      showToast('Error eliminando usuario', 'error');
     }
   };
 
@@ -239,7 +239,7 @@ const AdminView = ({ token }) => {
       fetchData();
       setEditUserId(null);
     } catch (error) {
-      showAdminMsg('Error actualizando usuario');
+      showToast('Error actualizando usuario', 'error');
     }
   };
 
@@ -265,14 +265,14 @@ const AdminView = ({ token }) => {
       fetchData();
       setBanModalOpen(false);
       setUserToBan(null);
-      showAdminMsg('Usuario baneado correctamente', 'success');
+      showToast('Usuario baneado correctamente', 'success');
     } catch (error) {
-      showAdminMsg('Error al banear usuario');
+      showToast('Error al banear usuario', 'error');
     }
   };
 
   const handleUnban = async (userId) => {
-    if (!window.confirm("¿Seguro que quieres quitar el bloqueo a este usuario?")) return;
+    if (!await confirm("¿Seguro que quieres quitar el bloqueo a este usuario?")) return;
     try {
       await axios.put(`${API_URL}/api/admin/users/${userId}/ban`, {
         isBanned: false,
@@ -280,21 +280,21 @@ const AdminView = ({ token }) => {
         banReason: null
       }, { headers: { Authorization: `Bearer ${token}` } });
       fetchData();
-      showAdminMsg('Usuario desbaneado', 'success');
+      showToast('Usuario desbaneado', 'success');
     } catch (error) {
-      showAdminMsg('Error al desbanear usuario');
+      showToast('Error al desbanear usuario', 'error');
     }
   };
 
   const handleDeleteOutfit = async (id) => {
-    if (!window.confirm("¿Seguro que quieres borrar este outfit definitivamente?")) return;
+    if (!await confirm("¿Seguro que quieres borrar este outfit definitivamente?")) return;
     try {
       await axios.delete(`${API_URL}/api/admin/outfits/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setOutfits(outfits.filter(o => o.id !== id));
       fetchStats();
-      showAdminMsg('Outfit eliminado', 'success');
+      showToast('Outfit eliminado', 'success');
     } catch (error) {
-      showAdminMsg('Error eliminando outfit');
+      showToast('Error eliminando outfit', 'error');
     }
   };
 
@@ -302,7 +302,7 @@ const AdminView = ({ token }) => {
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     const prompt = window.prompt(`¡PELIGRO! Vas a borrar TODOS los outfits y chats de TODOS los usuarios.\n\nEscribe el código ${code} para confirmar:`);
     if (prompt !== code) {
-      if (prompt !== null) showAdminMsg('Código incorrecto. Cancelado.', 'error');
+      if (prompt !== null) showToast('Código incorrecto. Cancelado.', 'error');
       return;
     }
     
@@ -313,9 +313,9 @@ const AdminView = ({ token }) => {
       });
       setOutfits([]);
       fetchStats();
-      showAdminMsg('Todos los outfits han sido eliminados', 'success');
+      showToast('Todos los outfits han sido eliminados', 'success');
     } catch (error) {
-      showAdminMsg('Error al vaciar la base de datos de outfits');
+      showToast('Error al vaciar la base de datos de outfits', 'error');
     }
   };
 
@@ -420,62 +420,62 @@ const AdminView = ({ token }) => {
         {loading ? (
           <div className="flex-1 w-full h-full">
             {activeTab === 'overview' && (
-              <div className="flex-1 overflow-y-auto p-4 md:p-8 animate-pulse">
+              <div className="flex-1 overflow-y-auto p-4 md:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
                   <div>
-                    <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                    <Skeleton variant="light" className="h-8 w-48 mb-2" rounded="rounded" />
+                    <Skeleton variant="light" className="h-4 w-32" rounded="rounded" />
                   </div>
-                  <div className="h-10 bg-gray-200 rounded w-32 mt-3 sm:mt-0"></div>
+                  <Skeleton variant="light" className="h-10 w-32 mt-3 sm:mt-0" rounded="rounded" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-36">
                       <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
-                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                        <Skeleton variant="light" className="w-12 h-12" rounded="rounded-xl" />
+                        <Skeleton variant="light" className="h-4 w-24" rounded="rounded" />
                       </div>
-                      <div className="h-10 bg-gray-200 rounded w-16 mt-2"></div>
+                      <Skeleton variant="light" className="h-10 w-16 mt-2" rounded="rounded" />
                     </div>
                   ))}
                 </div>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 min-h-[160px]">
-                  <div className="w-24 h-24 rounded-full bg-gray-200"></div>
+                  <Skeleton variant="light" className="w-24 h-24 shrink-0" rounded="rounded-full" />
                   <div className="flex-1 w-full space-y-4">
-                    <div className="h-6 bg-gray-200 rounded w-64"></div>
-                    <div className="h-4 bg-gray-200 rounded w-full max-w-2xl"></div>
+                    <Skeleton variant="light" className="h-6 w-64" rounded="rounded" />
+                    <Skeleton variant="light" className="h-4 w-full max-w-2xl" rounded="rounded" />
                     <div className="flex gap-4 pt-4">
-                      <div className="h-12 bg-gray-200 rounded w-24"></div>
-                      <div className="h-12 bg-gray-200 rounded w-24"></div>
+                      <Skeleton variant="light" className="h-12 w-24" rounded="rounded" />
+                      <Skeleton variant="light" className="h-12 w-24" rounded="rounded" />
                     </div>
                   </div>
                 </div>
               </div>
             )}
             {(activeTab === 'users' || activeTab === 'outfits') && (
-              <div className="flex-1 flex flex-col p-4 md:p-8 overflow-hidden animate-pulse h-full">
+              <div className="flex-1 flex flex-col p-4 md:p-8 overflow-hidden h-full">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
-                    <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-64"></div>
+                    <Skeleton variant="light" className="h-8 w-48 mb-2" rounded="rounded" />
+                    <Skeleton variant="light" className="h-4 w-64" rounded="rounded" />
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="h-10 bg-gray-200 rounded w-28"></div>
-                    <div className="h-10 bg-gray-200 rounded w-32"></div>
+                    <Skeleton variant="light" className="h-10 w-28" rounded="rounded" />
+                    <Skeleton variant="light" className="h-10 w-32" rounded="rounded" />
                   </div>
                 </div>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex-1 flex flex-col min-h-[400px]">
-                  <div className="h-12 bg-gray-50 border-b border-gray-100"></div>
+                  <Skeleton variant="light" className="h-12 w-full" rounded="rounded-none" />
                   <div className="flex-1 overflow-hidden p-4 space-y-6 pt-6">
                     {[...Array(6)].map((_, i) => (
                       <div key={i} className="flex gap-4 items-center">
-                        <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+                        <Skeleton variant="light" className="h-10 w-10 shrink-0" rounded="rounded-full" />
                         <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                          <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                          <Skeleton variant="light" className="h-4 w-1/4" rounded="rounded" />
+                          <Skeleton variant="light" className="h-3 w-1/3" rounded="rounded" />
                         </div>
-                        <div className="h-6 w-20 bg-gray-200 rounded-full hidden sm:block"></div>
-                        <div className="h-6 w-16 bg-gray-200 rounded-full hidden sm:block"></div>
+                        <Skeleton variant="light" className="h-6 w-20 hidden sm:block" rounded="rounded-full" />
+                        <Skeleton variant="light" className="h-6 w-16 hidden sm:block" rounded="rounded-full" />
                       </div>
                     ))}
                   </div>

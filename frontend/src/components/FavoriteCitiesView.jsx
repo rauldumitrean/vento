@@ -5,6 +5,7 @@ import {
   Star, Trash2, MapPin, Cloud, Sun, CloudRain, CloudSnow,
   CloudLightning, Wind, Thermometer, Plus, RefreshCw, Loader2
 } from "lucide-react";
+import Skeleton from "./ui/Skeleton";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -74,8 +75,8 @@ const FavCityCard = ({ fav, onSelect, onDelete, token }) => {
 
         {loading ? (
           <div className="space-y-2">
-            <div className="h-10 w-24 rounded-xl bg-white/10 animate-pulse" />
-            <div className="h-3 w-20 rounded-full bg-white/5 animate-pulse" />
+            <Skeleton className="h-10 w-24" rounded="rounded-xl" />
+            <Skeleton className="h-3 w-20" rounded="rounded-full" />
           </div>
         ) : weather ? (
           <>
@@ -168,10 +169,10 @@ export default function FavoriteCitiesView({ token, onSelectCity }) {
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="p-5 rounded-3xl border border-white/10 bg-white/5 animate-pulse">
-              <div className="h-3 w-20 rounded-full bg-white/10 mb-4" />
-              <div className="h-10 w-24 rounded-xl bg-white/10 mb-2" />
-              <div className="h-3 w-16 rounded-full bg-white/5" />
+            <div key={i} className="p-5 rounded-3xl border border-white/10 bg-white/5">
+              <Skeleton className="h-3 w-20 mb-4" rounded="rounded-full" />
+              <Skeleton className="h-10 w-24 mb-2" rounded="rounded-xl" />
+              <Skeleton className="h-3 w-16" rounded="rounded-full" />
             </div>
           ))}
         </div>

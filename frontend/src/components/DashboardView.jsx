@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../context/ToastContext';
+import Skeleton from './ui/Skeleton';
 import { Cloud, Search, ArrowRight, ArrowLeft, Activity, MapPin, Wind, Thermometer, Droplets, Sun, Sparkles, LogOut, Star, TrendingUp, CloudRain, ShieldCheck, CheckCircle2, ChevronRight, Share2, Upload, MessageSquare, Send, Camera, Save, X, ShoppingCart, User, Users, CloudSnow, Snowflake, CloudLightning, Lock, RefreshCw, Archive, Info, Heart, Gauge, LayoutDashboard, Luggage, Globe, Moon, Flame } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import SupportView from './SupportView';
@@ -676,7 +678,7 @@ const ChatMessage = ({ msg, darkMode, token }) => {
   );
 };
 
-const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, setView }) => {
+const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, setView, showToast }) => {
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -694,7 +696,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen es muy grande (máximo 5MB)');
+        showToast('La imagen es muy grande (máximo 5MB)', 'error');
         return;
       }
       const reader = new FileReader();
@@ -739,7 +741,9 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
 
       setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
     } catch (error) {
-      alert('Error enviando mensaje: ' + (error.response?.data?.error || error.message));
+      console.error(error);
+      showToast('Error enviando mensaje: ' + (error.response?.data?.error || error.message), 'error');
+      setChat(prev => prev.filter((_, i) => i !== prev.length - 1));
     } finally {
       setIsChatLoading(false);
     }
@@ -772,13 +776,9 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
                 <ChatMessage key={`${idx}-${msg.content?.substring(0,10)}`} msg={msg} darkMode={darkMode} token={token} />
               ))}
               {isChatLoading && (
-                <div className="flex justify-start">
-                  <div className={`p-4 rounded-2xl max-w-[85%] rounded-tl-sm animate-pulse flex flex-col gap-3 bg-white/10 backdrop-blur-md border border-white/10 shadow-lg`}>
-                    <div className={`h-2.5 w-48 rounded-full bg-white/20`}></div>
-                    <div className={`h-2.5 w-64 rounded-full bg-white/20`}></div>
-                    <div className={`h-2.5 w-32 rounded-full bg-white/20`}></div>
-                  </div>
-                </div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                  <Skeleton className="h-16 w-3/4 max-w-[85%] rounded-2xl rounded-tl-sm" rounded="rounded-2xl rounded-tl-sm" />
+                </motion.div>
               )}
             </>
           )}
@@ -857,8 +857,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   });
   const [view, setView] = useState(defaultView); // 'dashboard' | 'armario' | 'admin'
   const [darkMode, setDarkMode] = useState(Cookies.get('darkMode') === 'true');
-  // FIX: Added toast state to replace alert() calls
-  const [toast, setToast] = useState(null);
+  const { showToast } = useToast();
   
   const [location, setLocation] = useState('');
   const [weather, setWeather] = useState(null);
@@ -885,10 +884,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
     return () => clearInterval(interval);
   }, [loading]);
-
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imageBase64, setImageBase64] = useState('');
-  const [imageMimeType, setImageMimeType] = useState('');
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -957,7 +952,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         setShowStyleOnboarding(true);
       } else {
         // If age was just saved, check if we need to ask for gorras
-        checkOnboarding();
+        // Removed explicit checkOnboarding here, re-check logic if needed
       }
     } catch (err) {
       showToast('Error guardando la edad');
@@ -999,12 +994,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     return greetings[Math.floor(Math.random() * greetings.length)];
   });
 
-  // FIX: Helper to show non-blocking toast instead of alert()
-  const showToast = (msg, type = 'error') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 4000);
-  };
-  
   // Lógica de checkout y pagos
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1021,7 +1010,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
 
     if (payment === 'success') {
-      // FIX: Update state in-place instead of alert()+reload() to preserve app state
       Cookies.set('isPremium', 'true', { expires: 365 });
       if (plan) Cookies.set('premiumPlan', plan, { expires: 365 });
       window.history.replaceState({}, '', '/app');
@@ -1057,8 +1045,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     { name: 'Tokio', admin1: 'Tokio', country: 'Japón', latitude: 35.6895, longitude: 139.69171 }
   ];
 
-  // FIX: Removed redundant useEffect - isPremium check is already handled in the useState initializer above
-
   useEffect(() => {
     let isMounted = true;
     
@@ -1087,7 +1073,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
     const timeoutId = setTimeout(() => {
       fetchSuggestions();
-    }, 300); // Volvemos a 300ms que es el estándar de la industria para evitar bloqueos de API
+    }, 300);
 
     return () => {
       isMounted = false;
@@ -1111,16 +1097,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     meta.setAttribute('content', darkMode ? '#030712' : '#f9fafb');
   }, [darkMode]);
 
-  // Heartbeat: ping the server every 30s so the admin dashboard knows this user has the tab open
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const ping = () => axios.post(`${API_URL}/api/ping`, {}, {
       headers: { Authorization: `Bearer ${token}` }
     }).catch(() => {});
 
-    ping(); // ping immediately on mount
-    const interval = setInterval(ping, 15000); // then every 15 seconds
-    return () => clearInterval(interval); // cleanup on unmount (tab closed / logout)
+    ping();
+    const interval = setInterval(ping, 15000);
+    return () => clearInterval(interval);
   }, [token]);
 
   const handleCloseAd = () => {
@@ -1181,21 +1166,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     );
   };
 
-  const confirmGeneration = () => {
-    if (limitWarning) {
-      const { lat, lon, city } = limitWarning.params;
-      fetchWeatherAndOutfit(lat, lon, city);
-      setLimitWarning(null);
-    }
-  };
-
-  const requestCountRef = useRef(0);
-
   const fetchWeatherAndOutfit = async (lat, lon, city) => {
-    const currentRequestId = ++requestCountRef.current;
     setLoading(true);
     setIsFavorite(false);
-    setOutfit(null); // Clear previous outfit so it doesn't linger on error
+    setOutfit(null);
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       let url = `${API_URL}/api/weather?`;
@@ -1206,7 +1180,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
       url += params.toString();
 
       const wRes = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
-      if (currentRequestId !== requestCountRef.current) return;
       setWeather(wRes.data);
 
       const oRes = await axios.post(`${API_URL}/api/recomendacion`, {
@@ -1217,24 +1190,16 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         daily: wRes.data.daily
       }, { headers: { Authorization: `Bearer ${token}` } });
 
-      if (currentRequestId !== requestCountRef.current) return;
-
       setOutfit(oRes.data.recomendacion);
       setConsultaId(oRes.data.consultaId);
       
-      // Update local history count if we generated successfully and aren't at the limit yet
       setHistoryCount(prev => Math.min(prev + 1, historyLimit));
     } catch (error) {
-      if (currentRequestId !== requestCountRef.current) return;
-      showToast(error.response?.data?.error || 'Error al obtener los datos');
+      showToast(error.response?.data?.error || 'Error al obtener los datos', 'error');
     } finally {
-      if (currentRequestId === requestCountRef.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
-
-  // Se eliminaron las funciones originales de handleSearch, handleSelectSuggestion y handleGeolocation porque se movieron arriba
 
   const handleToggleFavorite = async () => {
     if (!consultaId) return;
@@ -1247,12 +1212,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   };
 
-  // ── Save city to favorites ──────────────────────────────────────────────────
   const [isCityFavorite, setIsCityFavorite] = useState(false);
   const [favoriteCityId, setFavoriteCityId] = useState(null);
   const [savingCityFav, setSavingCityFav] = useState(false);
 
-  // Sync city-favorite state when weather changes
   useEffect(() => { 
     setIsCityFavorite(!!weather?.isFavoriteCity); 
     setFavoriteCityId(weather?.favoriteCityId || null);
@@ -1264,7 +1227,6 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       if (isCityFavorite && favoriteCityId) {
-        // Delete favorite
         await axios.delete(`${API_URL}/api/favorites/${favoriteCityId}`, { headers: { Authorization: `Bearer ${token}` } });
         setIsCityFavorite(false);
         setFavoriteCityId(null);
@@ -1286,44 +1248,25 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
     }
   };
 
-  // ── Select city from FavoriteCitiesView → jump to dashboard + fetch ────────
   const handleSelectFavoriteCity = (cityName, lat, lon) => {
     setView('dashboard');
     setLocation(cityName);
     fetchWeatherAndOutfit(lat || null, lon || null, cityName);
   };
 
-  // Sync browser/Safari theme-color with dark mode
-
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   return (
     <div className="flex fixed inset-0 font-sans overflow-hidden text-white bg-[#0A0A0B] w-full max-w-full" style={{ overscrollBehavior: 'none' }}>
-      {/* Immersive Glassmorphism Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[#0A0A0B]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)]" />
         <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/8 rounded-full blur-[100px]" />
-        {/* Grid */}
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
       </div>
 
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium max-w-sm text-center bg-indigo-600/90 backdrop-blur-md text-white border border-white/10"
-          >
-            {toast.msg}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="relative z-10 flex w-full h-full p-2 sm:p-4 gap-2 sm:gap-4 overflow-hidden">
-        {/* Sidebar */}
         <Sidebar 
           view={view} 
           setView={setView} 
@@ -1341,9 +1284,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           token={token}
         />
 
-        {/* Main Content */}
         <div className="flex-1 min-w-0 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/40">
-          {/* Mobile Top Bar */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
              <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 group">
                <Cloud className="w-6 h-6 text-white group-hover:text-indigo-400 transition-colors" />
@@ -1377,11 +1318,18 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <CommunityView token={token} consultaId={consultaId} isCurrentOutfitPublic={false} />
               ) : view === 'chat' ? (
                 <div className="h-full flex flex-col pt-8 pb-[100px] lg:pb-0">
-                  <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
+                  <FloatingAssistant 
+                    outfit={outfit} 
+                    consultaId={consultaId} 
+                    token={token} 
+                    darkMode={darkMode}
+                    isPremium={isPremium}
+                    setView={setView}
+                    showToast={showToast}
+                  />
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh]">
-                  {/* Dashboard - Zyricon style centralized search */}
                   
                   {!weather && !loading ? (
                     <div className="flex flex-col items-center w-full max-w-3xl justify-center mt-[-10vh]">

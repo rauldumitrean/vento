@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader2, Tag, Palette, Calendar as CalendarIcon, CalendarPlus, X } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import Skeleton from './ui/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -22,6 +25,9 @@ const ArmarioHistorial = ({ token, darkMode }) => {
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [scheduleConsultaId, setScheduleConsultaId] = useState(null);
   const [scheduleDate, setScheduleDate] = useState('');
+
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   // FIX: Added token to dependency array to avoid stale closure
   useEffect(() => {
@@ -53,20 +59,22 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       const res = await axios.post(`${API_URL}/api/armario`, nuevaPrenda, { headers: { Authorization: `Bearer ${token}` } });
       setArmario([...armario, res.data]);
       setNuevaPrenda({ categoria: 'top', descripcion: '', color: '' });
+      showToast('Prenda añadida con éxito', 'success');
     } catch (error) {
-      alert("Error al añadir prenda");
+      showToast("Error al añadir prenda", 'error');
     }
   };
 
   const handleDeletePrenda = async (id) => {
     // FIX: Added confirmation dialog before delete
-    if (!window.confirm('¿Seguro que quieres eliminar esta prenda? Esta acción no se puede deshacer.')) return;
+    if (!await confirm('¿Seguro que quieres eliminar esta prenda? Esta acción no se puede deshacer.')) return;
     try {
       // FIX: Using API_URL env variable
       await axios.delete(`${API_URL}/api/armario/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setArmario(armario.filter(p => p.id !== id));
+      showToast('Prenda eliminada', 'success');
     } catch (error) {
-      alert("Error al borrar prenda");
+      showToast("Error al borrar prenda", 'error');
     }
   };
 
@@ -86,7 +94,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
           setArmario(armario.map(p => p.id === prendaId ? { ...p, imageUrl: res.data.imageUrl, uploading: false } : p));
         } catch (err) {
           console.error(err);
-          alert('Error al subir la imagen');
+          showToast('Error al subir la imagen', 'error');
           setArmario(armario.map(p => p.id === prendaId ? { ...p, uploading: false } : p));
         }
       };
@@ -97,12 +105,13 @@ const ArmarioHistorial = ({ token, darkMode }) => {
   };
 
   const handleDeleteHistorial = async (id) => {
-    if (!window.confirm('¿Seguro que quieres eliminar este outfit de tu historial?')) return;
+    if (!await confirm('¿Seguro que quieres eliminar este outfit de tu historial?')) return;
     try {
       await axios.delete(`${API_URL}/api/historial/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setHistorial(historial.filter(h => h.id !== id));
+      showToast('Outfit eliminado', 'success');
     } catch (error) {
-      alert("Error al borrar el historial");
+      showToast("Error al borrar el historial", 'error');
     }
   };
 
@@ -156,9 +165,9 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       setScheduleModalOpen(false);
       setScheduleConsultaId(null);
       setScheduleDate('');
-      // Using simple DOM alert, or just nothing since it closes the modal anyway
+      showToast('Outfit añadido al calendario', 'success');
     } catch (err) {
-      alert("Error al programar el outfit");
+      showToast("Error al programar el outfit", 'error');
     }
   };
 
@@ -166,8 +175,9 @@ const ArmarioHistorial = ({ token, darkMode }) => {
     try {
       await axios.delete(`${API_URL}/api/calendar/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setCalendar(calendar.filter(c => c.id !== id));
+      showToast('Outfit eliminado del calendario', 'success');
     } catch (error) {
-      alert("Error al borrar del calendario");
+      showToast("Error al borrar del calendario", 'error');
     }
   };
 
@@ -201,18 +211,18 @@ const ArmarioHistorial = ({ token, darkMode }) => {
         activeTab === 'armario' ? (
           <div>
             <div className={`flex flex-col sm:flex-row gap-3 mb-8 p-4 rounded-lg border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
-              <div className={`h-10 w-full sm:w-48 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-              <div className={`h-10 flex-1 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-              <div className={`h-10 w-full sm:w-32 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-              <div className={`h-10 w-full sm:w-24 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-indigo-100'}`}></div>
+              <Skeleton className="h-10 w-full sm:w-48" rounded="rounded" />
+              <Skeleton className="h-10 flex-1" rounded="rounded" />
+              <Skeleton className="h-10 w-full sm:w-32" rounded="rounded" />
+              <Skeleton className="h-10 w-full sm:w-24" rounded="rounded" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
                 <div key={i} className={`p-4 rounded-lg flex justify-between items-start border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
                   <div className="w-full">
-                    <div className={`h-5 w-16 rounded mb-3 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-indigo-50'}`}></div>
-                    <div className={`h-4 w-3/4 rounded mb-2 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-                    <div className={`h-3 w-1/2 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                    <Skeleton className="h-5 w-16 mb-3" rounded="rounded" />
+                    <Skeleton className="h-4 w-3/4 mb-2" rounded="rounded" />
+                    <Skeleton className="h-3 w-1/2" rounded="rounded" />
                   </div>
                 </div>
               ))}
@@ -223,18 +233,18 @@ const ArmarioHistorial = ({ token, darkMode }) => {
             {[1, 2, 3].map(i => (
               <div key={i} className={`p-6 rounded-xl border ${'bg-black/20 border-white/10 backdrop-blur-xl'}`}>
                 <div className="flex justify-between items-start mb-4">
-                  <div className={`h-4 w-48 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                  <Skeleton className="h-4 w-48" rounded="rounded" />
                   <div className="flex gap-2">
-                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-                    <div className={`h-8 w-8 rounded-full animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                    <Skeleton className="h-8 w-8" rounded="rounded-full" />
+                    <Skeleton className="h-8 w-8" rounded="rounded-full" />
                   </div>
                 </div>
-                <div className={`h-4 w-full rounded mb-2 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-                <div className={`h-4 w-5/6 rounded mb-6 animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                <Skeleton className="h-4 w-full mb-2" rounded="rounded" />
+                <Skeleton className="h-4 w-5/6 mb-6" rounded="rounded" />
                 <div className="flex flex-wrap gap-2">
-                  <div className={`h-6 w-24 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-                  <div className={`h-6 w-32 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
-                  <div className={`h-6 w-20 rounded animate-pulse ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}></div>
+                  <Skeleton className="h-6 w-24" rounded="rounded" />
+                  <Skeleton className="h-6 w-32" rounded="rounded" />
+                  <Skeleton className="h-6 w-20" rounded="rounded" />
                 </div>
               </div>
             ))}

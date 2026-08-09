@@ -4,12 +4,14 @@ import QRCode from 'react-qr-code';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { Users, UserPlus, User, Check, X, Search, MessageCircle, ArrowLeft, Send, Image as ImageIcon, QrCode, Flag, AlertTriangle, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../context/ToastContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function FriendsView({ token, darkMode, onNavigate }) {
   const [activeTab, setActiveTab] = useState('friends'); // 'friends', 'add', 'requests', 'chat'
   const [activeChatFriend, setActiveChatFriend] = useState(null);
+  const { showToast } = useToast();
 
   const [friendCode, setFriendCode] = useState('');
   const [friends, setFriends] = useState([]);
@@ -214,9 +216,9 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
       const res = await axios.post(`${API_URL}/api/historial/save-shared/${outfitId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert(res.data.message || 'Outfit guardado en tu historial exitosamente.');
+      showToast(res.data.message || 'Outfit guardado en tu historial exitosamente.', 'success');
     } catch (err) {
-      alert(err.response?.data?.error || 'Error al guardar el outfit.');
+      showToast(err.response?.data?.error || 'Error al guardar el outfit.', 'error');
     } finally {
       setSavingOutfitId(null);
     }

@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import React, { useState, useEffect, Component } from 'react';
 import axios from 'axios';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ToastProvider } from './context/ToastContext';
+import { ConfirmProvider } from './context/ConfirmContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -197,56 +199,60 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <BrowserRouter>
-          <GlobalBanOverlay 
-        token={token} 
-        bannedData={bannedData} 
-        setBannedData={setBannedData} 
-        setToken={setToken} 
-      />
-      <SessionExpiredOverlay 
-        sessionExpired={sessionExpired} 
-        setSessionExpired={setSessionExpired} 
-      />
-      <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden" style={{ touchAction: 'pan-y', overscrollBehavior: 'none', overscrollBehaviorX: 'none' }}>
-          <Routes>
-            <Route 
-              path="/" 
-              element={<LandingView token={token} />} 
-            />
-            <Route 
-              path="/login" 
-              element={!token ? <AuthView setToken={setToken} /> : <LoginRedirect />} 
-            />
-            <Route 
-              path="/app" 
-              element={token 
-                ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => { setToken(null); window.location.href = '/'; }} /></ErrorBoundary> 
-                : <Navigate to="/" />} 
-            />
-            <Route 
-              path="/support" 
-              element={token ? <SupportView token={token} /> : <Navigate to="/login" state={{ from: { pathname: '/support' } }} replace />} 
-            />
-            <Route 
-              path="/admin" 
-              element={
-                <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
-                  {adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />}
-                </Suspense>
-              } 
-            />
-            <Route path="/terms" element={<TermsView />} />
-            <Route path="/privacy" element={<PrivacyView />} />
-            <Route path="/faq" element={<FaqView />} />
-          </Routes>
-          {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
-          {token && <IosInstallPrompt />}
-          <CookieBanner />
-        </div>
-        </BrowserRouter>
-      </ErrorBoundary>
+      <ToastProvider>
+        <ConfirmProvider>
+          <ErrorBoundary>
+            <BrowserRouter>
+              <GlobalBanOverlay 
+                token={token} 
+                bannedData={bannedData} 
+                setBannedData={setBannedData} 
+                setToken={setToken} 
+              />
+              <SessionExpiredOverlay 
+                sessionExpired={sessionExpired} 
+                setSessionExpired={setSessionExpired} 
+              />
+              <div className="min-h-[100dvh] w-full flex flex-col overflow-x-hidden" style={{ touchAction: 'pan-y', overscrollBehavior: 'none', overscrollBehaviorX: 'none' }}>
+                <Routes>
+                  <Route 
+                    path="/" 
+                    element={<LandingView token={token} />} 
+                  />
+                  <Route 
+                    path="/login" 
+                    element={!token ? <AuthView setToken={setToken} /> : <LoginRedirect />} 
+                  />
+                  <Route 
+                    path="/app" 
+                    element={token 
+                      ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => { setToken(null); window.location.href = '/'; }} /></ErrorBoundary> 
+                      : <Navigate to="/" />} 
+                  />
+                  <Route 
+                    path="/support" 
+                    element={token ? <SupportView token={token} /> : <Navigate to="/login" state={{ from: { pathname: '/support' } }} replace />} 
+                  />
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+                        {adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />}
+                      </Suspense>
+                    } 
+                  />
+                  <Route path="/terms" element={<TermsView />} />
+                  <Route path="/privacy" element={<PrivacyView />} />
+                  <Route path="/faq" element={<FaqView />} />
+                </Routes>
+                {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
+                {token && <IosInstallPrompt />}
+                <CookieBanner />
+              </div>
+            </BrowserRouter>
+          </ErrorBoundary>
+        </ConfirmProvider>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

@@ -2,6 +2,7 @@ import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import Skeleton from './ui/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -42,12 +43,12 @@ export default function BanView({ banDetails, setBannedData, onLogout }) {
             exit={{ opacity: 0 }}
             className="max-w-md w-full bg-gray-900 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center border border-gray-800"
           >
-            <div className="w-24 h-24 mb-6 rounded-full bg-gray-800 animate-pulse"></div>
-            <div className="h-8 w-3/4 bg-gray-800 rounded animate-pulse mb-6"></div>
-            <div className="w-full bg-gray-800/50 p-4 rounded-xl mb-6 h-32 animate-pulse"></div>
+            <Skeleton className="w-24 h-24 mb-6" rounded="rounded-full" />
+            <Skeleton className="h-8 w-3/4 mb-6" rounded="rounded" />
+            <Skeleton className="w-full p-4 mb-6 h-32" rounded="rounded-xl" />
             <div className="flex flex-col gap-3 w-full mb-4">
-              <div className="h-12 w-full bg-gray-800 rounded-xl animate-pulse"></div>
-              <div className="h-12 w-full bg-gray-800 rounded-xl animate-pulse"></div>
+              <Skeleton className="h-12 w-full" rounded="rounded-xl" />
+              <Skeleton className="h-12 w-full" rounded="rounded-xl" />
             </div>
           </motion.div>
         ) : (
