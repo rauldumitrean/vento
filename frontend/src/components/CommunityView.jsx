@@ -209,7 +209,7 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
     setLoadingHistory(true);
     try {
       const res = await axios.get(`${API_URL}/api/historial`, { headers: { Authorization: `Bearer ${token}` } });
-      setHistoryOutfits(res.data.historial || []);
+      setHistoryOutfits(res.data || []);
     } catch (e) {
       console.error(e);
     } finally {
