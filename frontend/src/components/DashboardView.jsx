@@ -1286,7 +1286,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   if (showAd) return <AdModal onClose={handleCloseAd} />;
 
   return (
-    <div className="flex min-h-[100dvh] font-sans overflow-hidden overflow-x-hidden text-white bg-black w-full max-w-full" style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none' }}>
+    <div className="flex h-[100dvh] font-sans overflow-hidden text-white bg-[#0A0A0B] w-full max-w-full" style={{ touchAction: 'pan-y', overscrollBehavior: 'none' }}>
       {/* Immersive Glassmorphism Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[#0A0A0B]" />
@@ -1343,7 +1343,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
              </div>
           </div>
 
-          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0">
+          <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0 bg-[#0A0A0B]/60">
             <main className="flex-1 p-4 sm:p-6 lg:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full overflow-x-hidden">
               {view === 'armario' ? (
                 <ArmarioHistorial token={token} darkMode={true} />
