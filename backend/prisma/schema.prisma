@@ -22,6 +22,8 @@ model User {
   estiloPersonal String?
   estiloDetalles String?
   age        Int?
+  points     Int      @default(0)
+  level      String   @default("Novato")
   stripeCustomerId     String?  @unique
   stripeSubscriptionId String?  @unique
   premiumPlan          String?  // "monthly" o "lifetime"
@@ -38,6 +40,7 @@ model User {
   consultas  Consulta[]
   prendas    PrendaArmario[]
   tickets    Ticket[]
+  outfitCalendar OutfitCalendar[]
   friendshipsSent     Friendship[] @relation("UserFriendshipsSent")
   friendshipsReceived Friendship[] @relation("UserFriendshipsReceived")
   messagesSent        DirectMessage[] @relation("UserMessagesSent")
@@ -227,4 +230,18 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([createdAt])
+}
+
+model OutfitCalendar {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  consultaId    Int
+  scheduledDate DateTime
+  isNotified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consulta      Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+
+  @@index([userId, scheduledDate])
 }

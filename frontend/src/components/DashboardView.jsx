@@ -871,6 +871,9 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [loading, setLoading] = useState(false);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [showWeatherModal, setShowWeatherModal] = useState(false);
+  
+  const [userPoints, setUserPoints] = useState(0);
+  const [userLevel, setUserLevel] = useState("Novato");
 
   useEffect(() => {
     let interval;
@@ -912,6 +915,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         });
         if (res.data.user) {
           setHistoryCount(res.data.user.historyCount || 0);
+          setUserPoints(res.data.user.points || 0);
+          setUserLevel(res.data.user.level || "Novato");
           if (res.data.user.age === null) {
             setShowAgePrompt(true);
             if (!res.data.user.estiloPersonal) {
@@ -1325,6 +1330,8 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           handleLogout={onLogout} 
           userName={userName} 
           isPremium={isPremium} 
+          userPoints={userPoints}
+          userLevel={userLevel}
           onNewConsulta={() => {
             setView('dashboard');
             setWeather(null);

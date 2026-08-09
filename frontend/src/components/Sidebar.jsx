@@ -19,7 +19,7 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick, isCollapsed }) => (
   </button>
 );
 
-const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsulta, token }) => {
+const Sidebar = ({ view, setView, handleLogout, userName, isPremium, userPoints, userLevel, onNewConsulta, token }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -122,8 +122,21 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, onNewConsul
             </div>
             {!isCollapsed && (
               <div className="flex flex-col items-start min-w-0">
-                <span className="text-sm font-medium text-white truncate w-full">{userName || 'Usuario'}</span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">{isPremium ? 'Premium' : 'Free Plan'}</span>
+                <div className="flex items-center gap-1.5 w-full">
+                  <span className="text-sm font-medium text-white truncate">{userName || 'Usuario'}</span>
+                  {isPremium && <Star size={10} className="text-yellow-400 shrink-0" />}
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${
+                    userLevel === 'Icono de Moda' ? 'bg-yellow-500/20 text-yellow-400' :
+                    userLevel === 'Creador de Tendencias' ? 'bg-purple-500/20 text-purple-400' :
+                    userLevel === 'Aficionado' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-gray-500/20 text-gray-400'
+                  }`}>
+                    {userLevel}
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-medium">{userPoints} pts</span>
+                </div>
               </div>
             )}
           </button>

@@ -477,6 +477,17 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       }
     });
 
+    const userWithPoints = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { points: { increment: 10 } }
+    });
+    if (getLevelFromPoints(userWithPoints.points) !== userWithPoints.level) {
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { level: getLevelFromPoints(userWithPoints.points) }
+      });
+    }
+
     res.json({ consultaId: consulta.id, recomendacion: recomendacionJSON });
   } catch (error) {
     console.error(error);
@@ -1333,8 +1344,16 @@ Genera una lista de maleta PERFECTAMENTE OPTIMIZADA (ni demasiado ni muy poco). 
     res.status(500).json({ errorCode: '0x1065', error: 'Error al generar la lista de maleta.' });
   }
 });
+const fs = require('fs');
 
-// ── FEATURE 4: Community Feed ─────────────────────────────────────────────────
+const getLevelFromPoints = (points) => {
+  if (points >= 1000) return "Icono de Moda";
+  if (points >= 500) return "Creador de Tendencias";
+  if (points >= 100) return "Aficionado";
+  return "Novato";
+};
+
+// ── RUTA 0: Configuración inicial ─────────────────────────────────────────────────
 // GET /api/community — paginated public outfits feed
 router.get('/community', authMiddleware, async (req, res) => {
   try {
@@ -1413,6 +1432,21 @@ router.post('/community/:id/like', authMiddleware, async (req, res) => {
     } else {
       await prisma.outfitLike.create({ data: { userId, consultaId } });
       const count = await prisma.outfitLike.count({ where: { consultaId } });
+      
+      const consulta = await prisma.consulta.findUnique({ where: { id: consultaId } });
+      if (consulta && consulta.userId !== userId) {
+        const owner = await prisma.user.update({
+          where: { id: consulta.userId },
+          data: { points: { increment: 5 } }
+        });
+        if (getLevelFromPoints(owner.points) !== owner.level) {
+          await prisma.user.update({
+            where: { id: owner.id },
+            data: { level: getLevelFromPoints(owner.points) }
+          });
+        }
+      }
+
       return res.json({ liked: true, likesCount: count });
     }
   } catch (err) {
@@ -1657,6 +1691,61 @@ router.put('/notifications/read', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("Error updating notifications:", error);
     res.status(500).json({ error: 'Error al actualizar notificaciones' });
+  }
+});
+
+// ── GAMIFICATION & CALENDAR ─────────────────────────────────────────────────
+router.get('/leaderboard', authMiddleware, async (req, res) => {
+  try {
+    const topUsers = await prisma.user.findMany({
+      take: 10,
+      orderBy: { points: 'desc' },
+      select: { id: true, name: true, points: true, level: true, profilePicture: true }
+    });
+    res.json(topUsers);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener leaderboard' });
+  }
+});
+
+router.get('/calendar', authMiddleware, async (req, res) => {
+  try {
+    const events = await prisma.outfitCalendar.findMany({
+      where: { userId: req.user.id },
+      include: { consulta: true }
+    });
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener calendario' });
+  }
+});
+
+router.post('/calendar/add', authMiddleware, async (req, res) => {
+  try {
+    const { consultaId, scheduledDate } = req.body;
+    const event = await prisma.outfitCalendar.create({
+      data: {
+        userId: req.user.id,
+        consultaId: parseInt(consultaId),
+        scheduledDate: new Date(scheduledDate)
+      },
+      include: { consulta: true }
+    });
+    res.json(event);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al añadir al calendario' });
+  }
+});
+
+router.delete('/calendar/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.outfitCalendar.deleteMany({
+      where: { id, userId: req.user.id }
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar del calendario' });
   }
 });
 

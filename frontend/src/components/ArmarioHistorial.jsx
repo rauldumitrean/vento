@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
-// FIX: Removed unused imports: Check, Shirt
-import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader2, Tag, Palette } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader2, Tag, Palette, Calendar as CalendarIcon, CalendarPlus, X } from 'lucide-react';
 
-// FIX: Use env variable instead of hardcoded localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const ArmarioHistorial = ({ token, darkMode }) => {
@@ -12,12 +10,18 @@ const ArmarioHistorial = ({ token, darkMode }) => {
   const [historialFilter, setHistorialFilter] = useState('mis_generaciones');
   const [armario, setArmario] = useState([]);
   const [historial, setHistorial] = useState([]);
+  const [calendar, setCalendar] = useState([]);
   const [nuevaPrenda, setNuevaPrenda] = useState({ categoria: 'top', descripcion: '', color: '' });
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareConsultaId, setShareConsultaId] = useState(null);
   const [friends, setFriends] = useState([]);
   const [shareMessage, setShareMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  
+  // Calendar scheduling modal
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleConsultaId, setScheduleConsultaId] = useState(null);
+  const [scheduleDate, setScheduleDate] = useState('');
 
   // FIX: Added token to dependency array to avoid stale closure
   useEffect(() => {
@@ -30,8 +34,10 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       // FIX: Using API_URL env variable
       const resArmario = await axios.get(`${API_URL}/api/armario`, { headers: { Authorization: `Bearer ${token}` } });
       const resHistorial = await axios.get(`${API_URL}/api/historial`, { headers: { Authorization: `Bearer ${token}` } });
+      const resCalendar = await axios.get(`${API_URL}/api/calendar`, { headers: { Authorization: `Bearer ${token}` } });
       setArmario(resArmario.data);
       setHistorial(resHistorial.data);
+      setCalendar(resCalendar.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -136,6 +142,35 @@ const ArmarioHistorial = ({ token, darkMode }) => {
     }
   };
 
+  const handleScheduleOutfit = async (e) => {
+    e.preventDefault();
+    if (!scheduleConsultaId || !scheduleDate) return;
+    try {
+      await axios.post(`${API_URL}/api/calendar/add`, {
+        consultaId: scheduleConsultaId,
+        scheduledDate: scheduleDate
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      const resCalendar = await axios.get(`${API_URL}/api/calendar`, { headers: { Authorization: `Bearer ${token}` } });
+      setCalendar(resCalendar.data);
+      setScheduleModalOpen(false);
+      setScheduleConsultaId(null);
+      setScheduleDate('');
+      // Using simple DOM alert, or just nothing since it closes the modal anyway
+    } catch (err) {
+      alert("Error al programar el outfit");
+    }
+  };
+
+  const handleDeleteCalendar = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/api/calendar/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setCalendar(calendar.filter(c => c.id !== id));
+    } catch (error) {
+      alert("Error al borrar del calendario");
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -152,7 +187,13 @@ const ArmarioHistorial = ({ token, darkMode }) => {
           onClick={() => setActiveTab('historial')}
           className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeTab === 'historial' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
         >
-          Historial de Outfits
+          Historial
+        </button>
+        <button 
+          onClick={() => setActiveTab('calendario')}
+          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === 'calendario' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
+        >
+          <CalendarIcon size={16} /> Agenda
         </button>
       </div>
 
@@ -315,7 +356,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
             )}
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'historial' ? (
         <div className="space-y-6">
           <div className="flex bg-black/10 dark:bg-black/20 backdrop-blur-md p-1.5 rounded-2xl mb-6 max-w-sm border border-white/5">
             <button
@@ -366,6 +407,13 @@ const ArmarioHistorial = ({ token, darkMode }) => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
+                        onClick={() => { setScheduleConsultaId(h.id); setScheduleModalOpen(true); }}
+                        className={`p-2 rounded-full transition-colors text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20`}
+                        title="Añadir a mi agenda"
+                      >
+                        <CalendarPlus size={20} />
+                      </button>
+                      <button 
                         onClick={() => openShareModal(h.id)}
                         className={`p-2 rounded-full transition-colors text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20`}
                         title="Compartir con un amigo"
@@ -401,9 +449,73 @@ const ArmarioHistorial = ({ token, darkMode }) => {
             });
           })()}
         </div>
+      ) : (
+        /* CALENDARIO VIEW */
+        <div className="space-y-6">
+          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-200 text-sm flex items-start gap-3">
+            <CalendarIcon size={20} className="shrink-0 text-emerald-400" />
+            <div>
+              <p className="font-bold mb-0.5 text-emerald-300">Agenda Semanal</p>
+              <p>Programa tus outfits para los próximos días. Pulsa el botón de calendario en cualquier outfit de tu historial para asignarlo a una fecha.</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {calendar.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                  <CalendarIcon size={32} className="text-gray-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Tu agenda está vacía</h3>
+                <p className="text-gray-400 max-w-md">Ve a tu historial de outfits y programa qué te vas a poner cada día.</p>
+              </div>
+            ) : (
+              calendar.sort((a,b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map(event => {
+                let clima = {};
+                let outfit = { resumen: '', prendas: [] };
+                try { clima = JSON.parse(event.consulta.clima_json); } catch (e) {}
+                try { outfit = JSON.parse(event.consulta.recomendacion_json); } catch (e) {}
+                
+                const dateObj = new Date(event.scheduledDate);
+                const isToday = new Date().setHours(0,0,0,0) === dateObj.setHours(0,0,0,0);
+                
+                return (
+                  <div key={event.id} className={`p-5 rounded-2xl border ${isToday ? 'bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border-indigo-500/50 shadow-lg shadow-indigo-500/20' : 'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex flex-col">
+                        <span className={`text-sm font-bold uppercase tracking-wider ${isToday ? 'text-indigo-400' : 'text-gray-400'}`}>
+                          {isToday ? 'Hoy' : dateObj.toLocaleDateString('es-ES', { weekday: 'long' })}
+                        </span>
+                        <span className="text-xl font-black text-white">{dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteCalendar(event.id)}
+                        className="p-2 rounded-full transition-colors text-gray-500 hover:text-red-500 hover:bg-red-500/10"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                    
+                    <div className="mt-4 p-4 rounded-xl bg-black/40 border border-white/5">
+                      {outfit.resumen && <p className="font-medium mb-3 italic text-gray-300 line-clamp-2 text-sm">"{outfit.resumen}"</p>}
+                      <div className="flex flex-wrap gap-1.5">
+                        {(outfit.prendas || []).slice(0, 3).map((p, i) => (
+                          <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/10 border-gray-600 text-gray-300 truncate max-w-full">
+                            {p.descripcion}
+                          </span>
+                        ))}
+                        {(outfit.prendas?.length > 3) && <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-gray-400">+{outfit.prendas.length - 3}</span>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
       )}
 
-      {shareModalOpen && (
+      {/* Share Modal */}
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className={`w-full max-w-md rounded-3xl p-6 ${darkMode ? 'bg-gray-900 text-white border border-gray-800' : 'bg-white text-gray-900 shadow-2xl'}`}>
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Share2 size={24} className="text-indigo-500" /> Compartir Outfit</h3>
@@ -433,6 +545,44 @@ const ArmarioHistorial = ({ token, darkMode }) => {
             <button onClick={() => setShareModalOpen(false)} className={`mt-6 w-full py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
               Cerrar
             </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Schedule Modal */}
+      {scheduleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-3xl p-6 bg-gray-900 text-white border border-gray-800 shadow-2xl">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><CalendarPlus size={24} className="text-emerald-500" /> Programar Outfit</h3>
+            <p className="text-gray-400 text-sm mb-6">Elige el día para el que quieres usar este outfit.</p>
+            
+            <form onSubmit={handleScheduleOutfit}>
+              <div className="mb-6">
+                <input 
+                  type="date" 
+                  value={scheduleDate}
+                  onChange={e => setScheduleDate(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-black/40 border border-white/10 focus:outline-none focus:border-emerald-500 text-white"
+                  required
+                />
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => { setScheduleModalOpen(false); setScheduleDate(''); }} 
+                  className="flex-1 py-3 rounded-xl font-bold transition-colors bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={!scheduleDate}
+                  className="flex-1 py-3 rounded-xl font-bold transition-colors bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-50"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

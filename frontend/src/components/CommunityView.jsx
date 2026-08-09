@@ -163,6 +163,25 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [historyOutfits, setHistoryOutfits] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState('feed');
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+  const fetchLeaderboard = useCallback(async () => {
+    setLoadingLeaderboard(true);
+    try {
+      const res = await axios.get(`${API_URL}/api/leaderboard`, { headers: { Authorization: `Bearer ${token}` } });
+      setLeaderboard(res.data || []);
+    } catch (e) {
+      console.error('Leaderboard error:', e);
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (activeTab === 'ranking') fetchLeaderboard();
+  }, [activeTab, fetchLeaderboard]);
 
   const handleDeletePost = (deletedId) => {
     setOutfits(prev => prev.filter(o => o.id !== deletedId));
@@ -274,7 +293,25 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
         </div>
       </motion.div>
 
-      {/* Feed */}
+      {/* Tabs */}
+      <div className="flex items-center gap-6 border-b border-white/10 mb-6 px-2">
+        <button 
+          onClick={() => setActiveTab('feed')} 
+          className={`pb-3 text-sm font-bold transition-all border-b-2 ${activeTab === 'feed' ? 'border-emerald-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+        >
+          Explorar Outfits
+        </button>
+        <button 
+          onClick={() => setActiveTab('ranking')} 
+          className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'ranking' ? 'border-yellow-500 text-yellow-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+        >
+          <Crown size={16} /> Top Estilistas
+        </button>
+      </div>
+
+      {activeTab === 'feed' ? (
+        <>
+          {/* Feed */}
       {loading && outfits.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="animate-spin text-emerald-400" />
@@ -305,16 +342,108 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
               </button>
               <span className="text-sm text-gray-400 font-medium">Página {page} de {pages}</span>
               <button
-                onClick={() => fetchFeed(page + 1)}
-                disabled={page === pages || loading}
-                className="p-2 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40"
-              >
-                <ChevronRight size={18} />
-              </button>
+          {loading && outfits.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={32} className="animate-spin text-emerald-400" />
             </div>
+          ) : outfits.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center">
+              <Globe size={48} className="text-gray-600 mb-4" />
+              <h2 className="text-xl font-bold text-white mb-2">Sé el primero</h2>
+              <p className="text-gray-400 max-w-sm">Todavía no hay outfits compartidos. ¡Genera uno y compártelo con la comunidad!</p>
+            </motion.div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                {outfits.map((outfit) => (
+                  <OutfitCard key={outfit.id} outfit={outfit} token={token} currentUserId={currentUserId} onDelete={handleDeletePost} onClickCard={setSelectedOutfit} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pages > 1 && (
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => fetchFeed(page - 1)}
+                    disabled={page === 1 || loading}
+                    className="p-2 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="text-sm text-gray-400 font-medium">Página {page} de {pages}</span>
+                  <button
+                    onClick={() => fetchFeed(page + 1)}
+                    disabled={page === pages || loading}
+                    className="p-2 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
+      ) : (
+        /* LEADERBOARD VIEW */
+        <div className="flex flex-col gap-3">
+          {loadingLeaderboard ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={32} className="animate-spin text-yellow-400" />
+            </div>
+          ) : (
+            leaderboard.map((user, idx) => (
+              <motion.div 
+                key={user.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className={`flex items-center justify-between p-4 rounded-2xl border ${
+                  idx === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-900/20 border-yellow-500/30 shadow-lg shadow-yellow-900/20' : 
+                  idx === 1 ? 'bg-gray-400/10 border-gray-400/20' :
+                  idx === 2 ? 'bg-orange-600/10 border-orange-600/20' :
+                  'bg-white/5 border-white/10'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                    idx === 0 ? 'bg-yellow-500 text-black' : 
+                    idx === 1 ? 'bg-gray-300 text-black' :
+                    idx === 2 ? 'bg-orange-400 text-black' :
+                    'bg-black/40 text-gray-400'
+                  }`}>
+                    {idx + 1}
+                  </div>
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 border border-white/10 shrink-0">
+                    {user.profilePicture ? (
+                      <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <UserIcon size={20} className="text-gray-400 m-auto mt-3" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-lg">{user.name || 'Usuario'}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${
+                        user.level === 'Icono de Moda' ? 'bg-yellow-500/20 text-yellow-400' :
+                        user.level === 'Creador de Tendencias' ? 'bg-purple-500/20 text-purple-400' :
+                        user.level === 'Aficionado' ? 'bg-blue-500/20 text-blue-400' :
+                        'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {user.level}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-2xl font-black text-white">{user.points}</span>
+                  <span className="text-xs text-gray-400 font-medium">Puntos</span>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
       )}
+
       {/* Modal Detalles */}
       <AnimatePresence>
         {selectedOutfit && (
