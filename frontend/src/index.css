@@ -4,7 +4,6 @@
 
 @layer base {
   html {
-    overflow-x: hidden;
     max-width: 100%;
     background-color: #0A0A0B;
     overscroll-behavior-x: none;
@@ -19,7 +18,6 @@
   body {
     @apply text-neutral-900 font-sans antialiased;
     background-color: #0A0A0B;
-    overflow-x: hidden;
     position: relative;
     max-width: 100%;
     overscroll-behavior-x: none;
