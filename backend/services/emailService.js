@@ -350,7 +350,7 @@ exports.sendAccountDeletedEmail = async (user) => {
       subject,
       html: baseTemplate('Cuenta Eliminada', content, preheader)
     });
-    console.log(\`Account deleted email sent to \${user.email}\`);
+    console.log(`Account deleted email sent to ${user.email}`);
   } catch (err) {
     console.error('Error sending account deleted email:', err);
   }

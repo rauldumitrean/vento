@@ -65,7 +65,7 @@ try {
   console.error("CRITICAL STARTUP ERROR:", error);
   const express = require('express');
   app = express();
-  app.all('(.*)', (req, res) => {
+  app.all('*', (req, res) => {
     res.status(500).json({
       error: 'CRITICAL STARTUP ERROR',
       message: error.message,
