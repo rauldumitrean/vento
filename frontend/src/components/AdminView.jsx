@@ -325,19 +325,7 @@ const AdminView = ({ token }) => {
 
   return (
     <div className="flex flex-col md:flex-row h-[100dvh] bg-neutral-100 font-sans overflow-hidden">
-      {/* FIX: Toast notification for admin actions (replaces all alert() calls) */}
-      <AnimatePresence>
-        {adminMsg.text && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-[calc(1.5rem+env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl text-sm font-medium text-white ${adminMsg.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}
-          >
-            {adminMsg.text}
-          </motion.div>
-        )}
-      </AnimatePresence>
+
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-white border-r border-gray-100 text-gray-500 flex flex-col flex-shrink-0 md:h-full z-10">
         <div className="h-16 flex flex-shrink-0 items-center justify-between md:justify-start px-6 border-b border-gray-100">
