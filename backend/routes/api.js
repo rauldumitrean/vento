@@ -698,8 +698,13 @@ router.put('/historial/:id/favorito', authMiddleware, async (req, res) => {
     const { isFavorite } = req.body;
     if (typeof isFavorite !== 'boolean') return res.status(400).json({ errorCode: '0x102A', error: 'isFavorite debe ser un booleano' });
     
-    const consulta = await prisma.consulta.update({
-      where: { id, userId: req.user.id },
+    let consulta = await prisma.consulta.findFirst({ 
+      where: { id, userId: req.user.id } 
+    });
+    if (!consulta) return res.status(404).json({ errorCode: '0x102E', error: 'Consulta no encontrada' });
+    
+    consulta = await prisma.consulta.update({
+      where: { id },
       data: { isFavorite }
     });
     res.json(consulta);
@@ -715,7 +720,7 @@ router.delete('/historial/:id', authMiddleware, async (req, res) => {
     if (isNaN(id)) return res.status(400).json({ errorCode: '0x102D', error: 'ID inválido' });
 
     // Verificar propiedad
-    const consulta = await prisma.consulta.findUnique({ where: { id, userId: req.user.id } });
+    const consulta = await prisma.consulta.findFirst({ where: { id, userId: req.user.id } });
     if (!consulta) return res.status(404).json({ errorCode: '0x102E', error: 'Consulta no encontrada' });
 
     // Borrar mensajes asociados primero (Foreign Key constraint)

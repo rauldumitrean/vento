@@ -34,8 +34,15 @@ try {
   app.use(helmet());
   app.use(compression());
   
-  // CORS estricto (Ajustar según dominios permitidos, de momento mantenemos '*' pero se debe cerrar en prod)
-  app.use(cors({ origin: '*' }));
+  const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',') 
+    : ['http://localhost:5173'];
+  
+  app.use(cors({ 
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  }));
   
   // IMPORTANTE: Los parsers sincrónicos deben ir ANTES de cualquier middleware asíncrono (como el limiter).
   // Si el limiter (asíncrono) va primero en Vercel, cede el Event Loop y el stream de la petición
@@ -46,6 +53,15 @@ try {
 
   // Rate Limiting Global (Asíncrono)
   app.use('/api/', limiter);
+
+  // Rate Limiting Estricto para Auth
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 10, // 10 intentos por ventana
+    message: { errorCode: '0x429', error: 'Demasiados intentos de autenticación. Intenta más tarde.' }
+  });
+  app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth/register', authLimiter);
 
   app.use('/api/auth', authRoutes);
   app.use('/api/payments', paymentsRoutes);
@@ -74,35 +90,7 @@ try {
   });
 }
 
-// Auto-migration for Vercel database (adds column if missing)
-try {
-  const prisma = require('./prismaClient');
-  prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "sessionVersion" INTEGER NOT NULL DEFAULT 0;')
-    .catch(() => {}); // Ignore error if column already exists
-
-  // Auto-migrate usaGorras
-  prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "usaGorras" BOOLEAN;')
-    .catch(() => {});
-
-  // Auto-migrate alertCityName
-  prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN "alertCityName" TEXT;')
-    .catch(() => {});
-
-  // Create FavoriteCity table if it doesn't exist
-  prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "FavoriteCity" (
-      "id" SERIAL PRIMARY KEY,
-      "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-      "cityName" TEXT NOT NULL,
-      "lat" DOUBLE PRECISION,
-      "lon" DOUBLE PRECISION,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "FavoriteCity_userId_cityName_key" UNIQUE ("userId", "cityName")
-    );
-  `).catch(() => {});
-  
-  prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FavoriteCity_userId_idx" ON "FavoriteCity"("userId");`)
-    .catch(() => {});
-} catch (e) {}
+// Las migraciones de base de datos se han movido a herramientas CLI estándar (Prisma Migrate) 
+// para prevenir el uso de comandos RawUnsafe en producción.
 
 module.exports = app;

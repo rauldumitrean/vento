@@ -5,20 +5,40 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
 const authMiddleware = require('../middleware/authMiddleware');
+const { z } = require('zod');
+
+// Zod Schemas para Validación
+const registerSchema = z.object({
+  email: z.string().email('Email inválido.').max(255),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.').max(100),
+  name: z.string().max(100).optional().nullable(),
+  gender: z.string().max(50).optional().nullable(),
+  age: z.union([z.number().int().min(1).max(120), z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1).max(120))]).optional().nullable(),
+  usaGorras: z.boolean().optional().nullable()
+});
+
+const loginSchema = z.object({
+  email: z.string().email('Email inválido.'),
+  password: z.string().min(1)
+});
+
+const updatePrefsSchema = z.object({
+  usaGorras: z.boolean({ required_error: 'Faltan datos.' })
+});
 
 // JWT_SECRET is required but will be checked at runtime to prevent serverless function crash
 
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, gender, age, usaGorras } = req.body;
-    if (!email || !password) return res.status(400).json({ errorCode: '0x1053', error: 'Faltan datos.' });
-    // FIX A-8: Basic input validation
-    if (typeof email !== 'string' || !email.includes('@')) return res.status(400).json({ errorCode: '0x1054', error: 'Email inválido.' });
-    if (typeof password !== 'string' || password.length < 6) return res.status(400).json({ errorCode: '0x1055', error: 'La contraseña debe tener al menos 6 caracteres.' });
-    if (age !== undefined && age !== null && age !== '') {
-      const ageNum = parseInt(age);
-      if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) return res.status(400).json({ errorCode: '0x1056', error: 'La edad debe estar entre 1 y 120.' });
+    const parseResult = registerSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ 
+        errorCode: '0x1054', 
+        error: parseResult.error.errors[0].message,
+        details: parseResult.error.issues
+      });
     }
+    const { email, password, name, gender, age, usaGorras } = parseResult.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ errorCode: '0x1057', error: 'El email ya está registrado.' });
@@ -52,8 +72,11 @@ router.post('/register', async (req, res) => {
 
 router.post('/update-preferences', authMiddleware, async (req, res) => {
   try {
-    const { usaGorras } = req.body;
-    if (usaGorras === undefined) return res.status(400).json({ errorCode: '0x105Z', error: 'Faltan datos.' });
+    const parseResult = updatePrefsSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ errorCode: '0x105Z', error: 'Faltan datos o son inválidos.' });
+    }
+    const { usaGorras } = parseResult.data;
 
     const user = await prisma.user.update({
       where: { id: req.user.id },
@@ -70,8 +93,11 @@ router.post('/update-preferences', authMiddleware, async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ errorCode: '0x1059', error: 'Faltan datos.' });
+    const parseResult = loginSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ errorCode: '0x1059', error: 'Faltan datos o formato inválido.' });
+    }
+    const { email, password } = parseResult.data;
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(400).json({ errorCode: '0x105A', error: 'Credenciales inválidas.' });
@@ -355,7 +381,10 @@ router.put('/profile', authMiddleware, async (req, res) => {
 });
 
 // Initialize Stripe for subscription cancellation
-const stripeSecret = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy';
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+if (!stripeSecret) {
+  console.warn('STRIPE_SECRET_KEY is not defined. Payments will fail.');
+}
 const stripe = require('stripe')(stripeSecret);
 
 router.delete('/delete-account', authMiddleware, async (req, res) => {
