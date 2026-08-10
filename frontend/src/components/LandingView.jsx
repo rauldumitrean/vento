@@ -241,7 +241,7 @@ export default function LandingView({ setToken }) {
       
       {/* Left Ad - Solo si no es premium */}
       {!isPremium && (
-        <div className="hidden 2xl:flex w-[250px] shrink-0 sticky top-0 h-screen p-4 py-24">
+        <div className="hidden lg:flex w-[250px] shrink-0 sticky top-0 h-screen p-4 py-24">
           <VerticalAd className="w-full h-full" />
         </div>
       )}
@@ -615,7 +615,7 @@ export default function LandingView({ setToken }) {
 
       {/* Right Ad - Solo si no es premium */}
       {!isPremium && (
-        <div className="hidden 2xl:flex w-[250px] shrink-0 sticky top-0 h-screen p-4 py-24">
+        <div className="hidden lg:flex w-[250px] shrink-0 sticky top-0 h-screen p-4 py-24">
           <VerticalAd className="w-full h-full" />
         </div>
       )}

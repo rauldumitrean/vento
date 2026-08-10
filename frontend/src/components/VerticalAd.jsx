@@ -10,7 +10,7 @@ const VerticalAd = ({ className = "" }) => {
   }, []);
 
   return (
-    <div className={`hidden xl:flex w-[200px] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex-col items-center justify-center relative p-4 ${className}`}>
+    <div className={`w-[200px] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col items-center justify-center relative p-4 ${className}`}>
       <span className="absolute top-2 left-2 text-[10px] text-gray-500 uppercase tracking-widest">Publicidad</span>
       <div className="w-full h-full flex flex-col items-center justify-center opacity-30 text-center">
         <div className="w-12 h-12 border-2 border-dashed border-gray-600 rounded flex items-center justify-center mb-2">
