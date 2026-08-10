@@ -66,7 +66,7 @@ model Consulta {
   isFavorite         Boolean  @default(false)
   isShared           Boolean  @default(false)
   isPublic           Boolean  @default(false)
-  user               User     @relation(fields: [userId], references: [id])
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   mensajes           MensajeChat[]
   directMessages     DirectMessage[]
   outfitLikes        OutfitLike[]
@@ -84,7 +84,7 @@ model MensajeChat {
   rol        String   // "user" or "model"
   contenido  String
   createdAt  DateTime @default(now())
-  consulta   Consulta @relation(fields: [consultaId], references: [id])
+  consulta   Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
 
   @@index([consultaId, createdAt])
 }
@@ -97,7 +97,7 @@ model PrendaArmario {
   color       String?  // ej. "Blanca"
   imageUrl    String?  // URL de la foto de la prenda subida por el usuario
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, categoria])
@@ -111,7 +111,7 @@ model Ticket {
   mensaje   String
   estado    String   @default("ABIERTO") // ABIERTO | CERRADO
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, estado])
 }

@@ -342,6 +342,10 @@ router.put('/profile', authMiddleware, async (req, res) => {
   }
 });
 
+// Initialize Stripe for subscription cancellation
+const stripeSecret = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy';
+const stripe = require('stripe')(stripeSecret);
+
 router.delete('/delete-account', authMiddleware, async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -356,13 +360,20 @@ router.delete('/delete-account', authMiddleware, async (req, res) => {
       if (!password) return res.status(400).json({ error: 'Debes introducir tu contraseña.' });
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) return res.status(401).json({ error: 'Contraseña incorrecta.' });
-    } else {
-      // For OAuth users (Google/Apple), password is not required, 
-      // but they must confirm the email.
     }
 
-    // Prisma relation onDelete: Cascade should handle related records (consultas, viajes, history)
-    // if configured in schema. prisma.user.delete is enough if cascade is set.
+    // Cancelar la suscripción de Stripe si existe
+    if (user.stripeSubscriptionId) {
+      try {
+        await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+        console.log(`Suscripción de Stripe cancelada para el usuario ${user.id}`);
+      } catch (stripeErr) {
+        console.error('Error al cancelar la suscripción de Stripe:', stripeErr);
+        // Continuamos para borrar la cuenta igualmente
+      }
+    }
+
+    // Prisma relation onDelete: Cascade should handle related records
     await prisma.user.delete({ where: { id: user.id } });
 
     // Send confirmation email
