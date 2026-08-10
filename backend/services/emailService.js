@@ -330,3 +330,28 @@ exports.sendMorningAlertEmail = async (user, cityName, current, tempMax, tempMin
     console.error('Error sending morning alert email:', err);
   }
 };
+
+exports.sendAccountDeletedEmail = async (user) => {
+  const subject = 'Tu cuenta de Ventoo ha sido eliminada';
+  const preheader = 'Confirmación de eliminación de cuenta';
+  
+  const content = `
+    <h2>Hola${user.name ? ' ' + user.name : ''},</h2>
+    <p>Te confirmamos que tu cuenta de Ventoo ha sido eliminada correctamente, junto con todos tus datos, consultas, outfits y preferencias, tal y como solicitaste.</p>
+    <p>Si cambias de opinión en el futuro, siempre serás bienvenido/a para crear una nueva cuenta.</p>
+    <p>¡Gracias por haber probado Ventoo!</p>
+  `;
+
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: getFromEmail(),
+      to: user.email,
+      subject,
+      html: baseTemplate('Cuenta Eliminada', content, preheader)
+    });
+    console.log(\`Account deleted email sent to \${user.email}\`);
+  } catch (err) {
+    console.error('Error sending account deleted email:', err);
+  }
+};
