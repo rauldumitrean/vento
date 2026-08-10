@@ -24,6 +24,11 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [reportMessage, setReportMessage] = useState('');
   const [reportStatus, setReportStatus] = useState('idle'); // idle | loading | success | error
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteEmail, setDeleteEmail] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [isPremium, setIsPremium] = useState(Cookies.get('isPremium') === 'true');
   const [premiumPlan, setPremiumPlan] = useState(Cookies.get('premiumPlan') || null);
   
@@ -161,10 +166,33 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
         setTimeout(() => window.location.reload(), 2000);
       }
     } catch (err) {
-      setMessage(err.response?.data?.error || 'Error al cancelar la suscripción.');
+      console.error(err);
+      showToast('Error al gestionar suscripción', 'error');
+    } finally {
       setCheckoutLoading(false);
-      setShowCancelModal(false);
-      setTimeout(() => setMessage(''), 4000);
+    }
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    setDeleteError('');
+    setDeleteLoading(true);
+    
+    try {
+      const res = await axios.delete(`${API_URL}/api/auth/delete-account`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { email: deleteEmail, password: deletePassword }
+      });
+      
+      if (res.data.success) {
+        showToast('Cuenta eliminada correctamente', 'success');
+        setShowDeleteModal(false);
+        if (onLogout) onLogout();
+      }
+    } catch (err) {
+      setDeleteError(err.response?.data?.error || 'Error al eliminar la cuenta');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -416,7 +444,24 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                  )}
               </div>
            </div>
-        </div>
+           </div>
+           
+           {/* ZONA PELIGROSA */}
+           <div className={`p-6 md:p-8 rounded-[2rem] border flex flex-col mt-8 ${darkMode ? 'bg-red-900/10 border-red-500/20 shadow-2xl' : 'bg-red-50 border-red-100 shadow-xl'}`}>
+              <h3 className={`text-xl font-bold mb-2 flex items-center gap-3 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
+                <AlertTriangle className="text-red-500" /> Zona Peligrosa
+              </h3>
+              <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Una vez elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
+              </p>
+              <button 
+                type="button" 
+                onClick={() => setShowDeleteModal(true)} 
+                className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-red-600/30 active:scale-95 flex items-center justify-center gap-2"
+              >
+                Eliminar Cuenta
+              </button>
+           </div>
 
         {/* ACCIONES FINALES */}
         <div className="pt-8 flex flex-col sm:flex-row items-center gap-4">
@@ -451,6 +496,61 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                 No, mantener Premium
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Eliminar Cuenta */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className={`w-full max-w-sm p-8 rounded-[2rem] shadow-2xl ${darkMode ? 'bg-[#15151e] border border-red-500/30' : 'bg-white border border-red-200'}`}>
+            <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={40} />
+            </div>
+            <h3 className={`text-2xl font-black text-center mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>¿Eliminar cuenta?</h3>
+            <p className={`text-sm text-center mb-6 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Introduce tu correo y contraseña para confirmar la eliminación de tu cuenta.
+            </p>
+            
+            <form onSubmit={handleDeleteAccount} className="space-y-4">
+              {deleteError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-500 text-sm font-medium text-center">
+                  {deleteError}
+                </div>
+              )}
+              
+              <div>
+                <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Correo electrónico</label>
+                <input 
+                  type="email" 
+                  value={deleteEmail} 
+                  onChange={(e) => setDeleteEmail(e.target.value)} 
+                  className={`w-full p-3 rounded-xl border focus:ring-2 focus:outline-none transition-all ${darkMode ? 'bg-black/50 border-white/10 text-white focus:ring-red-500 focus:border-red-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:ring-red-500 focus:border-red-500'}`}
+                  placeholder="tu@correo.com"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Contraseña (déjala en blanco si usaste Google/Apple)</label>
+                <input 
+                  type="password" 
+                  value={deletePassword} 
+                  onChange={(e) => setDeletePassword(e.target.value)} 
+                  className={`w-full p-3 rounded-xl border focus:ring-2 focus:outline-none transition-all ${darkMode ? 'bg-black/50 border-white/10 text-white focus:ring-red-500 focus:border-red-500' : 'bg-gray-50 border-gray-200 text-gray-900 focus:ring-red-500 focus:border-red-500'}`}
+                  placeholder="Tu contraseña"
+                />
+              </div>
+
+              <div className="flex flex-col gap-3 pt-4">
+                <button type="submit" disabled={deleteLoading} className="w-full py-4 rounded-2xl font-bold bg-red-600 hover:bg-red-500 text-white transition-all active:scale-95 disabled:opacity-50 text-lg flex items-center justify-center gap-2">
+                  {deleteLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Confirmar Eliminación'}
+                </button>
+                <button type="button" onClick={() => setShowDeleteModal(false)} disabled={deleteLoading} className={`w-full py-4 rounded-2xl font-bold transition-all text-lg ${darkMode ? 'bg-white/5 text-white hover:bg-white/10' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -342,4 +342,37 @@ router.put('/profile', authMiddleware, async (req, res) => {
   }
 });
 
+router.delete('/delete-account', authMiddleware, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email) return res.status(400).json({ error: 'Falta el email.' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    if (user.email !== email) return res.status(400).json({ error: 'El correo no coincide con tu cuenta actual.' });
+
+    // Validate password if user has one
+    if (user.password) {
+      if (!password) return res.status(400).json({ error: 'Debes introducir tu contraseña.' });
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) return res.status(401).json({ error: 'Contraseña incorrecta.' });
+    } else {
+      // For OAuth users (Google/Apple), password is not required, 
+      // but they must confirm the email.
+    }
+
+    // Prisma relation onDelete: Cascade should handle related records (consultas, viajes, history)
+    // if configured in schema. prisma.user.delete is enough if cascade is set.
+    await prisma.user.delete({ where: { id: user.id } });
+
+    // Send confirmation email
+    await emailService.sendAccountDeletedEmail(user).catch(console.error);
+
+    res.json({ success: true, message: 'Cuenta eliminada correctamente.' });
+  } catch (error) {
+    console.error('Error al eliminar cuenta:', error);
+    res.status(500).json({ error: 'Error interno del servidor al eliminar la cuenta.' });
+  }
+});
+
 module.exports = router;
