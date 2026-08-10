@@ -98,7 +98,7 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    if (['asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email.toLowerCase()) && user.role !== 'ADMIN') {
+    if (['raul.dumitrean07@gmail.com', 'asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email.toLowerCase()) && user.role !== 'ADMIN') {
       user = await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
     }
 
@@ -188,7 +188,7 @@ router.post('/google', async (req, res) => {
       }
     }
 
-    if (['asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email.toLowerCase()) && user.role !== 'ADMIN') {
+    if (['raul.dumitrean07@gmail.com', 'asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email.toLowerCase()) && user.role !== 'ADMIN') {
       user = await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
     }
 
@@ -243,7 +243,7 @@ router.post('/apple', async (req, res) => {
       }
     }
 
-    if (['asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email?.toLowerCase()) && user.role !== 'ADMIN') {
+    if (['raul.dumitrean07@gmail.com', 'asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email?.toLowerCase()) && user.role !== 'ADMIN') {
       user = await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
     }
 
