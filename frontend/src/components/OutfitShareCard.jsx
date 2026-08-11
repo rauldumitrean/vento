@@ -1,19 +1,20 @@
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Download, X, Copy, Check } from 'lucide-react';
+import { Share2, Download, X, Copy, Check, Sun, Cloud, CloudRain, Snowflake, CloudLightning, Wind } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { ClothingIcon } from '../utils/ClothingIcon';
 
-// Mapeo de código de clima a emoji y gradiente de fondo
+// Mapeo de código de clima a icono y gradiente de fondo
 const getWeatherStyle = (weatherCode, temp) => {
-  if (weatherCode >= 95) return { emoji: '⛈️', label: 'Tormenta', gradient: 'from-gray-900 via-slate-800 to-gray-900', accent: '#6366f1' };
-  if (weatherCode >= 71) return { emoji: '❄️', label: 'Nieve', gradient: 'from-sky-950 via-blue-900 to-slate-900', accent: '#93c5fd' };
-  if (weatherCode >= 51) return { emoji: '🌧️', label: 'Lluvia', gradient: 'from-slate-900 via-blue-950 to-gray-900', accent: '#60a5fa' };
-  if (weatherCode >= 45) return { emoji: '🌫️', label: 'Niebla', gradient: 'from-gray-800 via-gray-900 to-slate-900', accent: '#9ca3af' };
-  if (weatherCode >= 1) return { emoji: '⛅', label: 'Nublado', gradient: 'from-slate-900 via-indigo-950 to-gray-900', accent: '#a5b4fc' };
+  if (weatherCode >= 95) return { Icon: CloudLightning, label: 'Tormenta', gradient: 'from-gray-900 via-slate-800 to-gray-900', accent: '#6366f1' };
+  if (weatherCode >= 71) return { Icon: Snowflake, label: 'Nieve', gradient: 'from-sky-950 via-blue-900 to-slate-900', accent: '#93c5fd' };
+  if (weatherCode >= 51) return { Icon: CloudRain, label: 'Lluvia', gradient: 'from-slate-900 via-blue-950 to-gray-900', accent: '#60a5fa' };
+  if (weatherCode >= 45) return { Icon: Wind, label: 'Niebla', gradient: 'from-gray-800 via-gray-900 to-slate-900', accent: '#9ca3af' };
+  if (weatherCode >= 1) return { Icon: Cloud, label: 'Nublado', gradient: 'from-slate-900 via-indigo-950 to-gray-900', accent: '#a5b4fc' };
   // Soleado — varía por temperatura
-  if (temp >= 30) return { emoji: '🔥', label: 'Calor intenso', gradient: 'from-orange-950 via-red-950 to-gray-900', accent: '#fb923c' };
-  if (temp >= 20) return { emoji: '☀️', label: 'Soleado', gradient: 'from-amber-950 via-yellow-950 to-gray-900', accent: '#fbbf24' };
-  return { emoji: '🌤️', label: 'Fresco', gradient: 'from-indigo-950 via-slate-900 to-gray-900', accent: '#818cf8' };
+  if (temp >= 30) return { Icon: Sun, label: 'Calor intenso', gradient: 'from-orange-950 via-red-950 to-gray-900', accent: '#fb923c' };
+  if (temp >= 20) return { Icon: Sun, label: 'Soleado', gradient: 'from-amber-950 via-yellow-950 to-gray-900', accent: '#fbbf24' };
+  return { Icon: Sun, label: 'Fresco', gradient: 'from-indigo-950 via-slate-900 to-gray-900', accent: '#818cf8' };
 };
 
 // Componente visual de la tarjeta (lo que se captura como imagen)
@@ -22,11 +23,12 @@ const CardVisual = ({ outfit, weather, city, cardRef }) => {
   const code = weather?.current?.weather_code ?? 0;
   const style = getWeatherStyle(code, temp);
   const prendas = outfit?.prendas?.slice(0, 4) || [];
+  const WeatherIcon = style.Icon;
 
   return (
     <div
       ref={cardRef}
-      style={{ width: 540, height: 540, fontFamily: 'system-ui, -apple-system, sans-serif' }}
+      style={{ width: 540, height: 540, fontFamily: 'Arial, sans-serif' }}
       className={`relative bg-gradient-to-br ${style.gradient} overflow-hidden flex flex-col`}
     >
       {/* Fondo decorativo */}
@@ -40,46 +42,48 @@ const CardVisual = ({ outfit, weather, city, cardRef }) => {
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between px-8 pt-8 pb-4">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: style.accent }}>
-            <span style={{ fontSize: 14 }}>💨</span>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: style.accent }}>
+            <Wind size={18} />
           </div>
-          <span className="text-white font-black text-lg tracking-tight">Ventoo</span>
+          <span className="text-white font-bold text-xl" style={{ letterSpacing: 'normal' }}>Ventoo</span>
         </div>
-        <div className="text-right">
-          <div className="text-3xl">{style.emoji}</div>
+        <div className="text-right text-white drop-shadow-md">
+          <WeatherIcon size={36} />
         </div>
       </div>
 
       {/* Ciudad y temperatura */}
       <div className="relative z-10 px-8 pb-3">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-center gap-4">
           {temp !== null && (
-            <span className="text-5xl font-black text-white">{Math.round(temp)}°</span>
+            <span className="text-6xl font-bold text-white drop-shadow-lg" style={{ letterSpacing: 'normal' }}>{Math.round(temp)}°</span>
           )}
-          <div>
-            <p className="text-white font-bold text-base leading-tight">{city || 'Mi ciudad'}</p>
-            <p className="text-sm" style={{ color: style.accent }}>{style.label}</p>
+          <div className="flex flex-col justify-center">
+            <p className="text-white font-bold text-xl" style={{ lineHeight: '1.2' }}>{city || 'Mi ciudad'}</p>
+            <p className="text-base font-medium" style={{ color: style.accent }}>{style.label}</p>
           </div>
         </div>
       </div>
 
       {/* Resumen del outfit */}
       {outfit?.resumen && (
-        <div className="relative z-10 mx-8 mb-4 px-4 py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)', borderLeft: `3px solid ${style.accent}` }}>
-          <p className="text-white text-sm italic leading-relaxed">"{outfit.resumen}"</p>
+        <div className="relative z-10 mx-8 mb-4 px-5 py-4 rounded-xl backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.06)', borderLeft: `4px solid ${style.accent}` }}>
+          <p className="text-white text-base" style={{ fontStyle: 'normal', lineHeight: '1.5', letterSpacing: 'normal', wordWrap: 'break-word', whiteSpace: 'normal' }}>"{outfit.resumen}"</p>
         </div>
       )}
 
       {/* Prendas */}
       {prendas.length > 0 && (
-        <div className="relative z-10 flex-1 px-8">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="relative z-10 flex-1 px-8 mt-2">
+          <div className="grid grid-cols-2 gap-3">
             {prendas.map((prenda, i) => (
-              <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: 18 }}>{prenda.emoji || '👕'}</span>
-                <div className="min-w-0 flex-1 overflow-hidden">
-                  <p className="text-white text-xs font-semibold whitespace-normal">{prenda.nombre || prenda.tipo}</p>
-                  {prenda.color && <p className="text-gray-400 text-[10px] whitespace-normal">{prenda.color}</p>}
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="text-white/90">
+                  <ClothingIcon tipo={prenda.tipo} size={24} />
+                </div>
+                <div className="min-w-0 flex-1 flex flex-col justify-center" style={{ overflow: 'hidden' }}>
+                  <p className="text-white text-sm font-semibold" style={{ whiteSpace: 'normal', lineHeight: '1.3' }}>{prenda.nombre || prenda.tipo}</p>
+                  {prenda.color && <p className="text-gray-400 text-xs mt-1" style={{ whiteSpace: 'normal' }}>{prenda.color}</p>}
                 </div>
               </div>
             ))}
@@ -88,9 +92,9 @@ const CardVisual = ({ outfit, weather, city, cardRef }) => {
       )}
 
       {/* Footer */}
-      <div className="relative z-10 flex items-center justify-between px-8 py-5 mt-auto">
-        <p className="text-gray-500 text-xs">ventoo.vercel.app</p>
-        <p className="text-xs" style={{ color: style.accent + 'aa' }}>
+      <div className="relative z-10 flex items-center justify-between px-8 py-6 mt-auto border-t border-white/5">
+        <p className="text-gray-400 font-medium text-sm">ventoo.vercel.app</p>
+        <p className="text-sm font-medium" style={{ color: style.accent + 'cc' }}>
           {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
         </p>
       </div>
@@ -132,6 +136,19 @@ const OutfitShareCard = ({ outfit, weather, city, onClose }) => {
     link.click();
   };
 
+  const generateShareLink = () => {
+    try {
+      const payload = btoa(encodeURIComponent(JSON.stringify({ 
+        city: city || 'Ciudad', 
+        weather: weather?.current, 
+        outfit: outfit 
+      })));
+      return `https://ventoo.vercel.app/shared?data=${payload}`;
+    } catch {
+      return 'https://ventoo.vercel.app';
+    }
+  };
+
   const handleShare = async () => {
     const canvas = await generateImage();
     if (!canvas) return;
@@ -146,7 +163,7 @@ const OutfitShareCard = ({ outfit, weather, city, onClose }) => {
           await navigator.share({
             files: [file],
             title: 'Mi outfit de hoy 💫',
-            text: `Hoy en ${city}: ${outfit?.resumen || ''} — Ventoo`,
+            text: `Hoy en ${city}: ${outfit?.resumen || ''} — Mira mi outfit completo aquí: ${generateShareLink()}`,
           });
         } catch (e) {
           if (e.name !== 'AbortError') handleDownload();
@@ -160,7 +177,8 @@ const OutfitShareCard = ({ outfit, weather, city, onClose }) => {
 
   const handleCopyLink = async () => {
     try {
-      const copyText = `¡Mira mi outfit recomendado para ${city || 'hoy'} en Ventoo!\n\n${outfit?.resumen || ''}\n\nPruébalo en https://ventoo.vercel.app`;
+      const shareUrl = generateShareLink();
+      const copyText = `¡Mira mi outfit recomendado para ${city || 'hoy'} en Ventoo!\n\n${outfit?.resumen || ''}\n\nPuedes verlo aquí: ${shareUrl}`;
       await navigator.clipboard.writeText(copyText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

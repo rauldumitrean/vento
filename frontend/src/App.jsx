@@ -29,6 +29,7 @@ import PrivacyView from './components/PrivacyView';
 import SupportView from './components/SupportView';
 import FaqView from './components/FaqView';
 import CookieBanner from './components/CookieBanner';
+import SharedOutfitView from './components/SharedOutfitView';
 
 // FIX C-5: React Error Boundary — prevents a single render error from crashing the entire app
 class ErrorBoundary extends Component {
@@ -244,6 +245,7 @@ function App() {
                   <Route path="/terms" element={<TermsView />} />
                   <Route path="/privacy" element={<PrivacyView />} />
                   <Route path="/faq" element={<FaqView />} />
+                  <Route path="/shared" element={<SharedOutfitView />} />
                 </Routes>
                 {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
                 {token && <IosInstallPrompt />}

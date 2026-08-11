@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun, BellRing, BellOff, Loader2 } from 'lucide-react';
+import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun, BellRing, BellOff, Loader2, Info } from 'lucide-react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
