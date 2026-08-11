@@ -140,6 +140,31 @@ export default function TravelPackingView({ token }) {
     }
   };
 
+  const handleDeleteViaje = async (e, id) => {
+    e.stopPropagation();
+    const isConfirmed = await confirm("¿Estás seguro de que deseas eliminar este viaje guardado?");
+    if (!isConfirmed) return;
+
+    try {
+      await axios.delete(`${API_URL}/api/viajes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setViajesGuardados(prev => prev.filter(v => v.id !== id));
+      if (activeViajeId === id) {
+        setActiveViajeId(null);
+        setResult(null);
+        setDestination('');
+        setStartDate('');
+        setEndDate('');
+        setCheckedItems({});
+      }
+      showToast("Viaje eliminado con éxito", "success");
+    } catch (err) {
+      console.error("Error eliminando viaje:", err);
+      showToast("Error al eliminar el viaje", "error");
+    }
+  };
+
   const toggleCheck = async (key) => {
     const newChecked = { ...checkedItems, [key]: !checkedItems[key] };
     setCheckedItems(newChecked);
