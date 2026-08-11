@@ -204,7 +204,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
           onClick={() => setActiveTab('calendario')}
           className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === 'calendario' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
         >
-          <CalendarIcon size={16} /> Agenda
+          <CalendarIcon size={16} /> Calendario
         </button>
       </div>
 

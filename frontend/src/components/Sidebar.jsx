@@ -70,7 +70,7 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, userPoints,
           {!isCollapsed && <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-2">Features</p>}
           <SidebarItem isCollapsed={isCollapsed} icon={LayoutDashboard} label="Dashboard" isActive={view === 'dashboard'} onClick={() => setView('dashboard')} />
           <SidebarItem isCollapsed={isCollapsed} icon={Cloud} label="Asistente de Maleta" isActive={view === 'packing'} onClick={() => setView('packing')} />
-          <SidebarItem isCollapsed={isCollapsed} icon={Archive} label="Mi Armario (Fotos)" isActive={view === 'armario'} onClick={() => setView('armario')} />
+          <SidebarItem isCollapsed={isCollapsed} icon={Archive} label="Armario & Calendario" isActive={view === 'armario'} onClick={() => setView('armario')} />
           <SidebarItem isCollapsed={isCollapsed} icon={Star} label="Ciudades Favoritas" isActive={view === 'favorites'} onClick={() => setView('favorites')} />
           <SidebarItem isCollapsed={isCollapsed} icon={Activity} label="Feed Comunidad" isActive={view === 'community'} onClick={() => setView('community')} />
           <SidebarItem isCollapsed={isCollapsed} icon={MessageSquare} label="Mix & Match Studio" isActive={view === 'studio'} onClick={() => setView('studio')} />

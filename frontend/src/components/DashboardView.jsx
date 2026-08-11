@@ -506,8 +506,8 @@ const OutfitGrid = ({ prendas = [], darkMode, token }) => {
   const cardProps = (prenda, idx) => ({
     prenda,
     darkMode,
-    canLoad: idx <= currentIdx,
-    onLoadComplete: () => setCurrentIdx(prev => Math.max(prev, idx + 1)),
+    canLoad: true,
+    onLoadComplete: () => {},
     token,
     isOpen: openIdx === idx,
     onOpen: () => setOpenIdx(idx),
