@@ -389,8 +389,6 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                 <Sun className="text-yellow-500" /> Alertas Matutinas
               </h3>
               <div className="flex-1 space-y-6">
-                 <div className={`p-5 rounded-2xl flex items-center justify-between border ${darkMode ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'}`}>
-                   <div>
                  
                  {/* Alertas Diarias Toggle */}
                  <div className={`p-5 rounded-[1.25rem] border flex items-center justify-between cursor-pointer transition-all ${darkMode ? 'bg-black/40 border-white/5 hover:bg-black/60' : 'bg-white border-gray-100 hover:bg-gray-50 shadow-sm'}`} onClick={() => setMorningAlerts(!morningAlerts)}>
