@@ -1,3 +1,7 @@
+// Sentry debe inicializarse ANTES que cualquier otro require
+const { initSentry, Sentry } = require('./sentry.js');
+initSentry();
+
 let app;
 try {
   const express = require('express');
@@ -143,6 +147,9 @@ try {
   app.use('/api/friends', friendsRoutes);
   app.use('/api/favorites', favoritesRoutes);
   app.use('/api', apiRoutes);
+
+  // Middleware de Sentry (debe ir ANTES del errorHandler personalizado)
+  app.use(Sentry.expressErrorHandler());
 
   // Middleware global de errores (siempre al final)
   app.use(errorHandler);

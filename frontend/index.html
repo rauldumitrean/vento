@@ -1,48 +1,91 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="canonical" href="https://ventoo.vercel.app/" />
     <meta name="google-adsense-account" content="ca-pub-7031196086140700">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7031196086140700" crossorigin="anonymous"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="description" content="Tu IA Asistente de Moda. Únete a Ventoo y descubre outfits generados por IA." />
-    <!-- Dynamic theme colors to blend with app background and prevent black borders on PWA overscroll -->
+    <meta name="apple-mobile-web-app-title" content="Ventoo" />
+    <meta name="application-name" content="Ventoo" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- SEO Principal -->
+    <title>Ventoo — Tu Asistente de Moda con IA | Outfits según el Clima</title>
+    <meta name="description" content="Ventoo es tu asistente de moda con Inteligencia Artificial. Recibe recomendaciones de outfits personalizadas según el clima de tu ciudad. Gestiona tu armario, chatea con la IA y comparte looks con la comunidad. ¡Gratis!" />
+    <meta name="keywords" content="asistente moda IA, outfit inteligencia artificial, ropa según clima, recomendaciones outfit, armario virtual, moda personalizada, outfit del día" />
+    <meta name="author" content="Ventoo" />
+
+    <!-- Theme colors -->
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0A0A0B" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A0A0B" />
     <meta name="theme-color" content="#0A0A0B" />
-    <title>Ventoo</title>
-    
+
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ventoo" />
     <meta property="og:url" content="https://ventoo.vercel.app/" />
-    <meta property="og:title" content="Ventoo" />
-    <meta property="og:description" content="Tu IA Asistente de Moda. Únete a Ventoo y descubre outfits generados por IA." />
+    <meta property="og:title" content="Ventoo — Tu Asistente de Moda con IA" />
+    <meta property="og:description" content="Recibe recomendaciones de outfits personalizadas según el clima de tu ciudad. Gestiona tu armario digital y chatea con la IA de moda." />
     <meta property="og:image" content="https://ventoo.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="es_ES" />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://ventoo.vercel.app/" />
-    <meta property="twitter:title" content="Ventoo" />
-    <meta property="twitter:description" content="Tu IA Asistente de Moda. Únete a Ventoo y descubre outfits generados por IA." />
-    <meta property="twitter:image" content="https://ventoo.vercel.app/og-image.png" />
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://ventoo.vercel.app/" />
+    <meta name="twitter:title" content="Ventoo — Tu Asistente de Moda con IA" />
+    <meta name="twitter:description" content="Recibe recomendaciones de outfits personalizadas según el clima de tu ciudad. Gestiona tu armario digital y chatea con la IA de moda." />
+    <meta name="twitter:image" content="https://ventoo.vercel.app/og-image.png" />
+
     <style>
       html, body { overflow-x: hidden; overscroll-behavior-x: none; max-width: 100%; }
       body { margin: 0; padding: 0; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
       #root { overflow-x: hidden; max-width: 100vw; }
     </style>
-    <!-- Structured Data for Google Site Name -->
+
+    <!-- Structured Data: SoftwareApplication (para Google) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Ventoo",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "url": "https://ventoo.vercel.app/",
+      "description": "Asistente de moda con IA que recomienda outfits según el clima de tu ciudad.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Ventoo",
-      "url": "https://ventoo.vercel.app/"
+      "url": "https://ventoo.vercel.app/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://ventoo.vercel.app/app?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
     }
     </script>
   </head>

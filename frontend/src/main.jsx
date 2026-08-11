@@ -1,7 +1,9 @@
+import './sentry.js' // Inicializar Sentry ANTES que cualquier otro módulo
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+
 import axios from 'axios';
 import { setupCache } from 'axios-cache-interceptor';
 

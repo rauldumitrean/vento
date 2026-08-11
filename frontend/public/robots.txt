@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+
+# No indexar rutas privadas de la app
+Disallow: /app
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://ventoo.vercel.app/sitemap.xml
