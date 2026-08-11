@@ -81,7 +81,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
         // If it's a retry, we change the seed slightly to get a new image
         if (loadAttempt > 0) seed += loadAttempt;
 
-        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}&nologo=true&enhance=false`;
+        url = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplePrompt)}?width=512&height=512&seed=${seed}`;
         prenda.imgUrl = url;
       }
       

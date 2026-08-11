@@ -391,60 +391,68 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
               <div className="flex-1 space-y-6">
                  <div className={`p-5 rounded-2xl flex items-center justify-between border ${darkMode ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'}`}>
                    <div>
-                     <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Email Diario</h4>
-                     <p className={`text-sm mt-1 font-medium ${darkMode ? 'text-indigo-200' : 'text-indigo-700'}`}>{morningAlerts ? 'Activado a las 08:00' : 'Desactivado'}</p>
+                 
+                 {/* Alertas Diarias Toggle */}
+                 <div className={`p-5 rounded-[1.25rem] border flex items-center justify-between cursor-pointer transition-all ${darkMode ? 'bg-black/40 border-white/5 hover:bg-black/60' : 'bg-white border-gray-100 hover:bg-gray-50 shadow-sm'}`} onClick={() => setMorningAlerts(!morningAlerts)}>
+                   <div className="flex items-center gap-3">
+                     <div className={`p-2 rounded-xl ${morningAlerts ? 'bg-indigo-500/10 text-indigo-400' : darkMode ? 'bg-gray-800 text-gray-500' : 'bg-gray-100 text-gray-500'}`}>
+                       <Sun size={20} />
+                     </div>
+                     <div>
+                       <h4 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>Resumen Diario</h4>
+                       <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                         Aviso de tiempo y ropa cada mañana
+                       </p>
+                     </div>
                    </div>
-                   <label className="relative inline-flex items-center cursor-pointer">
+                   <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
                      <input type="checkbox" className="sr-only peer" checked={morningAlerts} onChange={(e) => setMorningAlerts(e.target.checked)} />
-                     <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
                    </label>
                  </div>
-                 {morningAlerts && (
-                   <div className="animate-fade-in space-y-4">
-                     <p className={`text-sm leading-relaxed font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                       Recibirás un resumen del tiempo y consejos de ropa cada mañana a las 08:00. Necesitas tener al menos una ciudad favorita guardada en el mapa para que esto funcione.
-                     </p>
-                     {push.isSupported ? (
-                        <div className={`p-4 rounded-2xl border flex items-center justify-between ${darkMode ? 'bg-black/30 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-xl ${push.isSubscribed ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'}`}>
-                              {push.isSubscribed ? <BellRing size={20} /> : <BellOff size={20} />}
-                            </div>
-                            <div>
-                              <h4 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>Notificaciones Push</h4>
-                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                {push.isSubscribed ? 'Recibirás avisos en este dispositivo' : 'Actívalas para recibir avisos'}
-                              </p>
-                            </div>
+
+                 {/* Push Notifications Toggle */}
+                 <div className="animate-fade-in space-y-4 pt-2">
+                   {push.isSupported ? (
+                      <div className={`p-4 rounded-2xl border flex items-center justify-between ${darkMode ? 'bg-black/30 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-xl ${push.isSubscribed ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'}`}>
+                            {push.isSubscribed ? <BellRing size={20} /> : <BellOff size={20} />}
                           </div>
-                          <button
-                            type="button"
-                            disabled={push.loading}
-                            onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
-                            className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${
-                              push.isSubscribed 
-                                ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' 
-                                : 'bg-indigo-500 text-white hover:bg-indigo-600'
-                            }`}
-                          >
-                            {push.loading ? <Loader2 size={16} className="animate-spin" /> : (push.isSubscribed ? 'Desactivar' : 'Activar')}
-                          </button>
-                        </div>
-                      ) : (
-                        <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-orange-500/10 border-orange-500/20 text-orange-200' : 'bg-orange-50 border-orange-100 text-orange-800'}`}>
-                          <div className="flex items-start gap-3">
-                            <Info size={20} className="shrink-0 text-orange-400 mt-0.5" />
-                            <div>
-                              <h4 className="font-bold text-sm mb-1">Push no disponible</h4>
-                              <p className="text-xs opacity-80">
-                                Tu navegador actual no soporta notificaciones. Si usas un <b>iPhone o iPad</b>, asegúrate de tener iOS 16.4+ y usa el botón de Compartir en Safari para <b>"Añadir a la pantalla de inicio"</b>. Una vez instalada, abre la app desde tu pantalla de inicio para poder activar los avisos.
-                              </p>
-                            </div>
+                          <div>
+                            <h4 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>Notificaciones Push</h4>
+                            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              {push.isSubscribed ? 'Recibirás avisos en este dispositivo' : 'Actívalas para recibir avisos'}
+                            </p>
                           </div>
                         </div>
-                      )}
-                   </div>
-                 )}
+                        <button
+                          type="button"
+                          disabled={push.loading}
+                          onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
+                          className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${
+                            push.isSubscribed 
+                              ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' 
+                              : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                          }`}
+                        >
+                          {push.loading ? <Loader2 size={16} className="animate-spin" /> : (push.isSubscribed ? 'Desactivar' : 'Activar')}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className={`p-4 rounded-2xl border ${darkMode ? 'bg-orange-500/10 border-orange-500/20 text-orange-200' : 'bg-orange-50 border-orange-100 text-orange-800'}`}>
+                        <div className="flex items-start gap-3">
+                          <Info size={20} className="shrink-0 text-orange-400 mt-0.5" />
+                          <div>
+                            <h4 className="font-bold text-sm mb-1">Push no disponible</h4>
+                            <p className="text-xs opacity-80">
+                              Tu navegador actual no soporta notificaciones. Si usas un <b>iPhone o iPad</b>, asegúrate de tener iOS 16.4+ y usa el botón de Compartir en Safari para <b>"Añadir a la pantalla de inicio"</b>. Una vez instalada, abre la app desde tu pantalla de inicio para poder activar los avisos.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                 </div>
               </div>
            </div>
 

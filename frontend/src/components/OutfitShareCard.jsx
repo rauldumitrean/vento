@@ -66,7 +66,7 @@ const CardVisual = ({ outfit, weather, city, cardRef }) => {
       {/* Resumen del outfit */}
       {outfit?.resumen && (
         <div className="relative z-10 mx-8 mb-4 px-4 py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)', borderLeft: `3px solid ${style.accent}` }}>
-          <p className="text-white text-sm italic leading-relaxed line-clamp-2">"{outfit.resumen}"</p>
+          <p className="text-white text-sm italic leading-relaxed">"{outfit.resumen}"</p>
         </div>
       )}
 
@@ -77,9 +77,9 @@ const CardVisual = ({ outfit, weather, city, cardRef }) => {
             {prendas.map((prenda, i) => (
               <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <span style={{ fontSize: 18 }}>{prenda.emoji || '👕'}</span>
-                <div className="min-w-0">
-                  <p className="text-white text-xs font-semibold truncate">{prenda.nombre || prenda.tipo}</p>
-                  {prenda.color && <p className="text-gray-400 text-[10px] truncate">{prenda.color}</p>}
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <p className="text-white text-xs font-semibold whitespace-normal">{prenda.nombre || prenda.tipo}</p>
+                  {prenda.color && <p className="text-gray-400 text-[10px] whitespace-normal">{prenda.color}</p>}
                 </div>
               </div>
             ))}
@@ -160,7 +160,8 @@ const OutfitShareCard = ({ outfit, weather, city, onClose }) => {
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText('https://ventoo.vercel.app');
+      const copyText = `¡Mira mi outfit recomendado para ${city || 'hoy'} en Ventoo!\n\n${outfit?.resumen || ''}\n\nPruébalo en https://ventoo.vercel.app`;
+      await navigator.clipboard.writeText(copyText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
