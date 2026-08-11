@@ -5,6 +5,7 @@ import { Trash2, Heart, Clock, Plus, MapPin, Send, Users, Share2, Camera, Loader
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Skeleton from './ui/Skeleton';
+import OutfitCalendar from './OutfitCalendar';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -460,69 +461,8 @@ const ArmarioHistorial = ({ token, darkMode }) => {
           })()}
         </div>
       ) : (
-        /* CALENDARIO VIEW */
-        <div className="space-y-6">
-          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-200 text-sm flex items-start gap-3">
-            <CalendarIcon size={20} className="shrink-0 text-emerald-400" />
-            <div>
-              <p className="font-bold mb-0.5 text-emerald-300">Agenda Semanal</p>
-              <p>Programa tus outfits para los próximos días. Pulsa el botón de calendario en cualquier outfit de tu historial para asignarlo a una fecha.</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {calendar.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                  <CalendarIcon size={32} className="text-gray-500" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Tu agenda está vacía</h3>
-                <p className="text-gray-400 max-w-md">Ve a tu historial de outfits y programa qué te vas a poner cada día.</p>
-              </div>
-            ) : (
-              calendar.sort((a,b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map(event => {
-                let clima = {};
-                let outfit = { resumen: '', prendas: [] };
-                try { clima = JSON.parse(event.consulta.clima_json); } catch (e) {}
-                try { outfit = JSON.parse(event.consulta.recomendacion_json); } catch (e) {}
-                
-                const dateObj = new Date(event.scheduledDate);
-                const isToday = new Date().setHours(0,0,0,0) === dateObj.setHours(0,0,0,0);
-                
-                return (
-                  <div key={event.id} className={`p-5 rounded-2xl border ${isToday ? 'bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border-indigo-500/50 shadow-lg shadow-indigo-500/20' : 'bg-white/5 border-white/10 backdrop-blur-xl'}`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex flex-col">
-                        <span className={`text-sm font-bold uppercase tracking-wider ${isToday ? 'text-indigo-400' : 'text-gray-400'}`}>
-                          {isToday ? 'Hoy' : dateObj.toLocaleDateString('es-ES', { weekday: 'long' })}
-                        </span>
-                        <span className="text-xl font-black text-white">{dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
-                      </div>
-                      <button 
-                        onClick={() => handleDeleteCalendar(event.id)}
-                        className="p-2 rounded-full transition-colors text-gray-500 hover:text-red-500 hover:bg-red-500/10"
-                      >
-                        <X size={20} />
-                      </button>
-                    </div>
-                    
-                    <div className="mt-4 p-4 rounded-xl bg-black/40 border border-white/5">
-                      {outfit.resumen && <p className="font-medium mb-3 italic text-gray-300 line-clamp-2 text-sm">"{outfit.resumen}"</p>}
-                      <div className="flex flex-wrap gap-1.5">
-                        {(outfit.prendas || []).slice(0, 3).map((p, i) => (
-                          <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/10 border-gray-600 text-gray-300 truncate max-w-full">
-                            {p.descripcion}
-                          </span>
-                        ))}
-                        {(outfit.prendas?.length > 3) && <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-gray-400">+{outfit.prendas.length - 3}</span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        /* CALENDARIO VIEW - FEATURE 2 */
+        <OutfitCalendar token={token} darkMode={darkMode} />
       )}
 
       {/* Share Modal */}
@@ -554,13 +494,14 @@ const ArmarioHistorial = ({ token, darkMode }) => {
             )}
             
             <button onClick={() => setShareModalOpen(false)} className={`mt-6 w-full py-3 rounded-xl font-bold transition-colors ${darkMode ? 'bg-gray-800 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
-              Cerrar
+               Cerrar
             </button>
           </div>
         </div>
       )}
-      
+
       {/* Schedule Modal */}
+
       {scheduleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm rounded-3xl p-6 bg-gray-900 text-white border border-gray-800 shadow-2xl">

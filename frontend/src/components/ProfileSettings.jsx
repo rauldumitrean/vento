@@ -1,7 +1,8 @@
 import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun } from 'lucide-react';
+import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun, BellRing, BellOff, Loader2 } from 'lucide-react';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -33,6 +34,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [premiumPlan, setPremiumPlan] = useState(Cookies.get('premiumPlan') || null);
   
   const [activeAccordion, setActiveAccordion] = useState('personal');
+  const push = usePushNotifications();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -398,10 +400,38 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                    </label>
                  </div>
                  {morningAlerts && (
-                   <div className="animate-fade-in">
+                   <div className="animate-fade-in space-y-4">
                      <p className={`text-sm leading-relaxed font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                        Recibirás un resumen del tiempo y consejos de ropa cada mañana a las 08:00. Necesitas tener al menos una ciudad favorita guardada en el mapa para que esto funcione.
                      </p>
+
+                     {push.isSupported && (
+                       <div className={`p-4 rounded-2xl border flex items-center justify-between ${darkMode ? 'bg-black/30 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                         <div className="flex items-center gap-3">
+                           <div className={`p-2 rounded-xl ${push.isSubscribed ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'}`}>
+                             {push.isSubscribed ? <BellRing size={20} /> : <BellOff size={20} />}
+                           </div>
+                           <div>
+                             <h4 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>Notificaciones Push</h4>
+                             <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                               {push.isSubscribed ? 'Recibirás avisos en este dispositivo' : 'Actívalas para recibir avisos'}
+                             </p>
+                           </div>
+                         </div>
+                         <button
+                           type="button"
+                           disabled={push.loading}
+                           onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
+                           className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${
+                             push.isSubscribed 
+                               ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' 
+                               : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                           }`}
+                         >
+                           {push.loading ? <Loader2 size={16} className="animate-spin" /> : (push.isSubscribed ? 'Desactivar' : 'Activar')}
+                         </button>
+                       </div>
+                     )}
                    </div>
                  )}
               </div>

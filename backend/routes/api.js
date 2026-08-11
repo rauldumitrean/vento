@@ -7,6 +7,15 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // FIX: Moved bcrypt require to top level instead of inside route handlers
 const bcrypt = require('bcryptjs');
 const { sendBanNotificationEmail, sendNewTicketEmail } = require('../services/emailService');
+const webpush = require('web-push');
+
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:raul.dumitrean07@gmail.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 // Initialize Gemini (graceful degradation if missing)
 const geminiKey = process.env.GEMINI_API_KEY || 'MISSING_KEY';
@@ -1460,7 +1469,47 @@ router.post('/community/:id/like', authMiddleware, async (req, res) => {
   }
 });
 
-// ── FEATURE 5: Morning Alerts ─────────────────────────────────────────────────
+// ── FEATURE: Push Notifications ─────────────────────────────────────────────
+router.post('/notifications/subscribe', authMiddleware, async (req, res) => {
+  try {
+    const subscription = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'Suscripción inválida' });
+    }
+
+    // Guardar en la base de datos
+    await prisma.pushSubscription.create({
+      data: {
+        userId: req.user.id,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth
+      }
+    });
+
+    res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('Error guardando suscripción:', error);
+    res.status(500).json({ error: 'Error al suscribirse a notificaciones' });
+  }
+});
+
+router.delete('/notifications/unsubscribe', authMiddleware, async (req, res) => {
+  try {
+    const { endpoint } = req.body;
+    if (!endpoint) return res.status(400).json({ error: 'Falta endpoint' });
+
+    await prisma.pushSubscription.deleteMany({
+      where: { userId: req.user.id, endpoint }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al cancelar suscripción' });
+  }
+});
+
+// ── FEATURE 5: Morning Alerts & History Cleanup ─────────────────────────────
 // GET/POST /api/morning-alerts/trigger — called by a CRON job (secured with internal key)
 router.all('/morning-alerts/trigger', async (req, res) => {
   try {
@@ -1520,10 +1569,55 @@ router.all('/morning-alerts/trigger', async (req, res) => {
           }
         });
         
+        // Send Web Push Notification
+        const payload = JSON.stringify({
+          title: '🌧️ Ventoo',
+          body: `Hoy en ${city.cityName} hace ${current.temperature_2m}°C. Máxima de ${tempMax}°C y mínima de ${tempMin}°C.`,
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
+          data: { url: 'https://ventoo.vercel.app' }
+        });
+
+        const subscriptions = await prisma.pushSubscription.findMany({ where: { userId: user.id } });
+        for (const sub of subscriptions) {
+          try {
+            await webpush.sendNotification({
+              endpoint: sub.endpoint,
+              keys: { p256dh: sub.p256dh, auth: sub.auth }
+            }, payload);
+          } catch (e) {
+            if (e.statusCode === 404 || e.statusCode === 410) {
+              await prisma.pushSubscription.delete({ where: { id: sub.id } });
+            }
+          }
+        }
+
         sent++;
       } catch (userErr) {
         console.error(`Morning alert failed for user ${user.id}:`, userErr.message);
       }
+    }
+
+    // FEATURE 2: Outfit History Cleanup
+    try {
+      const allUsers = await prisma.user.findMany({ select: { id: true, isPremium: true } });
+      let deletedCount = 0;
+      for (const u of allUsers) {
+        const retentionDays = u.isPremium ? 365 : 30;
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - retentionDays);
+        const delRes = await prisma.consulta.deleteMany({
+          where: {
+            userId: u.id,
+            createdAt: { lt: cutoff },
+            isFavorite: false // Never delete favorited outfits
+          }
+        });
+        deletedCount += delRes.count;
+      }
+      console.log(`History cleanup: deleted ${deletedCount} old outfits.`);
+    } catch (cleanupErr) {
+      console.error('Error cleaning up history:', cleanupErr);
     }
 
     res.json({ ok: true, sent, total: users.length });

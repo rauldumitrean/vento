@@ -23,6 +23,7 @@ import EstudioEstiloView from './EstudioEstiloView';
 import NotificationBell from './NotificationBell';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import OutfitShareCard from './OutfitShareCard';
 import MobileNavBar from './MobileNavBar';
 import StyleOnboardingModal from './StyleOnboardingModal';
 import VerticalAd from './VerticalAd';
@@ -870,6 +871,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
   const [loading, setLoading] = useState(false);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [showWeatherModal, setShowWeatherModal] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
   
   const [userPoints, setUserPoints] = useState(0);
   const [userLevel, setUserLevel] = useState("Novato");
@@ -1520,9 +1522,14 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                    <h2 className="text-sm tracking-widest uppercase font-bold text-purple-400 mb-2">Generado por IA</h2>
                                    <p className="text-lg italic text-gray-300 max-w-2xl">"{outfit.resumen}"</p>
                                  </div>
-                                 <button onClick={handleToggleFavorite} className={`p-3 rounded-full transition-colors ${isFavorite ? 'text-red-400 bg-red-500/20' : 'text-gray-400 bg-black/20 hover:bg-white/10'}`}>
-                                   <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                                 </button>
+                                 <div className="flex items-center gap-2">
+                                   <button onClick={() => setShowShareCard(true)} className={`p-3 rounded-full transition-colors text-gray-400 bg-black/20 hover:bg-white/10`} title="Compartir Outfit">
+                                     <Share2 size={20} />
+                                   </button>
+                                   <button onClick={handleToggleFavorite} className={`p-3 rounded-full transition-colors ${isFavorite ? 'text-red-400 bg-red-500/20' : 'text-gray-400 bg-black/20 hover:bg-white/10'}`}>
+                                     <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                                   </button>
+                                 </div>
                                </div>
 
                                {/* Using the standard OutfitGrid */}
@@ -1578,6 +1585,15 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                               </motion.div>
                           )}
                        </div>
+                       
+                       {showShareCard && outfit && weather && (
+                         <OutfitShareCard
+                           outfit={outfit}
+                           weather={weather}
+                           city={weather.location || location || 'Mi ciudad'}
+                           onClose={() => setShowShareCard(false)}
+                         />
+                       )}
                        
                        {/* Floating Chat Widget */}
                        {outfit && (

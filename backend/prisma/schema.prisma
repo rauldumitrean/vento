@@ -51,6 +51,7 @@ model User {
   outfitLikes         OutfitLike[]
   viajes              ViajeGuardado[]
   notifications       Notification[]
+  pushSubscriptions   PushSubscription[]
 
   @@index([lastActive])
   @@index([isPremium])
@@ -245,4 +246,17 @@ model OutfitCalendar {
   consulta      Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
 
   @@index([userId, scheduledDate])
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  endpoint  String   @db.Text
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
