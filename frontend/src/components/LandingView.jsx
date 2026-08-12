@@ -226,6 +226,13 @@ export default function LandingView({ setToken }) {
   const { scrollY } = useScroll();
   const containerRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Performance optimization: defer rendering below-the-fold
+  const [loadBelowFold, setLoadBelowFold] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoadBelowFold(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Comprobar si hay un usuario premium conectado para ocultar anuncios
   const isPremium = Cookies.get('isPremium') === 'true';
@@ -404,8 +411,11 @@ export default function LandingView({ setToken }) {
         </motion.div>
       </section>
 
-      {/* ── Stats strip ── */}
-      <section className="relative z-10 py-16 border-y border-white/[0.06] bg-white/[0.02]">
+      {/* Deferred Content for Performance */}
+      {loadBelowFold && (
+        <>
+          {/* ── Stats strip ── */}
+          <section className="relative z-10 py-16 border-y border-white/[0.06] bg-white/[0.02]">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10">
           <StatCard value="100K+" label="Outfits generados" delay={0} />
           <StatCard value="3s" label="Tiempo de respuesta" delay={0.1} />
@@ -612,6 +622,8 @@ export default function LandingView({ setToken }) {
           </div>
         </div>
       </footer>
+        </>
+      )}
       </div>
 
       {/* Right Ad - Solo si no es premium */}

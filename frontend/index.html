@@ -7,7 +7,24 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="canonical" href="https://ventoo.vercel.app/" />
     <meta name="google-adsense-account" content="ca-pub-7031196086140700">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7031196086140700" crossorigin="anonymous"></script>
+    <script>
+      (function() {
+        var adLoaded = false;
+        function loadAd() {
+          if (adLoaded) return;
+          adLoaded = true;
+          var s = document.createElement('script');
+          s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7031196086140700";
+          s.async = true;
+          s.crossOrigin = "anonymous";
+          document.head.appendChild(s);
+        }
+        window.addEventListener('scroll', loadAd, { passive: true, once: true });
+        window.addEventListener('mousemove', loadAd, { passive: true, once: true });
+        window.addEventListener('touchstart', loadAd, { passive: true, once: true });
+        setTimeout(loadAd, 3500);
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
