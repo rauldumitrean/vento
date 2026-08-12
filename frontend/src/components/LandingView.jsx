@@ -143,7 +143,7 @@ const StatCard = ({ value, label, delay = 0 }) => (
     className="text-center"
   >
     <div className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 mb-1">{value}</div>
-    <div className="text-gray-500 text-sm font-medium uppercase tracking-widest">{label}</div>
+    <div className="text-gray-400 text-sm font-medium uppercase tracking-widest">{label}</div>
   </motion.div>
 );
 
@@ -205,7 +205,7 @@ const PricingCard = ({ plan, price, period, desc, features, cta, accent, badge, 
           <span className="text-4xl font-black text-white">{price}</span>
           {period && <span className="text-gray-400 text-sm">{period}</span>}
         </div>
-        <p className="text-gray-500 text-sm mt-3 leading-relaxed border-b border-white/5 pb-6">{desc}</p>
+        <p className="text-gray-400 text-sm mt-3 leading-relaxed border-b border-white/5 pb-6">{desc}</p>
       </div>
       <ul className="space-y-3 mb-8 flex-1 text-sm">
         {features.map((f, i) => (
@@ -318,7 +318,7 @@ export default function LandingView({ setToken }) {
                   </div>
                 ) : (
                   <div className="pt-2 pb-2 flex items-center gap-3">
-                    {Cookies.get('userProfilePicture') && (
+                    {(Cookies.get('userProfilePicture') && Cookies.get('userProfilePicture') !== 'undefined') && (
                       <img src={Cookies.get('userProfilePicture')} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-indigo-500/50" />
                     )}
                     <button onClick={() => { setIsMobileMenuOpen(false); navigate('/app'); }} className="flex-1 sm:w-auto px-8 py-3 text-center bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2">
@@ -344,8 +344,7 @@ export default function LandingView({ setToken }) {
             Tu asistente de moda con IA
           </motion.div>
 
-          {/* Headline */}
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
+          <motion.h1 initial={{ y: 20 }} animate={{ y: 0 }} transition={{ duration: 0.8 }}
             className="text-5xl sm:text-7xl md:text-8xl font-black leading-[1.05] tracking-tighter mb-8"
           >
             Vístete para<br />
@@ -355,11 +354,11 @@ export default function LandingView({ setToken }) {
               </span>
             </span>
             <br />
-            <span className="text-gray-500">Sin importar el clima.</span>
+            <span className="text-gray-400">Sin importar el clima.</span>
           </motion.h1>
 
           {/* Sub */}
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
+          <motion.p initial={{ y: 10 }} animate={{ y: 0 }} transition={{ duration: 0.8 }}
             className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
           >
             Ventoo cruza datos meteorológicos en tiempo real con inteligencia artificial para generar tu outfit ideal, cada día.
@@ -371,7 +370,7 @@ export default function LandingView({ setToken }) {
           >
             {Cookies.get('token') ? (
               <div className="flex items-center gap-4 p-2 pr-4 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.05] transition-colors">
-                {Cookies.get('userProfilePicture') && (
+                {(Cookies.get('userProfilePicture') && Cookies.get('userProfilePicture') !== 'undefined') && (
                   <img src={Cookies.get('userProfilePicture')} alt="Avatar" className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500/50" />
                 )}
                 <button
@@ -403,7 +402,7 @@ export default function LandingView({ setToken }) {
 
           {/* Trust bar */}
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.9 }}
-            className="mt-10 text-xs text-gray-600 flex items-center justify-center gap-2"
+            className="mt-10 text-xs text-gray-400 flex items-center justify-center gap-2"
           >
             <Shield size={12} className="text-gray-700" />
             Sin tarjeta de crédito · Gratis para siempre · Sin anuncios en Premium
@@ -430,7 +429,7 @@ export default function LandingView({ setToken }) {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
             <p className="text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Tecnología de vanguardia</p>
             <h2 className="text-4xl md:text-5xl font-black mb-4">El Futuro de la Moda</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Nuestra IA va mucho más allá de sugerir "ponte un abrigo".</p>
+            <p className="text-gray-400 max-w-xl mx-auto">Nuestra IA va mucho más allá de sugerir "ponte un abrigo".</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
@@ -482,7 +481,7 @@ export default function LandingView({ setToken }) {
                 <p className="text-indigo-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Proceso simple</p>
                 <h2 className="text-4xl md:text-5xl font-black mb-12 leading-tight">
                   Pruébalo ahora.<br/>
-                  <span className="text-gray-500">Sal perfecto.</span>
+                  <span className="text-gray-400">Sal perfecto.</span>
                 </h2>
                 <div className="space-y-10">
                   {[
@@ -494,7 +493,7 @@ export default function LandingView({ setToken }) {
                       <AnimatedStepIndicator number={n} />
                       <div>
                         <h3 className="text-lg font-bold mb-1">{t}</h3>
-                        <p className="text-gray-500 text-sm leading-relaxed">{d}</p>
+                        <p className="text-gray-400 text-sm leading-relaxed">{d}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -513,7 +512,7 @@ export default function LandingView({ setToken }) {
                       <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
                       <div className="w-3 h-3 rounded-full bg-green-500/70" />
                     </div>
-                    <span className="text-[10px] text-gray-600 font-mono">Ventoo AI Engine</span>
+                    <span className="text-[10px] text-gray-400 font-mono">Ventoo AI Engine</span>
                   </div>
                   <AppPreviewAnimation />
                 </div>
@@ -529,7 +528,7 @@ export default function LandingView({ setToken }) {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
             <p className="text-purple-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Planes y precios</p>
             <h2 className="text-4xl md:text-5xl font-black mb-4">Elige tu plan</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Comienza gratis, sube de nivel cuando estés listo.</p>
+            <p className="text-gray-400 max-w-xl mx-auto">Comienza gratis, sube de nivel cuando estés listo.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -610,8 +609,8 @@ export default function LandingView({ setToken }) {
             <Cloud className="text-indigo-400" size={20} />
             <span className="text-base font-black tracking-widest text-white">VENTOO</span>
           </div>
-          <span className="text-gray-600 text-sm">© 2026 Ventoo. Desarrollado por Raul. Todos los derechos reservados.</span>
-          <div className="flex items-center gap-5 text-xs text-gray-600">
+          <span className="text-gray-400 text-sm">© 2026 Ventoo. Desarrollado por Raul. Todos los derechos reservados.</span>
+          <div className="flex items-center gap-5 text-xs text-gray-400">
             <button onClick={() => navigate('/faq')} className="hover:text-gray-300 transition-colors">FAQ</button>
             <span className="text-gray-800">•</span>
             <button onClick={() => navigate('/support')} className="hover:text-gray-300 transition-colors">Soporte</button>
