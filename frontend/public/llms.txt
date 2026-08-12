@@ -14,3 +14,7 @@
 - Chat con IA especializado en moda.
 - Red social y feed de comunidad.
 - Escaneo de QR para añadir amigos.
+
+## Enlaces útiles
+- [Web Principal](https://ventoo.vercel.app/)
+- [Política de Privacidad](https://ventoo.vercel.app/privacy)

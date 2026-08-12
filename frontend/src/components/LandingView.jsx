@@ -268,6 +268,7 @@ export default function LandingView({ setToken }) {
           {/* Hamburger Menu Button */}
           <div className="flex items-center gap-3">
             <button 
+              aria-label="Menú principal"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-gray-300 hover:text-white p-2 transition-colors flex items-center gap-2"
             >

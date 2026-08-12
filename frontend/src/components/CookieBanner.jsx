@@ -109,12 +109,15 @@ const CookieBanner = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full max-w-lg bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh]"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cookie-config-title"
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                <h2 id="cookie-config-title" className="text-xl font-black text-white flex items-center gap-2">
                   <Settings2 className="text-indigo-500" /> Configuración de Cookies
                 </h2>
-                <button onClick={() => setShowConfig(false)} className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-gray-800">
+                <button aria-label="Cerrar configuración" onClick={() => setShowConfig(false)} className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-gray-800">
                   <X size={20} />
                 </button>
               </div>
