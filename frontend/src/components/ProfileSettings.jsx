@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun, BellRing, BellOff, Loader2, Info } from 'lucide-react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import OutfitCalendar from './OutfitCalendar';
+import HistorialOutfits from './HistorialOutfits';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -32,6 +34,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [deleteError, setDeleteError] = useState('');
   const [isPremium, setIsPremium] = useState(Cookies.get('isPremium') === 'true');
   const [premiumPlan, setPremiumPlan] = useState(Cookies.get('premiumPlan') || null);
+  const [activeProfileTab, setActiveProfileTab] = useState('ajustes');
   
   const [activeAccordion, setActiveAccordion] = useState('personal');
   const push = usePushNotifications();
@@ -308,6 +311,28 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
         </div>
       )}
 
+      <div className="flex bg-black/10 dark:bg-black/20 backdrop-blur-md p-1.5 rounded-2xl mb-8 max-w-sm mx-auto border border-white/5">
+        <button 
+          onClick={() => setActiveProfileTab('ajustes')}
+          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeProfileTab === 'ajustes' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
+        >
+          Ajustes
+        </button>
+        <button 
+          onClick={() => setActiveProfileTab('historial')}
+          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeProfileTab === 'historial' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
+        >
+          Historial
+        </button>
+        <button 
+          onClick={() => setActiveProfileTab('calendario')}
+          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${activeProfileTab === 'calendario' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
+        >
+          Calendario
+        </button>
+      </div>
+
+      {activeProfileTab === 'ajustes' && (
       <form onSubmit={handleSave} className="space-y-8">
         
         {/* SECCIÓN 1: DATOS PERSONALES */}
@@ -522,7 +547,62 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
           )}
         </div>
 
+        {/* SECCIÓN SEGURIDAD */}
+        <div className={`p-6 md:p-8 rounded-[2rem] border ${darkMode ? 'bg-[#15151e]/80 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-xl'}`}>
+           <h3 className={`text-xl font-bold mb-6 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+             <AlertTriangle className="text-indigo-500" /> Seguridad
+           </h3>
+           <div className="space-y-4">
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const curPass = e.target.currentPassword.value;
+              const newPass = e.target.newPassword.value;
+              if (newPass.length < 6) return alert('La nueva contraseña debe tener al menos 6 caracteres');
+              setLoading(true);
+              try {
+                await axios.put(`${API_URL}/api/auth/password`, {
+                  currentPassword: curPass,
+                  newPassword: newPass
+                }, { headers: { Authorization: `Bearer ${token}` } });
+                alert('Contraseña actualizada correctamente');
+                e.target.reset();
+              } catch (err) {
+                alert(err.response?.data?.error || 'Error al cambiar contraseña');
+              } finally {
+                setLoading(false);
+              }
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Contraseña actual</label>
+                  <input name="currentPassword" type="password" placeholder="Solo si ya tenías una contraseña" className={`w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-black/40 border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'}`} />
+                </div>
+                <div>
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nueva contraseña</label>
+                  <input name="newPassword" type="password" required className={`w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${darkMode ? 'bg-black/40 border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'}`} />
+                </div>
+                <button type="submit" disabled={loading} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50">
+                  {loading ? 'Actualizando...' : 'Actualizar contraseña'}
+                </button>
+              </div>
+            </form>
+           </div>
+        </div>
+
       </form>
+      )}
+
+      {activeProfileTab === 'historial' && (
+        <div className="py-4">
+          <HistorialOutfits token={token} darkMode={darkMode} />
+        </div>
+      )}
+
+      {activeProfileTab === 'calendario' && (
+        <div className="py-4">
+          <OutfitCalendar token={token} darkMode={darkMode} />
+        </div>
+      )}
 
       {/* Modal Cancelar Suscripción */}
       {showCancelModal && (

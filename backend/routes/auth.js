@@ -427,4 +427,38 @@ router.delete('/delete-account', authMiddleware, async (req, res) => {
   }
 });
 
+router.put('/password', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = req.user;
+    
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    if (user.password) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Debes introducir tu contraseña actual.' });
+      }
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: 'La contraseña actual es incorrecta.' });
+      }
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    });
+
+    res.json({ message: 'Contraseña actualizada correctamente.' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ error: 'Error del servidor al cambiar la contraseña.' });
+  }
+});
+
 module.exports = router;

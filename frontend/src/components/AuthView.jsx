@@ -34,7 +34,9 @@ const CustomGoogleButton = ({ onSuccess, onError }) => {
 };
 
 export default function AuthView({ setToken }) {
+  const navigate = useNavigate();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(!location.state?.isRegister);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,6 +70,8 @@ export default function AuthView({ setToken }) {
 
   const handleAuth = async (e, endpoint) => {
     e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
     setError('');
     setLoading(true);
     try {
@@ -84,6 +88,7 @@ export default function AuthView({ setToken }) {
           if (res.data.user.profilePicture) Cookies.set('userProfilePicture', res.data.user.profilePicture, { expires: 365 });
         }
         setToken(res.data.token);
+        navigate('/app');
       }
     } catch (err) {
       if (err.response?.status === 403 && err.response?.data?.banReason) {
@@ -94,6 +99,7 @@ export default function AuthView({ setToken }) {
       }
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   };
 
