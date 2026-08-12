@@ -482,7 +482,7 @@ export default function LandingView({ setToken }) {
                     <motion.div key={n} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: Number(n) * 0.1 }} className="flex gap-6 items-start">
                       <AnimatedStepIndicator number={n} />
                       <div>
-                        <h4 className="text-lg font-bold mb-1">{t}</h4>
+                        <h3 className="text-lg font-bold mb-1">{t}</h3>
                         <p className="text-gray-500 text-sm leading-relaxed">{d}</p>
                       </div>
                     </motion.div>

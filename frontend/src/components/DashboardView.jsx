@@ -300,7 +300,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
             >
               {/* Modal Header */}
               <div className={`sticky top-0 z-20 flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-black/20 backdrop-blur-md`}>
-                <h3 className={`text-lg sm:text-xl font-bold pr-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
+                <h2 className={`text-lg sm:text-xl font-bold pr-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h2>
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   {onPrev && (
                     <button aria-label="Anterior prenda" onClick={(e) => { e.stopPropagation(); onPrev(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
@@ -346,11 +346,11 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
                     
                     <div className="space-y-6">
                       <div>
-                        <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h4>
+                        <h3 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Descripción</h3>
                         <p className={`text-base leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{prenda.descripcion}</p>
                       </div>
                       <div>
-                        <h4 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h4>
+                        <h3 className={`text-sm font-semibold uppercase tracking-wider mb-2 opacity-70 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>¿Por qué esta prenda?</h3>
                         <p className={`text-base leading-relaxed italic border-l-4 pl-4 ${darkMode ? 'text-indigo-200 border-indigo-500/50' : 'text-indigo-700 border-indigo-200'}`}>{prenda.razon}</p>
                       </div>
                     </div>
@@ -754,9 +754,9 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
     <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-md border-white/10 shadow-black/50`}>
       <div className={`flex flex-col h-full w-full transition-all duration-300 ${!isPremium ? 'blur-sm opacity-50 pointer-events-none select-none' : ''}`}>
         <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md flex items-center justify-between">
-           <h2 className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
+           <div className="text-sm tracking-widest uppercase text-white font-bold flex items-center gap-2">
              <Sparkles size={14} className="text-indigo-400" /> Asistente de Estilo
-           </h2>
+           </div>
            <button onClick={() => setView('dashboard')} className="lg:hidden p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
              <ArrowLeft size={20} />
            </button>
@@ -834,7 +834,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
           <div className={`p-4 rounded-full mb-4 ${darkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-600'} shadow-lg backdrop-blur-md`}>
             <Lock size={32} />
           </div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Asistente IA Exclusivo</h3>
+          <h2 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Asistente IA Exclusivo</h2>
           <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-xs mx-auto`}>
             El Asistente de Estilo impulsado por IA está disponible únicamente para usuarios Premium.
           </p>
@@ -1719,7 +1719,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
             >
               {/* Header */}
               <div className={`sticky top-0 z-10 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
-                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Detalles del Tiempo - {weather.location}</h3>
+                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Detalles del Tiempo - {weather.location}</h2>
                 <button onClick={() => setShowWeatherModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
                   <X size={20} />
                 </button>
@@ -1799,7 +1799,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 {weather.latitude && weather.longitude && (
                   <div className={`mt-8 p-1 rounded-2xl overflow-hidden shadow-inner ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                     <div className="p-4">
-                      <h4 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                         <MapPin size={16} className="text-indigo-500"/> Ubicación Interactiva
                       </h4>
                     </div>
@@ -1820,7 +1820,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 {/* 24-Hour Forecast */}
                 {weather.hourly && (
                   <div>
-                    <h4 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Previsión 24 Horas</h4>
+                    <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Previsión 24 Horas</h3>
                     <div className="flex overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar">
                       {weather.hourly.time.slice(0, 24).map((timeStr, idx) => {
                         const date = new Date(timeStr);
@@ -1843,7 +1843,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
                 {/* Map Embed */}
                 <div>
-                  <h4 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Mapa de la Zona</h4>
+                  <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Mapa de la Zona</h3>
                   <div className={`w-full h-[400px] rounded-2xl overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <iframe
                       title="Weather Map"
@@ -1886,7 +1886,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                   <Archive size={28} className="text-orange-500" />
                 </div>
                 
-                <h3 className="text-xl font-bold mb-2">
+                <h2 className="text-xl font-bold mb-2">
                   {limitWarning.type === 'close' ? 'Estás a punto de alcanzar tu límite' : 'Has alcanzado tu límite de historial'}
                 </h3>
                 
@@ -1945,7 +1945,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-indigo-50">
                   <Sparkles size={28} className="text-indigo-600" />
                 </div>
-                <h3 className="text-2xl font-black mb-2 tracking-tight">Mejora tus resultados</h3>
+                <h2 className="text-2xl font-black mb-2 tracking-tight">Mejora tus resultados</h2>
                 <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   Para que la Inteligencia Artificial te recomiende outfits que se adapten mejor a ti, necesitamos saber tu edad.
                 </p>
@@ -1992,7 +1992,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-indigo-50">
                   <Sparkles size={28} className="text-indigo-600" />
                 </div>
-                <h3 className="text-2xl font-black mb-2 tracking-tight">Afina tus outfits</h3>
+                <h2 className="text-2xl font-black mb-2 tracking-tight">Afina tus outfits</h2>
                 <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   ¿Te gusta usar gorras o sombreros? Si marcas que sí, la IA los incluirá en tus outfits cuando el clima y el estilo lo pidan.
                 </p>

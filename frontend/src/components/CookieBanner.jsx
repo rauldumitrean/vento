@@ -68,7 +68,7 @@ const CookieBanner = () => {
                   <Shield size={24} className="text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-lg mb-1">Tu Privacidad es Importante</h3>
+                  <h2 className="text-white font-bold text-lg mb-1">Tu Privacidad es Importante</h2>
                   <p className="text-gray-400 text-sm leading-relaxed">
                     Utilizamos cookies estrictamente necesarias para el funcionamiento de la web (como tu sesión y modo oscuro). También podemos usar cookies opcionales para entender el uso de nuestra plataforma y personalizar tu experiencia.
                   </p>
@@ -111,9 +111,9 @@ const CookieBanner = () => {
               className="w-full max-w-lg bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh]"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-white flex items-center gap-2">
+                <h2 className="text-xl font-black text-white flex items-center gap-2">
                   <Settings2 className="text-indigo-500" /> Configuración de Cookies
-                </h3>
+                </h2>
                 <button onClick={() => setShowConfig(false)} className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-gray-800">
                   <X size={20} />
                 </button>
@@ -123,7 +123,7 @@ const CookieBanner = () => {
                 {/* Esenciales */}
                 <div className="p-4 rounded-xl border border-gray-700 bg-gray-800/50">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-white text-lg">Estrictamente Necesarias</h4>
+                    <h3 className="font-bold text-white text-lg">Estrictamente Necesarias</h3>
                     <div className="flex items-center gap-2 text-indigo-400 text-sm font-bold bg-indigo-500/10 px-2 py-1 rounded">
                       <Check size={14} /> Siempre Activas
                     </div>
@@ -134,7 +134,7 @@ const CookieBanner = () => {
                 {/* Analíticas */}
                 <div className="p-4 rounded-xl border border-gray-700 bg-gray-800/50">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-white text-lg">Analíticas y Rendimiento</h4>
+                    <h3 className="font-bold text-white text-lg">Analíticas y Rendimiento</h3>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -151,7 +151,7 @@ const CookieBanner = () => {
                 {/* Marketing */}
                 <div className="p-4 rounded-xl border border-gray-700 bg-gray-800/50">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-white text-lg">Publicidad y Marketing</h4>
+                    <h3 className="font-bold text-white text-lg">Publicidad y Marketing</h3>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
                         type="checkbox" 

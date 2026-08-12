@@ -29,12 +29,12 @@ export default function AdModal({ onClose }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Anuncio obligatorio"
+      aria-labelledby="ad-modal-title"
     >
       <div className="relative bg-white w-full max-w-3xl aspect-[4/3] sm:aspect-video rounded flex items-center justify-center overflow-hidden shadow-2xl">
         {/* Simulación de anuncio */}
         <div className="absolute inset-0 bg-neutral-100 flex flex-col items-center justify-center p-6 sm:p-12 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Apoya a Ventoo</h2>
+          <h2 id="ad-modal-title" className="text-2xl font-bold text-gray-800 mb-2">Apoya a Ventoo</h2>
           <p className="text-gray-600 mb-8 text-sm sm:text-base max-w-xl">
             Para poder seguir ofreciéndote este servicio de Inteligencia Artificial de forma 100% gratuita, financiamos los servidores mediante publicidad.
           </p>
