@@ -303,16 +303,16 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
                 <h3 className={`text-lg sm:text-xl font-bold pr-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{prenda.nombre_corto || prenda.descripcion.substring(0, 30) + '...'}</h3>
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   {onPrev && (
-                    <button onClick={(e) => { e.stopPropagation(); onPrev(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
+                    <button aria-label="Anterior prenda" onClick={(e) => { e.stopPropagation(); onPrev(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
                       <ArrowLeft size={20} />
                     </button>
                   )}
                   {onNext && (
-                    <button onClick={(e) => { e.stopPropagation(); onNext(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
+                    <button aria-label="Siguiente prenda" onClick={(e) => { e.stopPropagation(); onNext(); }} className={`p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-indigo-300`}>
                       <ArrowRight size={20} />
                     </button>
                   )}
-                  <button onClick={onClose} className={`ml-2 p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-gray-300`}>
+                  <button aria-label="Cerrar modal" onClick={onClose} className={`ml-2 p-1.5 sm:p-2 rounded-full transition-colors hover:bg-white/10 text-gray-300`}>
                     <X size={20} />
                   </button>
                 </div>
@@ -382,7 +382,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
             onClick={() => setFullScreenImage(false)}
           >
             <img src={imgSrc} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" />
-            <button className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
+            <button aria-label="Cerrar imagen completa" className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
               <X size={24} />
             </button>
           </motion.div>

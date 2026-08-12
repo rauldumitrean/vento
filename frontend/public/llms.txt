@@ -1,0 +1,15 @@
+# Ventoo - Tu Asistente de Moda con IA
+
+Ventoo es un asistente de moda web construido con React, Vite y TailwindCSS en el frontend, y Node.js/Express en el backend.
+
+## Arquitectura
+- **Frontend**: React (Vite), React Router, Framer Motion, TailwindCSS, Axios.
+- **Backend**: Express, Prisma (PostgreSQL), Google Generative AI (Gemini), Open-Meteo.
+- **Hosting**: Vercel.
+
+## Funcionalidades
+- Recomendaciones de outfits basadas en el clima.
+- Armario virtual con gestión de prendas.
+- Chat con IA especializado en moda.
+- Red social y feed de comunidad.
+- Escaneo de QR para añadir amigos.

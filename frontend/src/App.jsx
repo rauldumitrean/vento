@@ -214,7 +214,7 @@ function App() {
                 sessionExpired={sessionExpired} 
                 setSessionExpired={setSessionExpired} 
               />
-              <div className="min-h-[100dvh] w-full flex flex-col overflow-clip">
+              <main className="min-h-[100dvh] w-full flex flex-col overflow-clip">
                 <Routes>
                   <Route 
                     path="/" 
@@ -250,7 +250,7 @@ function App() {
                 {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
                 {token && <IosInstallPrompt />}
                 <CookieBanner />
-              </div>
+              </main>
             </BrowserRouter>
           </ErrorBoundary>
         </ConfirmProvider>
