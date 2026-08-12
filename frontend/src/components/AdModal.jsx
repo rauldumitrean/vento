@@ -11,12 +11,15 @@ export default function AdModal({ onClose }) {
   }, [timeLeft]);
 
   useEffect(() => {
-    // FIX: Use correct AdSense push pattern without checking non-standard .loaded property
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("AdSense error", e);
-    }
+    // FIX: Delay push to ensure container has layout/width computed (prevents No slot size error)
+    const timeoutId = setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.error("AdSense error", e);
+      }
+    }, 250);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // FIX: Guard against undefined onClose to prevent crash

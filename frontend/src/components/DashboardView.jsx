@@ -1801,7 +1801,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                     <div className="p-4">
                       <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                         <MapPin size={16} className="text-indigo-500"/> Ubicación Interactiva
-                      </h4>
+                      </h3>
                     </div>
                     <div className="w-full h-80 rounded-b-xl overflow-hidden border-t border-gray-200 dark:border-gray-700">
                       <iframe 
@@ -1888,7 +1888,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                 
                 <h2 className="text-xl font-bold mb-2">
                   {limitWarning.type === 'close' ? 'Estás a punto de alcanzar tu límite' : 'Has alcanzado tu límite de historial'}
-                </h3>
+                </h2>
                 
                 <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {limitWarning.type === 'close' 

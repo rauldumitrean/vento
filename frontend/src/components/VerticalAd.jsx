@@ -2,11 +2,14 @@ import React, { useEffect } from 'react';
 
 const VerticalAd = ({ className = "" }) => {
   useEffect(() => {
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("AdSense error", e);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.error("AdSense error", e);
+      }
+    }, 250);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
