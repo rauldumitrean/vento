@@ -17,19 +17,19 @@ const queryClient = new QueryClient({
 });
 import LandingView from './components/LandingView';
 import BanView from './components/BanView';
+import IosInstallPrompt from './components/IosInstallPrompt';
+import CookieBanner from './components/CookieBanner';
 
-import AuthView from './components/AuthView';
-import DashboardView from './components/DashboardView';
 import { Suspense, lazy } from 'react';
+const AuthView = lazy(() => import('./components/AuthView'));
+const DashboardView = lazy(() => import('./components/DashboardView'));
 const AdminView = lazy(() => import('./components/AdminView'));
 const AdminLoginView = lazy(() => import('./components/AdminLoginView'));
-import IosInstallPrompt from './components/IosInstallPrompt';
-import TermsView from './components/TermsView';
-import PrivacyView from './components/PrivacyView';
-import SupportView from './components/SupportView';
-import FaqView from './components/FaqView';
-import CookieBanner from './components/CookieBanner';
-import SharedOutfitView from './components/SharedOutfitView';
+const TermsView = lazy(() => import('./components/TermsView'));
+const PrivacyView = lazy(() => import('./components/PrivacyView'));
+const SupportView = lazy(() => import('./components/SupportView'));
+const FaqView = lazy(() => import('./components/FaqView'));
+const SharedOutfitView = lazy(() => import('./components/SharedOutfitView'));
 
 // FIX C-5: React Error Boundary — prevents a single render error from crashing the entire app
 class ErrorBoundary extends Component {
@@ -215,38 +215,36 @@ function App() {
                 setSessionExpired={setSessionExpired} 
               />
               <main className="min-h-[100dvh] w-full flex flex-col overflow-clip">
-                <Routes>
-                  <Route 
-                    path="/" 
-                    element={<LandingView token={token} />} 
-                  />
-                  <Route 
-                    path="/login" 
-                    element={!token ? <AuthView setToken={setToken} /> : <LoginRedirect />} 
-                  />
-                  <Route 
-                    path="/app" 
-                    element={token 
-                      ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => { setToken(null); window.location.href = '/'; }} /></ErrorBoundary> 
-                      : <Navigate to="/" />} 
-                  />
-                  <Route 
-                    path="/support" 
-                    element={token ? <SupportView token={token} /> : <Navigate to="/login" state={{ from: { pathname: '/support' } }} replace />} 
-                  />
-                  <Route 
-                    path="/admin" 
-                    element={
-                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
-                        {adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />}
-                      </Suspense>
-                    } 
-                  />
-                  <Route path="/terms" element={<TermsView />} />
-                  <Route path="/privacy" element={<PrivacyView />} />
-                  <Route path="/faq" element={<FaqView />} />
-                  <Route path="/shared" element={<SharedOutfitView />} />
-                </Routes>
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black/90"><div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+                  <Routes>
+                    <Route 
+                      path="/" 
+                      element={<LandingView token={token} />} 
+                    />
+                    <Route 
+                      path="/login" 
+                      element={!token ? <AuthView setToken={setToken} /> : <LoginRedirect />} 
+                    />
+                    <Route 
+                      path="/app" 
+                      element={token 
+                        ? <ErrorBoundary><DashboardView token={token} defaultView="dashboard" onLogout={() => { setToken(null); window.location.href = '/'; }} /></ErrorBoundary> 
+                        : <Navigate to="/" />} 
+                    />
+                    <Route 
+                      path="/support" 
+                      element={token ? <SupportView token={token} /> : <Navigate to="/login" state={{ from: { pathname: '/support' } }} replace />} 
+                    />
+                    <Route 
+                      path="/admin" 
+                      element={adminToken ? <AdminView token={adminToken} /> : <AdminLoginView setAdminToken={setAdminToken} />} 
+                    />
+                    <Route path="/terms" element={<TermsView />} />
+                    <Route path="/privacy" element={<PrivacyView />} />
+                    <Route path="/faq" element={<FaqView />} />
+                    <Route path="/shared" element={<SharedOutfitView />} />
+                  </Routes>
+                </Suspense>
                 {/* FIX L-9: Only show install prompt and cookie banner for authenticated users */}
                 {token && <IosInstallPrompt />}
                 <CookieBanner />
