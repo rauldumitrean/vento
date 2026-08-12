@@ -117,7 +117,7 @@ router.get('/autocomplete', authMiddleware, async (req, res) => {
 
 router.get('/weather', authMiddleware, async (req, res) => {
   try {
-    const { lat, lon, city } = req.query;
+    let { lat, lon, city } = req.query;
     let latitude = lat;
     let longitude = lon;
     

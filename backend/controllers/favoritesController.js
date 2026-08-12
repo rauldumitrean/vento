@@ -41,6 +41,7 @@ const addFavorite = async (req, res, next) => {
 const removeFavorite = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ errorCode: '0x1006_B', error: 'ID inválido' });
     const fav = await prisma.favoriteCity.findUnique({ where: { id } });
     
     if (!fav || fav.userId !== req.user.id) {

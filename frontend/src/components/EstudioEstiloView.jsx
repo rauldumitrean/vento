@@ -22,7 +22,7 @@ export default function EstudioEstiloView({ token }) {
     let isMounted = true;
     const fetchArmario = async () => {
       try {
-        const res = await axios.post(`${API_URL}/api/armario`, {}, {
+        const res = await axios.get(`${API_URL}/api/armario`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (isMounted) {
