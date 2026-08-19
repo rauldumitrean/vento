@@ -38,14 +38,18 @@ class ErrorBoundary extends Component {
     this.state = { hasError: false, error: null };
   }
   static getDerivedStateFromError(error) {
+    const errorStr = error?.message || error?.toString() || '';
+    if (errorStr.includes('Failed to fetch dynamically imported module') || errorStr.includes('Importing a module script failed')) {
+      if ('caches' in window) {
+        caches.keys().then(names => names.forEach(name => caches.delete(name)));
+      }
+      window.location.reload();
+      return { hasError: false, error: null }; // Evitamos renderizar la pantalla de error
+    }
     return { hasError: true, error };
   }
   componentDidCatch(error, info) {
     console.error('ErrorBoundary caught:', error, info);
-    // Fix for Vite lazy-loading chunk errors on new deploys
-    if (error?.message?.includes('Failed to fetch dynamically imported module') || error?.message?.includes('Importing a module script failed')) {
-      window.location.reload();
-    }
   }
   render() {
     if (this.state.hasError) {
@@ -59,7 +63,13 @@ class ErrorBoundary extends Component {
             <p className="text-red-400/70 font-mono text-xs mt-2 whitespace-pre-wrap">{this.state.error?.stack}</p>
           </div>
           <button
-            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            onClick={() => { 
+              this.setState({ hasError: false }); 
+              if ('caches' in window) {
+                caches.keys().then(names => names.forEach(name => caches.delete(name)));
+              }
+              window.location.reload(); 
+            }}
             className="px-6 py-3 bg-indigo-600 rounded-xl font-semibold hover:bg-indigo-500 transition-colors"
           >
             Recargar
