@@ -30,6 +30,11 @@ const ArmarioHistorial = ({ token, darkMode, initialTab = 'armario', hideTabs = 
   const { showToast } = useToast();
   const { confirm } = useConfirm();
 
+  // Sync activeTab when navigating between sidebar sections
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
   // FIX: Added token to dependency array to avoid stale closure
   useEffect(() => {
     fetchData();
