@@ -42,6 +42,10 @@ class ErrorBoundary extends Component {
   }
   componentDidCatch(error, info) {
     console.error('ErrorBoundary caught:', error, info);
+    // Fix for Vite lazy-loading chunk errors on new deploys
+    if (error?.message?.includes('Failed to fetch dynamically imported module') || error?.message?.includes('Importing a module script failed')) {
+      window.location.reload();
+    }
   }
   render() {
     if (this.state.hasError) {
