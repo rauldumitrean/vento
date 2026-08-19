@@ -11,7 +11,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        maximumFileSizeToCacheInBytes: 3000000 // 3MB limit
+        maximumFileSizeToCacheInBytes: 3000000, // 3MB limit
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true
       },
       manifest: {
         name: 'Vento AI',
