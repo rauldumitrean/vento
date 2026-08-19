@@ -215,21 +215,21 @@ exports.sendPaymentSuccessEmail = async (user, plan) => {
 exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason) => {
   if (!process.env.SMTP_HOST || !isBanned) return;
 
-  const subject = \`Aviso importante sobre tu cuenta de Ventoo\`;
+  const subject = `Aviso importante sobre tu cuenta de Ventoo`;
   const preheader = 'Tu cuenta ha sido suspendida.';
   
   let durationText = 'de forma permanente';
   if (bannedUntil) {
     const date = new Date(bannedUntil);
-    durationText = \`hasta el \${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })} a las \${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}\`;
+    durationText = `hasta el ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })} a las ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
   }
 
-  const reasonText = banReason ? \`<p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;"><strong style="color: #f4f4f5; font-weight: 600;">Motivo de la suspensión:</strong> \${banReason}</p>\` : '';
+  const reasonText = banReason ? `<p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;"><strong style="color: #f4f4f5; font-weight: 600;">Motivo de la suspensión:</strong> ${banReason}</p>` : '';
 
-  const content = \`
+  const content = `
     <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Aviso de Suspensión de Cuenta</h2>
-    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hola <strong style="color: #f4f4f5; font-weight: 600;">\${user.name || 'Usuario'}</strong>,</p>
-    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Te escribimos para informarte de que tu cuenta de Ventoo ha sido suspendida <strong style="color: #f4f4f5; font-weight: 600;">\${durationText}</strong> por infringir nuestros términos de servicio.</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hola <strong style="color: #f4f4f5; font-weight: 600;">${user.name || 'Usuario'}</strong>,</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Te escribimos para informarte de que tu cuenta de Ventoo ha sido suspendida <strong style="color: #f4f4f5; font-weight: 600;">${durationText}</strong> por infringir nuestros términos de servicio.</p>
     
     <div style="text-align: center; margin: 30px 0;">
       <div style="display: inline-block; background-color: rgba(239, 68, 68, 0.1); padding: 24px; border-radius: 50%; border: 1px solid rgba(239, 68, 68, 0.2);">
@@ -237,13 +237,13 @@ exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason
       </div>
     </div>
     
-    \${reasonText}
+    ${reasonText}
     
     <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 8px; margin: 20px 0;">
       <p style="color: #fca5a5; margin: 0; font-size: 14px; line-height: 1.5;">Durante este tiempo, no podrás acceder a la plataforma ni utilizar los servicios de inteligencia artificial.</p>
     </div>
     <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Si crees que esto ha sido un error, por favor, contacta con nuestro equipo de soporte.</p>
-  \`;
+  `;
 
   try {
     const transporter = createTransporter();
@@ -253,7 +253,7 @@ exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason
       subject,
       html: baseTemplate('Cuenta Suspendida', content, preheader)
     });
-    console.log(\`Ban notification email sent to \${user.email}\`);
+    console.log(`Ban notification email sent to ${user.email}`);
   } catch (err) {
     console.error('Error sending ban notification email:', err);
   }
