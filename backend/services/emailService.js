@@ -16,48 +16,63 @@ const createTransporter = () => {
 const getFromEmail = () => process.env.EMAIL_FROM || '"Ventoo" <hola@ventoo.app>';
 const getLogoUrl = () => `${process.env.FRONTEND_URL || 'https://ventoo.app'}/favicon.svg`;
 
-// ─── PLANTILLA BASE ──────────────────────────────────────────────────────────
 const baseTemplate = (title, content, preheader = '') => `
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>\${title}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #060608; color: #f3f4f6; margin: 0; padding: 0; }
-    .container { max-width: 600px; margin: 40px auto; background: #111116; border-radius: 24px; overflow: hidden; border: 1px solid #ffffff15; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5); }
-    .header { padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #3730a3 0%, #6b21a8 100%); border-bottom: 1px solid #ffffff15; }
-    .header img { width: 48px; height: 48px; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-    .header h1 { margin: 0; font-size: 28px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; }
-    .content { padding: 40px 30px; }
-    .content p { font-size: 16px; line-height: 1.6; color: #d1d5db; margin: 0 0 20px 0; }
-    .content h2 { font-size: 20px; font-weight: bold; color: #ffffff; margin: 0 0 16px 0; }
-    .footer { padding: 30px; text-align: center; background: #0a0a0f; border-top: 1px solid #ffffff10; }
-    .footer p { font-size: 13px; color: #6b7280; margin: 0 0 8px 0; }
-    .footer a { color: #818cf8; text-decoration: none; }
-    .btn { display: inline-block; padding: 14px 32px; background: linear-gradient(to right, #4f46e5, #9333ea); color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 12px; margin-top: 10px; }
-    .data-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-    .data-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    .data-row:last-child { margin-bottom: 0; }
-    .data-label { color: #9ca3af; font-size: 14px; }
-    .data-value { color: #ffffff; font-weight: bold; font-size: 14px; }
-    .preheader { display: none; max-height: 0px; overflow: hidden; }
+    /* Reset */
+    body, p, h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #030305; color: #f3f4f6; -webkit-font-smoothing: antialiased; }
+    .wrapper { width: 100%; background-color: #030305; padding: 40px 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #0c0c10; border-radius: 20px; border: 1px solid #1f1f2e; overflow: hidden; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.7); }
+    .header { padding: 40px 40px 20px; text-align: center; }
+    .header img { width: 56px; height: 56px; margin-bottom: 20px; }
+    .header h1 { font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, #3f3f5a, transparent); margin: 0 40px 30px; }
+    .content { padding: 0 40px 40px; }
+    .content p { font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0; }
+    .content h2 { font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center; }
+    .content strong { color: #f4f4f5; font-weight: 600; }
+    .footer { padding: 30px 40px; text-align: center; background: #050508; border-top: 1px solid #1f1f2e; }
+    .footer p { font-size: 13px; color: #52525b; margin: 0 0 12px 0; }
+    .footer a { color: #818cf8; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+    .footer a:hover { color: #a5b4fc; }
+    .btn-container { text-align: center; margin: 35px 0 10px; }
+    .btn { display: inline-block; padding: 16px 36px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff !important; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 14px; box-shadow: 0 8px 20px -6px rgba(79, 70, 229, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -6px rgba(79, 70, 229, 0.7); }
+    .data-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 24px; border-radius: 16px; margin: 24px 0; }
+    .data-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 12px; }
+    .data-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+    .data-label { color: #8b8b99; font-size: 15px; font-weight: 500; }
+    .data-value { color: #e4e4e7; font-weight: 600; font-size: 15px; text-align: right; }
+    .preheader { display: none; max-height: 0px; overflow: hidden; color: transparent; opacity: 0; }
+    .social-links { margin-top: 20px; }
+    .social-links a { display: inline-block; margin: 0 8px; color: #52525b; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    ul.features-list { list-style-type: none; padding: 0; margin: 0 0 24px 0; }
+    ul.features-list li { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; color: #d1d5db; display: flex; align-items: center; }
+    ul.features-list li::before { content: "✨"; margin-right: 12px; font-size: 14px; }
   </style>
 </head>
 <body>
-  <div class="preheader">${preheader}</div>
-  <div class="container">
-    <div class="header">
-      <img src="${getLogoUrl()}" alt="Ventoo Logo">
-      <h1>VENTOO</h1>
-    </div>
-    <div class="content">
-      ${content}
-    </div>
-    <div class="footer">
-      <p>Este correo electrónico fue enviado por Ventoo AI.</p>
-      <p>¿Tienes alguna duda? <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/support">Contacta con soporte</a></p>
+  <div class="preheader">\${preheader}</div>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <img src="\${getLogoUrl()}" alt="Ventoo Logo">
+        <h1>VENTOO</h1>
+      </div>
+      <div class="divider"></div>
+      <div class="content">
+        \${content}
+      </div>
+      <div class="footer">
+        <p>&copy; \${new Date().getFullYear()} Ventoo AI. Todos los derechos reservados.</p>
+        <p>¿Tienes alguna duda? <a href="\${process.env.FRONTEND_URL || 'https://ventoo.app'}/support">Contacta con soporte</a></p>
+      </div>
     </div>
   </div>
 </body>
@@ -79,7 +94,7 @@ exports.sendWelcomeEmail = async (user) => {
     <p>Hola <strong>${user.name}</strong>,</p>
     <p>Estamos encantados de darte la bienvenida a Ventoo. A partir de hoy, nunca más tendrás que preocuparte por qué ponerte. Nuestra Inteligencia Artificial cruzará el clima exacto de tu ubicación con tu estilo personal para darte recomendaciones perfectas.</p>
     <p>Ya tienes tu plan <strong>Básico</strong> activado con 5 outfits diarios.</p>
-    <div style="text-align: center; margin-top: 30px;">
+    <div class="btn-container">
       <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">Entrar a mi Panel</a>
     </div>
   `;
@@ -147,14 +162,14 @@ exports.sendPaymentSuccessEmail = async (user, plan) => {
     <h2>¡Gracias por tu compra!</h2>
     <p>Hola <strong>${user.name}</strong>,</p>
     <p>Tu cuenta ha sido actualizada con éxito al plan <strong>${planName}</strong>. Ahora tienes acceso a todas las funciones premium de Ventoo, incluyendo:</p>
-    <ul style="color: #d1d5db; line-height: 1.6; font-size: 15px; margin-bottom: 20px;">
+    <ul class="features-list">
       <li>Generación ilimitada de outfits</li>
       <li>Visión por IA (subir fotos de tu ropa)</li>
       <li>Chatbot de estilo avanzado sin límites</li>
       <li>Experiencia 100% libre de anuncios</li>
     </ul>
     <p>Disfruta de la experiencia definitiva de estilismo inteligente.</p>
-    <div style="text-align: center; margin-top: 30px;">
+    <div class="btn-container">
       <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">Explorar funciones Premium</a>
     </div>
   `;
@@ -250,7 +265,7 @@ exports.sendNewTicketEmail = async (user, ticket) => {
     <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
       <p style="margin: 0; white-space: pre-wrap;">${ticket.mensaje}</p>
     </div>
-    <div style="text-align: center; margin-top: 30px;">
+    <div class="btn-container">
       <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/admin" class="btn">Abrir Panel de Admin</a>
     </div>
   `;
@@ -309,7 +324,7 @@ exports.sendMorningAlertEmail = async (user, cityName, current, tempMax, tempMin
     <h2>🎽 Consejo de Vestuario</h2>
     <p style="font-size: 16px; color: #e5e7eb;">${clothingTip}</p>
     
-    <div style="text-align: center; margin-top: 30px;">
+    <div class="btn-container">
       <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">✨ Generar Outfit Completo</a>
     </div>
     <p style="font-size: 12px; color: #4b5563; text-align: center; margin-top: 20px;">
