@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Save, Shirt, ChevronDown, ChevronUp, CreditCard, Settings, Smartphone, AlertTriangle, LogOut, Camera, ArrowLeft, Sun, BellRing, BellOff, Loader2, Info } from 'lucide-react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import OutfitCalendar from './OutfitCalendar';
-import HistorialOutfits from './HistorialOutfits';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -34,7 +32,6 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
   const [deleteError, setDeleteError] = useState('');
   const [isPremium, setIsPremium] = useState(Cookies.get('isPremium') === 'true');
   const [premiumPlan, setPremiumPlan] = useState(Cookies.get('premiumPlan') || null);
-  const [activeProfileTab, setActiveProfileTab] = useState('ajustes');
   
   const [activeAccordion, setActiveAccordion] = useState('personal');
   const push = usePushNotifications();
@@ -311,28 +308,7 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
         </div>
       )}
 
-      <div className="flex bg-black/10 dark:bg-black/20 backdrop-blur-md p-1.5 rounded-2xl mb-8 max-w-sm mx-auto border border-white/5">
-        <button 
-          onClick={() => setActiveProfileTab('ajustes')}
-          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeProfileTab === 'ajustes' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
-        >
-          Ajustes
-        </button>
-        <button 
-          onClick={() => setActiveProfileTab('historial')}
-          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all ${activeProfileTab === 'historial' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
-        >
-          Historial
-        </button>
-        <button 
-          onClick={() => setActiveProfileTab('calendario')}
-          className={`flex-1 py-2.5 px-4 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${activeProfileTab === 'calendario' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-gray-500 hover:text-gray-400'}`}
-        >
-          Calendario
-        </button>
-      </div>
 
-      {activeProfileTab === 'ajustes' && (
       <form onSubmit={handleSave} className="space-y-8">
         
         {/* SECCIÓN 1: DATOS PERSONALES */}
@@ -590,19 +566,6 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
         </div>
 
       </form>
-      )}
-
-      {activeProfileTab === 'historial' && (
-        <div className="py-4">
-          <HistorialOutfits token={token} darkMode={darkMode} />
-        </div>
-      )}
-
-      {activeProfileTab === 'calendario' && (
-        <div className="py-4">
-          <OutfitCalendar token={token} darkMode={darkMode} />
-        </div>
-      )}
 
       {/* Modal Cancelar Suscripción */}
       {showCancelModal && (
