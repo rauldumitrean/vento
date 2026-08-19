@@ -18,63 +18,67 @@ const getLogoUrl = () => `${process.env.FRONTEND_URL || 'https://ventoo.app'}/fa
 
 const baseTemplate = (title, content, preheader = '') => `
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>\${title}</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>${title}</title>
   <style>
-    /* Reset */
+    /* Retain some basic resets for clients that support it */
     body, p, h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #030305; color: #f3f4f6; -webkit-font-smoothing: antialiased; }
-    .wrapper { width: 100%; background-color: #030305; padding: 40px 0; }
-    .container { max-width: 600px; margin: 0 auto; background: #0c0c10; border-radius: 20px; border: 1px solid #1f1f2e; overflow: hidden; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.7); }
-    .header { padding: 40px 40px 20px; text-align: center; }
-    .header img { width: 56px; height: 56px; margin-bottom: 20px; }
-    .header h1 { font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
-    .divider { height: 1px; background: linear-gradient(90deg, transparent, #3f3f5a, transparent); margin: 0 40px 30px; }
-    .content { padding: 0 40px 40px; }
-    .content p { font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0; }
-    .content h2 { font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center; }
-    .content strong { color: #f4f4f5; font-weight: 600; }
-    .footer { padding: 30px 40px; text-align: center; background: #050508; border-top: 1px solid #1f1f2e; }
-    .footer p { font-size: 13px; color: #52525b; margin: 0 0 12px 0; }
-    .footer a { color: #818cf8; text-decoration: none; font-weight: 500; transition: color 0.2s; }
-    .footer a:hover { color: #a5b4fc; }
-    .btn-container { text-align: center; margin: 35px 0 10px; }
-    .btn { display: inline-block; padding: 16px 36px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff !important; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 14px; box-shadow: 0 8px 20px -6px rgba(79, 70, 229, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -6px rgba(79, 70, 229, 0.7); }
-    .data-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 24px; border-radius: 16px; margin: 24px 0; }
-    .data-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 12px; }
-    .data-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-    .data-label { color: #8b8b99; font-size: 15px; font-weight: 500; }
-    .data-value { color: #e4e4e7; font-weight: 600; font-size: 15px; text-align: right; }
-    .preheader { display: none; max-height: 0px; overflow: hidden; color: transparent; opacity: 0; }
-    .social-links { margin-top: 20px; }
-    .social-links a { display: inline-block; margin: 0 8px; color: #52525b; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-    ul.features-list { list-style-type: none; padding: 0; margin: 0 0 24px 0; }
-    ul.features-list li { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; color: #d1d5db; display: flex; align-items: center; }
-    ul.features-list li::before { content: "✨"; margin-right: 12px; font-size: 14px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #030305 !important; color: #f3f4f6 !important; -webkit-font-smoothing: antialiased; }
+    .btn:hover { background-color: #6366f1 !important; }
   </style>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td, p, a, h1, h2, h3, h4 {font-family: Arial, sans-serif !important;}
+  </style>
+  <![endif]-->
 </head>
-<body>
-  <div class="preheader">\${preheader}</div>
-  <div class="wrapper">
-    <div class="container">
-      <div class="header">
-        <img src="\${getLogoUrl()}" alt="Ventoo Logo">
-        <h1>VENTOO</h1>
-      </div>
-      <div class="divider"></div>
-      <div class="content">
-        \${content}
-      </div>
-      <div class="footer">
-        <p>&copy; \${new Date().getFullYear()} Ventoo AI. Todos los derechos reservados.</p>
-        <p>¿Tienes alguna duda? <a href="\${process.env.FRONTEND_URL || 'https://ventoo.app'}/support">Contacta con soporte</a></p>
-      </div>
-    </div>
-  </div>
+<body style="background-color: #030305; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f3f4f6; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  <div style="display: none; max-height: 0px; overflow: hidden; color: transparent; opacity: 0; font-size: 0px; line-height: 0px;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>
+  
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #030305;">
+    <tr>
+      <td align="center" style="padding: 40px 10px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0c0c10; border-radius: 20px; border: 1px solid #1f1f2e; overflow: hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px 40px;">
+              <img src="${getLogoUrl()}" alt="Ventoo Logo" width="56" height="56" style="display: block; width: 56px; height: 56px; margin-bottom: 20px; outline: none; text-decoration: none;">
+              <h1 style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 2px; margin: 0; text-transform: uppercase;">VENTOO</h1>
+            </td>
+          </tr>
+          
+          <!-- Divider -->
+          <tr>
+            <td align="center" style="padding: 0 40px 30px 40px;">
+              <div style="height: 1px; background-color: #1f1f2e; width: 100%; line-height: 1px; font-size: 1px;">&nbsp;</div>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 0 40px 40px 40px; color: #a1a1aa; font-size: 16px; line-height: 1.7;">
+              ${content}
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 30px 40px; background-color: #050508; border-top: 1px solid #1f1f2e;">
+              <p style="font-size: 13px; color: #52525b; margin: 0 0 12px 0;">&copy; ${new Date().getFullYear()} Ventoo AI. Todos los derechos reservados.</p>
+              <p style="font-size: 13px; color: #52525b; margin: 0;">¿Tienes alguna duda? <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/support" style="color: #818cf8; text-decoration: none; font-weight: 500;">Contacta con soporte</a></p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 `;
@@ -90,12 +94,12 @@ exports.sendWelcomeEmail = async (user) => {
   const subject = `¡Bienvenido a Ventoo, ${user.name}!`;
   const preheader = 'Tu IA meteorológica de moda te está esperando.';
   const content = `
-    <h2>Tu cuenta ha sido creada con éxito</h2>
-    <p>Hola <strong>${user.name}</strong>,</p>
-    <p>Estamos encantados de darte la bienvenida a Ventoo. A partir de hoy, nunca más tendrás que preocuparte por qué ponerte. Nuestra Inteligencia Artificial cruzará el clima exacto de tu ubicación con tu estilo personal para darte recomendaciones perfectas.</p>
-    <p>Ya tienes tu plan <strong>Básico</strong> activado con 5 outfits diarios.</p>
-    <div class="btn-container">
-      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">Entrar a mi Panel</a>
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Tu cuenta ha sido creada con éxito</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hola <strong style="color: #f4f4f5; font-weight: 600;">${user.name}</strong>,</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Estamos encantados de darte la bienvenida a Ventoo. A partir de hoy, nunca más tendrás que preocuparte por qué ponerte. Nuestra Inteligencia Artificial cruzará el clima exacto de tu ubicación con tu estilo personal para darte recomendaciones perfectas.</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Ya tienes tu plan <strong style="color: #f4f4f5; font-weight: 600;">Básico</strong> activado con 5 outfits diarios.</p>
+    <div style="text-align: center; margin: 35px 0 10px;">
+      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" style="display: inline-block; padding: 16px 36px; background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 14px;">Entrar a mi Panel</a>
     </div>
   `;
 
@@ -124,15 +128,30 @@ exports.sendLoginAlertEmail = async (user, reqIp = 'IP desconocida', userAgent =
   const dateStr = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' });
   
   const content = `
-    <h2>Alerta de Seguridad</h2>
-    <p>Hola ${user.name},</p>
-    <p>Hemos detectado un nuevo inicio de sesión en tu cuenta de Ventoo.</p>
-    <div class="data-box">
-      <div class="data-row"><span class="data-label">Fecha:</span><span class="data-value">${dateStr} (CET)</span></div>
-      <div class="data-row"><span class="data-label">IP:</span><span class="data-value">${reqIp}</span></div>
-      <div class="data-row"><span class="data-label">Dispositivo:</span><span class="data-value">${userAgent.substring(0, 40)}...</span></div>
-    </div>
-    <p style="font-size: 14px; color: #9ca3af;">Si has sido tú, puedes ignorar este mensaje. Si no reconoces esta actividad, por favor cambia tu contraseña inmediatamente.</p>
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Alerta de Seguridad</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hola <strong style="color: #f4f4f5; font-weight: 600;">${user.name}</strong>,</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hemos detectado un nuevo inicio de sesión en tu cuenta de Ventoo.</p>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #121218; border: 1px solid #1f1f2e; border-radius: 16px; margin: 24px 0;">
+      <tr><td style="padding: 24px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="padding-bottom: 12px; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">Fecha:</td>
+            <td align="right" style="padding-bottom: 12px; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${dateStr} (CET)</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">IP:</td>
+            <td align="right" style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${reqIp}</td>
+          </tr>
+          <tr>
+            <td style="padding-top: 12px; color: #8b8b99; font-size: 15px; font-weight: 500;">Dispositivo:</td>
+            <td align="right" style="padding-top: 12px; color: #e4e4e7; font-size: 15px; font-weight: 600;">${userAgent.substring(0, 40)}...</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <p style="font-size: 14px; line-height: 1.7; color: #71717a; margin: 0;">Si has sido tú, puedes ignorar este mensaje. Si no reconoces esta actividad, por favor cambia tu contraseña inmediatamente.</p>
   `;
 
   try {
@@ -159,18 +178,23 @@ exports.sendPaymentSuccessEmail = async (user, plan) => {
   const subject = `Suscripción a ${planName} confirmada`;
   const preheader = '¡Gracias por mejorar a Premium!';
   const content = `
-    <h2>¡Gracias por tu compra!</h2>
-    <p>Hola <strong>${user.name}</strong>,</p>
-    <p>Tu cuenta ha sido actualizada con éxito al plan <strong>${planName}</strong>. Ahora tienes acceso a todas las funciones premium de Ventoo, incluyendo:</p>
-    <ul class="features-list">
-      <li>Generación ilimitada de outfits</li>
-      <li>Visión por IA (subir fotos de tu ropa)</li>
-      <li>Chatbot de estilo avanzado sin límites</li>
-      <li>Experiencia 100% libre de anuncios</li>
-    </ul>
-    <p>Disfruta de la experiencia definitiva de estilismo inteligente.</p>
-    <div class="btn-container">
-      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">Explorar funciones Premium</a>
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">¡Gracias por tu compra!</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hola <strong style="color: #f4f4f5; font-weight: 600;">${user.name}</strong>,</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Tu cuenta ha sido actualizada con éxito al plan <strong style="color: #f4f4f5; font-weight: 600;">${planName}</strong>. Ahora tienes acceso a todas las funciones premium de Ventoo, incluyendo:</p>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+      <tr><td style="background-color: #121218; border: 1px solid #1f1f2e; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; color: #d1d5db; font-size: 15px;">✨ Generación ilimitada de outfits</td></tr>
+      <tr><td style="padding: 4px;"></td></tr>
+      <tr><td style="background-color: #121218; border: 1px solid #1f1f2e; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; color: #d1d5db; font-size: 15px;">✨ Visión por IA (subir fotos de tu ropa)</td></tr>
+      <tr><td style="padding: 4px;"></td></tr>
+      <tr><td style="background-color: #121218; border: 1px solid #1f1f2e; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; color: #d1d5db; font-size: 15px;">✨ Chatbot de estilo avanzado sin límites</td></tr>
+      <tr><td style="padding: 4px;"></td></tr>
+      <tr><td style="background-color: #121218; border: 1px solid #1f1f2e; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; color: #d1d5db; font-size: 15px;">✨ Experiencia 100% libre de anuncios</td></tr>
+    </table>
+    
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Disfruta de la experiencia definitiva de estilismo inteligente.</p>
+    <div style="text-align: center; margin: 35px 0 10px;">
+      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" style="display: inline-block; padding: 16px 36px; background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 14px;">Explorar funciones Premium</a>
     </div>
   `;
 
@@ -191,37 +215,35 @@ exports.sendPaymentSuccessEmail = async (user, plan) => {
 exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason) => {
   if (!process.env.SMTP_HOST || !isBanned) return;
 
-  const subject = `Aviso importante sobre tu cuenta de Ventoo`;
+  const subject = \`Aviso importante sobre tu cuenta de Ventoo\`;
   const preheader = 'Tu cuenta ha sido suspendida.';
   
   let durationText = 'de forma permanente';
   if (bannedUntil) {
     const date = new Date(bannedUntil);
-    durationText = `hasta el ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })} a las ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    durationText = \`hasta el \${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })} a las \${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}\`;
   }
 
-  const reasonText = banReason ? `<p><strong>Motivo de la suspensión:</strong> ${banReason}</p>` : '';
+  const reasonText = banReason ? \`<p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;"><strong style="color: #f4f4f5; font-weight: 600;">Motivo de la suspensión:</strong> \${banReason}</p>\` : '';
 
-  const content = `
-    <h2 style="text-align: center;">Aviso de Suspensión de Cuenta</h2>
-    <p>Hola <strong>${user.name || 'Usuario'}</strong>,</p>
-    <p>Te escribimos para informarte de que tu cuenta de Ventoo ha sido suspendida <strong>${durationText}</strong> por infringir nuestros términos de servicio.</p>
+  const content = \`
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Aviso de Suspensión de Cuenta</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Hola <strong style="color: #f4f4f5; font-weight: 600;">\${user.name || 'Usuario'}</strong>,</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Te escribimos para informarte de que tu cuenta de Ventoo ha sido suspendida <strong style="color: #f4f4f5; font-weight: 600;">\${durationText}</strong> por infringir nuestros términos de servicio.</p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <div style="display: inline-block; background: rgba(239, 68, 68, 0.1); padding: 24px; border-radius: 50%; border: 1px solid rgba(239, 68, 68, 0.2);">
-        <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
+      <div style="display: inline-block; background-color: rgba(239, 68, 68, 0.1); padding: 24px; border-radius: 50%; border: 1px solid rgba(239, 68, 68, 0.2);">
+        <img src="https://img.icons8.com/ios-filled/50/ef4444/cancel.png" alt="Ban" width="48" height="48" style="display: block;">
       </div>
     </div>
     
-    ${reasonText}
-    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 8px; margin: 20px 0;">
-      <p style="color: #fca5a5; margin: 0; font-size: 14px;">Durante este tiempo, no podrás acceder a la plataforma ni utilizar los servicios de inteligencia artificial.</p>
+    \${reasonText}
+    
+    <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <p style="color: #fca5a5; margin: 0; font-size: 14px; line-height: 1.5;">Durante este tiempo, no podrás acceder a la plataforma ni utilizar los servicios de inteligencia artificial.</p>
     </div>
-    <p>Si crees que esto ha sido un error, por favor, contacta con nuestro equipo de soporte.</p>
-  `;
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Si crees que esto ha sido un error, por favor, contacta con nuestro equipo de soporte.</p>
+  \`;
 
   try {
     const transporter = createTransporter();
@@ -231,7 +253,7 @@ exports.sendBanNotificationEmail = async (user, isBanned, bannedUntil, banReason
       subject,
       html: baseTemplate('Cuenta Suspendida', content, preheader)
     });
-    console.log(`Ban notification email sent to ${user.email}`);
+    console.log(\`Ban notification email sent to \${user.email}\`);
   } catch (err) {
     console.error('Error sending ban notification email:', err);
   }
@@ -246,27 +268,33 @@ exports.sendNewTicketEmail = async (user, ticket) => {
   const subject = `Nuevo ticket de soporte de ${user.name || 'Usuario'}`;
   const preheader = `Problema reportado: ${ticket.asunto}`;
   const content = `
-    <h2>Nuevo Ticket de Soporte</h2>
-    <div class="data-box">
-      <div class="data-row">
-        <span class="data-label">Usuario:</span>
-        <span class="data-value">${user.name} (${user.email})</span>
-      </div>
-      <div class="data-row">
-        <span class="data-label">ID Usuario:</span>
-        <span class="data-value">${user.id}</span>
-      </div>
-      <div class="data-row">
-        <span class="data-label">Asunto:</span>
-        <span class="data-value">${ticket.asunto}</span>
-      </div>
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Nuevo Ticket de Soporte</h2>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #121218; border: 1px solid #1f1f2e; border-radius: 16px; margin: 24px 0;">
+      <tr><td style="padding: 24px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="padding-bottom: 12px; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">Usuario:</td>
+            <td align="right" style="padding-bottom: 12px; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${user.name} (${user.email})</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">ID Usuario:</td>
+            <td align="right" style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${user.id}</td>
+          </tr>
+          <tr>
+            <td style="padding-top: 12px; color: #8b8b99; font-size: 15px; font-weight: 500;">Asunto:</td>
+            <td align="right" style="padding-top: 12px; color: #e4e4e7; font-size: 15px; font-weight: 600;">${ticket.asunto}</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <h2 style="font-size: 18px; font-weight: 700; color: #ffffff; margin: 20px 0 10px 0; letter-spacing: -0.5px;">Mensaje:</h2>
+    <div style="background-color: #121218; border: 1px solid #1f1f2e; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+      <p style="margin: 0; white-space: pre-wrap; font-size: 15px; color: #d1d5db; line-height: 1.6;">${ticket.mensaje}</p>
     </div>
-    <h2>Mensaje:</h2>
-    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-      <p style="margin: 0; white-space: pre-wrap;">${ticket.mensaje}</p>
-    </div>
-    <div class="btn-container">
-      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/admin" class="btn">Abrir Panel de Admin</a>
+    <div style="text-align: center; margin: 35px 0 10px;">
+      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/admin" style="display: inline-block; padding: 16px 36px; background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 14px;">Abrir Panel de Admin</a>
     </div>
   `;
 
@@ -283,13 +311,10 @@ exports.sendNewTicketEmail = async (user, ticket) => {
     console.error('Error sending new ticket email:', err);
   }
 };
-/**
- * Send a morning alert email with today's weather and outfit tip.
- */
+
 exports.sendMorningAlertEmail = async (user, cityName, current, tempMax, tempMin) => {
   if (!process.env.SMTP_HOST) return;
 
-  const hour = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   const subject = `☀️ Buenos días${user.name ? `, ${user.name}` : ''} — Tu resumen del clima en ${cityName}`;
   const preheader = `Hoy en ${cityName}: ${Math.round(current.temperature_2m)}°C. ¡Vístete con estilo!`;
 
@@ -305,30 +330,46 @@ exports.sendMorningAlertEmail = async (user, cityName, current, tempMax, tempMin
   else clothingTip = 'Día frío. Abrígate bien, jersey grueso y abrigo son imprescindibles. 🧣';
 
   const content = `
-    <h2>Buenos días${user.name ? `, ${user.name}` : ''} 👋</h2>
-    <p>Aquí tienes tu resumen meteorológico matutino para <strong>${cityName}</strong>.</p>
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Buenos días${user.name ? `, ${user.name}` : ''} 👋</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0; text-align: center;">Aquí tienes tu resumen meteorológico matutino para <strong style="color: #f4f4f5; font-weight: 600;">${cityName}</strong>.</p>
     
-    <div style="text-align: center; margin: 30px 0; padding: 30px; background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(147,51,234,0.15)); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+    <div style="text-align: center; margin: 30px 0; padding: 30px; background-color: #1a1528; border-radius: 20px; border: 1px solid #2d2446;">
       <div style="font-size: 56px; margin-bottom: 8px;">${emoji}</div>
       <div style="font-size: 52px; font-weight: 900; color: ${tempColor}; margin-bottom: 4px;">${Math.round(current.temperature_2m)}°C</div>
       <div style="color: #9ca3af; font-size: 14px;">Sensación: ${Math.round(current.apparent_temperature)}°C</div>
     </div>
 
-    <div class="data-box">
-      <div class="data-row"><span class="data-label">🌡️ Máxima hoy</span><span class="data-value">${Math.round(tempMax)}°C</span></div>
-      <div class="data-row"><span class="data-label">🌙 Mínima hoy</span><span class="data-value">${Math.round(tempMin)}°C</span></div>
-      <div class="data-row"><span class="data-label">💧 Humedad</span><span class="data-value">${current.relative_humidity_2m || '—'}%</span></div>
-      <div class="data-row"><span class="data-label">💨 Viento</span><span class="data-value">${Math.round(current.wind_speed_10m || 0)} km/h</span></div>
-    </div>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #121218; border: 1px solid #1f1f2e; border-radius: 16px; margin: 24px 0;">
+      <tr><td style="padding: 24px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="padding-bottom: 12px; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">🌡️ Máxima hoy</td>
+            <td align="right" style="padding-bottom: 12px; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${Math.round(tempMax)}°C</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">🌙 Mínima hoy</td>
+            <td align="right" style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${Math.round(tempMin)}°C</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #8b8b99; font-size: 15px; font-weight: 500;">💧 Humedad</td>
+            <td align="right" style="padding: 12px 0; border-bottom: 1px dashed #1f1f2e; color: #e4e4e7; font-size: 15px; font-weight: 600;">${current.relative_humidity_2m || '—'}%</td>
+          </tr>
+          <tr>
+            <td style="padding-top: 12px; color: #8b8b99; font-size: 15px; font-weight: 500;">💨 Viento</td>
+            <td align="right" style="padding-top: 12px; color: #e4e4e7; font-size: 15px; font-weight: 600;">${Math.round(current.wind_speed_10m || 0)} km/h</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
 
-    <h2>🎽 Consejo de Vestuario</h2>
-    <p style="font-size: 16px; color: #e5e7eb;">${clothingTip}</p>
+    <h2 style="font-size: 20px; font-weight: 700; color: #ffffff; margin: 24px 0 16px 0; letter-spacing: -0.5px; text-align: center;">🎽 Consejo de Vestuario</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #e5e7eb; margin: 0 0 24px 0; text-align: center;">${clothingTip}</p>
     
-    <div class="btn-container">
-      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" class="btn">✨ Generar Outfit Completo</a>
+    <div style="text-align: center; margin: 35px 0 10px;">
+      <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" style="display: inline-block; padding: 16px 36px; background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 14px;">✨ Generar Outfit Completo</a>
     </div>
-    <p style="font-size: 12px; color: #4b5563; text-align: center; margin-top: 20px;">
-      Para dejar de recibir estas alertas, desactívalas en tus <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" style="color: #6366f1;">ajustes de perfil</a>.
+    <p style="font-size: 12px; color: #52525b; text-align: center; margin-top: 20px;">
+      Para dejar de recibir estas alertas, desactívalas en tus <a href="${process.env.FRONTEND_URL || 'https://ventoo.app'}/app" style="color: #818cf8; text-decoration: none;">ajustes de perfil</a>.
     </p>
   `;
 
@@ -351,10 +392,10 @@ exports.sendAccountDeletedEmail = async (user) => {
   const preheader = 'Confirmación de eliminación de cuenta';
   
   const content = `
-    <h2>Hola${user.name ? ' ' + user.name : ''},</h2>
-    <p>Te confirmamos que tu cuenta de Ventoo ha sido eliminada correctamente, junto con todos tus datos, consultas, outfits y preferencias, tal y como solicitaste.</p>
-    <p>Si cambias de opinión en el futuro, siempre serás bienvenido/a para crear una nueva cuenta.</p>
-    <p>¡Gracias por haber probado Ventoo!</p>
+    <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 20px 0; letter-spacing: -0.5px; text-align: center;">Hola${user.name ? ' ' + user.name : ''},</h2>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Te confirmamos que tu cuenta de Ventoo ha sido eliminada correctamente, junto con todos tus datos, consultas, outfits y preferencias, tal y como solicitaste.</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0;">Si cambias de opinión en el futuro, siempre serás bienvenido/a para crear una nueva cuenta.</p>
+    <p style="font-size: 16px; line-height: 1.7; color: #a1a1aa; margin: 0 0 24px 0; text-align: center; font-weight: 600; color: #f4f4f5;">¡Gracias por haber probado Ventoo!</p>
   `;
 
   try {
