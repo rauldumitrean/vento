@@ -9,8 +9,8 @@ import OutfitCalendar from './OutfitCalendar';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const ArmarioHistorial = ({ token, darkMode }) => {
-  const [activeTab, setActiveTab] = useState('armario');
+const ArmarioHistorial = ({ token, darkMode, initialTab = 'armario', hideTabs = false }) => {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [historialFilter, setHistorialFilter] = useState('mis_generaciones');
   const [armario, setArmario] = useState([]);
   const [historial, setHistorial] = useState([]);
@@ -187,6 +187,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className={`w-full max-w-4xl mx-auto rounded-xl shadow-sm p-6 ${darkMode ? 'bg-gray-900 text-white border-gray-800 border' : 'bg-white'}`}
     >
+      {!hideTabs && (
       <div className="flex bg-black/10 dark:bg-black/20 backdrop-blur-md p-1.5 rounded-2xl mb-8 max-w-sm mx-auto border border-white/5">
         <button 
           onClick={() => setActiveTab('armario')}
@@ -207,6 +208,7 @@ const ArmarioHistorial = ({ token, darkMode }) => {
           <CalendarIcon size={16} /> Calendario
         </button>
       </div>
+      )}
 
       {loading ? (
         activeTab === 'armario' ? (

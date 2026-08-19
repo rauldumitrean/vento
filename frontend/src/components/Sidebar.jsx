@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Cloud, Search, Activity, User, LogOut, Star, MessageSquare, Archive, Settings, LayoutDashboard, Menu } from 'lucide-react';
+import { Cloud, Search, Activity, User, LogOut, Star, MessageSquare, Archive, Settings, LayoutDashboard, Menu, Clock, Calendar } from 'lucide-react';
 import Cookies from 'js-cookie';
 import NotificationBell from './NotificationBell';
 
@@ -70,7 +70,9 @@ const Sidebar = ({ view, setView, handleLogout, userName, isPremium, userPoints,
           {!isCollapsed && <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-2">Features</p>}
           <SidebarItem isCollapsed={isCollapsed} icon={LayoutDashboard} label="Dashboard" isActive={view === 'dashboard'} onClick={() => setView('dashboard')} />
           <SidebarItem isCollapsed={isCollapsed} icon={Cloud} label="Asistente de Maleta" isActive={view === 'packing'} onClick={() => setView('packing')} />
-          <SidebarItem isCollapsed={isCollapsed} icon={Archive} label="Armario & Calendario" isActive={view === 'armario'} onClick={() => setView('armario')} />
+          <SidebarItem isCollapsed={isCollapsed} icon={Archive} label="Mi Armario" isActive={view === 'armario'} onClick={() => setView('armario')} />
+          <SidebarItem isCollapsed={isCollapsed} icon={Clock} label="Historial" isActive={view === 'historial'} onClick={() => setView('historial')} />
+          <SidebarItem isCollapsed={isCollapsed} icon={Calendar} label="Calendario" isActive={view === 'calendario'} onClick={() => setView('calendario')} />
           <SidebarItem isCollapsed={isCollapsed} icon={Star} label="Ciudades Favoritas" isActive={view === 'favorites'} onClick={() => setView('favorites')} />
           <SidebarItem isCollapsed={isCollapsed} icon={Activity} label="Feed Comunidad" isActive={view === 'community'} onClick={() => setView('community')} />
           <SidebarItem isCollapsed={isCollapsed} icon={MessageSquare} label="Mix & Match Studio" isActive={view === 'studio'} onClick={() => setView('studio')} />

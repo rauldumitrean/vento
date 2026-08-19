@@ -1303,7 +1303,11 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           <div className={`flex-1 min-w-0 overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0 bg-[#0A0A0B]/60 ${view === 'dashboard' && !weather && !loading ? 'overflow-hidden' : 'overflow-y-auto'}`}>
             <main className="flex-1 p-4 sm:p-6 lg:p-10 flex flex-col w-full max-w-6xl mx-auto min-h-full overflow-x-hidden">
               {view === 'armario' ? (
-                <ArmarioHistorial token={token} darkMode={true} />
+                <ArmarioHistorial token={token} darkMode={true} initialTab="armario" hideTabs={true} />
+              ) : view === 'historial' ? (
+                <ArmarioHistorial token={token} darkMode={true} initialTab="historial" hideTabs={true} />
+              ) : view === 'calendario' ? (
+                <ArmarioHistorial token={token} darkMode={true} initialTab="calendario" hideTabs={true} />
               ) : view === 'admin' && Cookies.get('userRole') === 'ADMIN' ? (
                 <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div></div>}><AdminView token={token} darkMode={true} /></Suspense>
               ) : view === 'profile' ? (
@@ -1647,7 +1651,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
           <button
             onClick={() => setView('armario')}
             className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'armario' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
+              ['armario', 'historial', 'calendario'].includes(view) ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             <Archive size={19} />
