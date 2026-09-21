@@ -1683,122 +1683,129 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl flex flex-col hide-scrollbar ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'}`}
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.6)] flex flex-col hide-scrollbar bg-[#0f0f13] border border-white/10 text-white"
             >
+              <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full filter blur-[80px] -z-10 pointer-events-none" />
+              
               {/* Header */}
-              <div className={`sticky top-0 z-10 flex items-center justify-between p-6 border-b ${darkMode ? 'bg-gray-900/90 border-gray-700 backdrop-blur-md' : 'bg-white/90 border-gray-100 backdrop-blur-md'}`}>
-                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Detalles del Tiempo - {weather.location}</h2>
-                <button onClick={() => setShowWeatherModal(false)} className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+              <div className="sticky top-0 z-20 flex items-center justify-between p-6 border-b bg-[#0f0f13]/80 border-white/10 backdrop-blur-xl">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <span className="p-2 bg-indigo-500/20 rounded-xl">
+                    <CloudRain size={20} className="text-indigo-400" />
+                  </span>
+                  Detalles del Tiempo - {weather.location}
+                </h2>
+                <button onClick={() => setShowWeatherModal(false)} className="p-2.5 rounded-full transition-colors hover:bg-white/10 text-gray-400 hover:text-white">
                   <X size={20} />
                 </button>
               </div>
               
               {/* Content */}
-              <div className="p-6 space-y-8">
+              <div className="p-6 sm:p-8 space-y-10 z-10">
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Thermometer size={16} className={darkMode ? 'text-indigo-400' : 'text-indigo-500'} />
-                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Temperatura</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-indigo-500/20 rounded-lg">
+                        <Thermometer size={16} className="text-indigo-400" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Temperatura</span>
                     </div>
-                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.temperature_2m}°C</span>
+                    <span className="text-3xl font-light text-white">{weather.current.temperature_2m}°C</span>
                   </div>
-                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Thermometer size={16} className={darkMode ? 'text-orange-400' : 'text-orange-500'} />
-                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sensación</span>
+                  
+                  <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-rose-500/20 rounded-lg">
+                        <Thermometer size={16} className="text-rose-400" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Sensación</span>
                     </div>
-                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.apparent_temperature}°C</span>
+                    <span className="text-3xl font-light text-white">{weather.current.apparent_temperature}°C</span>
                   </div>
-                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Droplets size={16} className={darkMode ? 'text-blue-400' : 'text-blue-500'} />
-                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Humedad</span>
+                  
+                  <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-blue-500/20 rounded-lg">
+                        <Droplets size={16} className="text-blue-400" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Humedad</span>
                     </div>
-                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.relative_humidity_2m}%</span>
+                    <span className="text-3xl font-light text-white">{weather.current.relative_humidity_2m}%</span>
                   </div>
-                  <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Wind size={16} className={darkMode ? 'text-teal-400' : 'text-teal-500'} />
-                      <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Viento</span>
+                  
+                  <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-teal-500/20 rounded-lg">
+                        <Wind size={16} className="text-teal-400" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Viento</span>
                     </div>
-                    <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.wind_speed_10m} km/h</span>
+                    <span className="text-3xl font-light text-white">{weather.current.wind_speed_10m} km/h</span>
                   </div>
                   
                   {weather.current.uv_index !== undefined && (
-                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sun size={16} className={darkMode ? 'text-yellow-400' : 'text-yellow-500'} />
-                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Índice UV</span>
+                    <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-yellow-500/20 rounded-lg">
+                          <Sun size={16} className="text-yellow-400" />
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Índice UV</span>
                       </div>
-                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.uv_index}</span>
+                      <span className="text-3xl font-light text-white">{weather.current.uv_index}</span>
                     </div>
                   )}
                   {weather.current.precipitation !== undefined && (
-                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <CloudRain size={16} className={darkMode ? 'text-blue-400' : 'text-blue-500'} />
-                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Precipitación</span>
+                    <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-blue-500/20 rounded-lg">
+                          <CloudRain size={16} className="text-blue-400" />
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Lluvia</span>
                       </div>
-                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.precipitation} mm</span>
+                      <span className="text-3xl font-light text-white">{weather.current.precipitation} mm</span>
                     </div>
                   )}
                   {weather.current.cloud_cover !== undefined && (
-                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Cloud size={16} className={darkMode ? 'text-gray-400' : 'text-gray-400'} />
-                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nubes</span>
+                    <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-gray-500/20 rounded-lg">
+                          <Cloud size={16} className="text-gray-400" />
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Nubes</span>
                       </div>
-                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.cloud_cover}%</span>
+                      <span className="text-3xl font-light text-white">{weather.current.cloud_cover}%</span>
                     </div>
                   )}
                   {weather.current.surface_pressure !== undefined && (
-                    <div className={`p-4 rounded-2xl flex flex-col justify-between ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Gauge size={16} className={darkMode ? 'text-purple-400' : 'text-purple-500'} />
-                        <span className={`text-xs uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Presión</span>
+                    <div className="p-5 rounded-2xl flex flex-col justify-between bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-purple-500/20 rounded-lg">
+                          <Gauge size={16} className="text-purple-400" />
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Presión</span>
                       </div>
-                      <span className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.current.surface_pressure} hPa</span>
+                      <span className="text-3xl font-light text-white">{weather.current.surface_pressure} hPa</span>
                     </div>
                   )}
                 </div>
 
-                {weather.latitude && weather.longitude && (
-                  <div className={`mt-8 p-1 rounded-2xl overflow-hidden shadow-inner ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                    <div className="p-4">
-                      <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        <MapPin size={16} className="text-indigo-500"/> Ubicación Interactiva
-                      </h3>
-                    </div>
-                    <div className="w-full h-80 rounded-b-xl overflow-hidden border-t border-gray-200 dark:border-gray-700">
-                      <iframe 
-                        width="100%" 
-                        height="100%" 
-                        frameBorder="0" 
-                        scrolling="no" 
-                        marginHeight="0" 
-                        marginWidth="0" 
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${weather.longitude-0.1}%2C${weather.latitude-0.1}%2C${weather.longitude+0.1}%2C${weather.latitude+0.1}&layer=mapnik&marker=${weather.latitude}%2C${weather.longitude}`}
-                      ></iframe>
-                    </div>
-                  </div>
-                )}
-
                 {/* 24-Hour Forecast */}
                 {weather.hourly && (
                   <div>
-                    <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Previsión 24 Horas</h3>
+                    <h3 className="text-sm font-bold mb-4 uppercase tracking-widest text-indigo-400 flex items-center gap-2">
+                      Previsión 24 Horas
+                    </h3>
                     <div className="flex overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar">
                       {weather.hourly.time.slice(0, 24).map((timeStr, idx) => {
                         const date = new Date(timeStr);
                         const hours = date.getHours().toString().padStart(2, '0') + ':00';
                         return (
-                          <div key={idx} className={`flex flex-col items-center justify-center min-w-[80px] p-3 rounded-2xl shrink-0 snap-center ${darkMode ? 'bg-gray-800' : 'bg-indigo-50/50'}`}>
-                            <span className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{hours}</span>
-                            <span className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{weather.hourly.temperature_2m[idx] ?? '--'}°</span>
+                          <div key={idx} className="flex flex-col items-center justify-center min-w-[80px] p-4 rounded-2xl shrink-0 snap-center bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                            <span className="text-xs mb-2 font-semibold text-gray-400">{hours}</span>
+                            <span className="text-xl font-bold mb-1 text-white">{weather.hourly.temperature_2m[idx] ?? '--'}°</span>
                             {weather.hourly.precipitation_probability && (
-                              <span className="text-[10px] text-blue-500 font-medium flex items-center justify-center gap-0.5 mt-1">
+                              <span className="text-[10px] text-blue-400 font-medium flex items-center justify-center gap-1 mt-1 bg-blue-500/10 px-2 py-0.5 rounded-full">
                                 {weather.hourly.precipitation_probability[idx]}% <Droplets size={10} className="opacity-80" />
                               </span>
                             )}
@@ -1811,8 +1818,10 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
 
                 {/* Map Embed */}
                 <div>
-                  <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Mapa de la Zona</h3>
-                  <div className={`w-full h-[400px] rounded-2xl overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <h3 className="text-sm font-bold mb-4 uppercase tracking-widest text-indigo-400 flex items-center gap-2">
+                    <MapPin size={16} /> Mapa de la Zona
+                  </h3>
+                  <div className="w-full h-[400px] rounded-3xl overflow-hidden border border-white/10 shadow-inner shadow-black/50 relative bg-gray-900">
                     <iframe
                       title="Weather Map"
                       width="100%"
@@ -1821,12 +1830,12 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                       scrolling="no"
                       marginHeight="0"
                       marginWidth="0"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(weather.lon)-0.05},${parseFloat(weather.lat)-0.05},${parseFloat(weather.lon)+0.05},${parseFloat(weather.lat)+0.05}&layer=mapnik&marker=${weather.lat},${weather.lon}`}
-                      style={{ border: 0 }}
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=` + (parseFloat(weather.lon)-0.05) + `,` + (parseFloat(weather.lat)-0.05) + `,` + (parseFloat(weather.lon)+0.05) + `,` + (parseFloat(weather.lat)+0.05) + `&layer=mapnik&marker=` + weather.lat + `,` + weather.lon}
+                      style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(90%) opacity(0.85)' }}
                     ></iframe>
                   </div>
-                  <div className="mt-2 text-right">
-                     <a href={`https://www.openstreetmap.org/?mlat=${weather.lat}&mlon=${weather.lon}#map=13/${weather.lat}/${weather.lon}`} target="_blank" rel="noopener noreferrer" className={`text-xs hover:underline ${darkMode ? 'text-indigo-400' : 'text-indigo-500'}`}>Ver mapa más grande</a>
+                  <div className="mt-3 text-right">
+                     <a href={`https://www.openstreetmap.org/?mlat=${weather.lat}&mlon=${weather.lon}#map=13/${weather.lat}/${weather.lon}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold hover:underline text-indigo-400 hover:text-indigo-300 transition-colors">Ver mapa más grande</a>
                   </div>
                 </div>
 
