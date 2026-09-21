@@ -1417,12 +1417,12 @@ Genera una lista de maleta PERFECTAMENTE OPTIMIZADA (ni demasiado ni muy poco). 
 });
 const fs = require('fs');
 
-const getLevelFromPoints = (points) => {
-  if (points >= 1000) return "Icono de Moda";
-  if (points >= 500) return "Creador de Tendencias";
-  if (points >= 100) return "Aficionado";
-  return "Novato";
-};
+function getLevelFromPoints(points) {
+    if (points >= 1000) return "Icono de Moda";
+    if (points >= 500) return "Creador de Tendencias";
+    if (points >= 100) return "Aficionado";
+    return "Novato";
+}
 
 // ── RUTA 0: Configuración inicial ─────────────────────────────────────────────────
 // GET /api/community — paginated public outfits feed
