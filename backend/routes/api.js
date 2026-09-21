@@ -462,12 +462,35 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
   "infraccion": null
 }`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    let textResult = result.response.text();
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
+    });
     
-    if(textResult.includes('\`\`\`json')) {
-        textResult = textResult.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+    let result;
+    try {
+      result = await model.generateContent(prompt);
+    } catch (err) {
+      console.error("Gemini Error:", err);
+      return res.status(500).json({ errorCode: '0x101A-GEMINI', error: 'Error del modelo de IA: ' + (err.message || String(err)) });
+    }
+
+    let textResult;
+    try {
+      textResult = result.response.text();
+    } catch (err) {
+      return res.status(500).json({ errorCode: '0x101A-TEXT', error: 'Error extrayendo texto de IA: ' + (err.message || String(err)) });
+    }
+    
+    if(textResult.includes('```json')) {
+        textResult = textResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+    } else if (textResult.includes('```')) {
+        textResult = textResult.replace(/```/g, '').trim();
     }
     
     let recomendacionJSON;
@@ -475,7 +498,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       recomendacionJSON = JSON.parse(textResult);
     } catch(e) {
       console.error("Error parseando JSON de Gemini:", textResult);
-      return res.status(500).json({ errorCode: '0x1018', error: 'Error procesando respuesta de IA' });
+      return res.status(500).json({ errorCode: '0x1018', error: 'Error parseando JSON de IA' });
     }
 
     // --- HYDRATE ARMARIO IMAGES ---
@@ -513,30 +536,41 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
       });
     }
 
-    const consulta = await prisma.consulta.create({
-      data: {
-        userId: req.user.id,
-        ubicacion: ubicacion,
-        clima_json: JSON.stringify(clima),
-        recomendacion_json: JSON.stringify(recomendacionJSON)
-      }
-    });
-
-    const userWithPoints = await prisma.user.update({
-      where: { id: req.user.id },
-      data: { points: { increment: 10 } }
-    });
-    if (getLevelFromPoints(userWithPoints.points) !== userWithPoints.level) {
-      await prisma.user.update({
-        where: { id: req.user.id },
-        data: { level: getLevelFromPoints(userWithPoints.points) }
+    let consulta;
+    try {
+      consulta = await prisma.consulta.create({
+        data: {
+          userId: req.user.id,
+          ubicacion: ubicacion,
+          clima_json: JSON.stringify(clima),
+          recomendacion_json: JSON.stringify(recomendacionJSON)
+        }
       });
+    } catch (err) {
+      console.error("Prisma Create Error:", err);
+      return res.status(500).json({ errorCode: '0x101A-DB1', error: 'Error guardando consulta: ' + (err.message || String(err)) });
+    }
+
+    try {
+      const userWithPoints = await prisma.user.update({
+        where: { id: req.user.id },
+        data: { points: { increment: 10 } }
+      });
+      if (getLevelFromPoints(userWithPoints.points) !== userWithPoints.level) {
+        await prisma.user.update({
+          where: { id: req.user.id },
+          data: { level: getLevelFromPoints(userWithPoints.points) }
+        });
+      }
+    } catch (err) {
+      console.error("Prisma Update Points Error:", err);
+      // We don't fail the request if points fail, just log it.
     }
 
     res.json({ consultaId: consulta.id, recomendacion: recomendacionJSON });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ errorCode: '0x101A', error: 'Error al generar la recomendación' });
+    console.error("Global Recomendacion Error:", error);
+    res.status(500).json({ errorCode: '0x101A-GLOBAL', error: 'Error global: ' + (error.message || String(error)) });
   } finally {
     // Release in-memory lock
     activeRequests.delete(req.user.id);
