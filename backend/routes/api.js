@@ -55,6 +55,8 @@ const genAI = new GoogleGenerativeAI(geminiKey);
 // In-memory lock to prevent duplicate concurrent requests per user
 // NOTE: This only works within the same serverless instance — acceptable for basic protection
 const activeRequests = new Map();
+const weatherCache = new Map();
+const weatherCacheKeys = [];
 
 // Admin Middleware
 const adminMiddleware = async (req, res, next) => {
@@ -460,7 +462,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
   "infraccion": null
 }`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     let textResult = result.response.text();
     
@@ -597,8 +599,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
     }
 
     const model = genAI.getGenerativeModel({ 
-      // FIX: Use gemini-3.1-flash-lite as it supports vision and is in the user's quota
-      model: "gemini-3.1-flash-lite", // Soporta vision
+      // FIX: Use gemini-1.5-flash as it supports vision and is in the user's quota
+      model: "gemini-1.5-flash", // Soporta vision
       systemInstruction: `Eres un experto asesor de moda personal de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
 ${nameTextChat}
 ${ageTextChat}
@@ -1396,7 +1398,7 @@ Genera una lista de maleta PERFECTAMENTE OPTIMIZADA (ni demasiado ni muy poco). 
   "consejo_maleta": "Un consejo clave de packing pro (ej: método de enrollado para ahorrar espacio)"
 }`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const result = await model.generateContent(packingPrompt);
     let textResult = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
     
