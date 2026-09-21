@@ -62,7 +62,7 @@ router.post('/register', async (req, res) => {
       }
     });
 
-    const token = jwt.sign({ id: user.id, sessionVersion: user.sessionVersion || 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id, sessionVersion: user.sessionVersion || 0 }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras } });
   } catch (error) {
     console.error(error);
@@ -128,7 +128,7 @@ router.post('/login', async (req, res) => {
       where: { id: user.id },
       data: { sessionVersion: { increment: 1 } }
     });
-    const token = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '30d' });
     
     // Send async login alert (must await in Vercel serverless)
     const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -215,7 +215,7 @@ router.post('/google', async (req, res) => {
       where: { id: user.id },
       data: { sessionVersion: { increment: 1 } }
     });
-    const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '30d' });
     const reqIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
@@ -267,7 +267,7 @@ router.post('/apple', async (req, res) => {
       where: { id: user.id },
       data: { sessionVersion: { increment: 1 } }
     });
-    const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '30d' });
     // Never return raw Prisma object — whitelist safe fields only
     res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {

@@ -362,9 +362,18 @@ export default function ProfileSettings({ token, darkMode, onLogout, onBack }) {
                 </select>
               </div>
               <div>
-                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Detalles Específicos (Opcional)</label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Detalles Específicos (Opcional)</label>
+                  <span className={`text-xs font-medium ${estiloDetalles.length >= 300 ? 'text-red-500' : darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    {estiloDetalles.length}/300
+                  </span>
+                </div>
                 <textarea 
-                  value={estiloDetalles} onChange={e => setEstiloDetalles(e.target.value)} 
+                  value={estiloDetalles} 
+                  onChange={e => {
+                    if (e.target.value.length <= 300) setEstiloDetalles(e.target.value);
+                  }} 
+                  maxLength={300}
                   placeholder="Ej: Prefiero ropa ancha, estilo oversize, colores pastel..." rows={3} 
                   className={`w-full rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium ${darkMode ? 'bg-black/20 border-white/5 text-white focus:bg-black/40 placeholder-gray-600' : 'bg-gray-50/50 border-gray-200 text-gray-900 focus:bg-white placeholder-gray-400'} border resize-none`}
                 />

@@ -327,9 +327,15 @@ export default function CommunityView({ token, consultaId, isCurrentOutfitPublic
         </div>
       ) : outfits.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-center">
-          <Globe size={48} className="text-gray-600 mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Sé el primero</h2>
-          <p className="text-gray-400 max-w-sm">Todavía no hay outfits compartidos. ¡Genera uno y compártelo con la comunidad!</p>
+          <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-emerald-500/10">
+            <Globe size={48} className="text-emerald-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Sé el primero</h2>
+          <p className="text-gray-400 max-w-md">Todavía no hay outfits compartidos en la comunidad. ¡Genera uno, compártelo y consigue puntos!</p>
+          <button onClick={openUploadModal} className="mt-6 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+            <Upload size={18} />
+            Compartir un Outfit
+          </button>
         </motion.div>
       ) : (
         <>

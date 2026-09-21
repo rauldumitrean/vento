@@ -12,6 +12,9 @@ import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 const AdminView = ({ token }) => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits' | 'tickets'
   const [users, setUsers] = useState([]);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersTotalPages, setUsersTotalPages] = useState(1);
+  const [usersSearch, setUsersSearch] = useState('');
   const [outfits, setOutfits] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [communityPosts, setCommunityPosts] = useState([]);
@@ -99,13 +102,26 @@ const AdminView = ({ token }) => {
     }
   };
 
+  const fetchUsers = async (page = 1, search = '') => {
+    try {
+      setIsRefreshing(true);
+      const res = await axios.get(`${API_URL}/api/admin/users?page=${page}&limit=50&search=${encodeURIComponent(search)}`, { headers: { Authorization: `Bearer ${token}` } });
+      setUsers(res.data.users || []);
+      setUsersPage(res.data.page || 1);
+      setUsersTotalPages(res.data.pages || 1);
+    } catch (err) {
+      showToast('Error obteniendo usuarios', 'error');
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 300);
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
       const safeGet = (url) => axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).catch(err => ({ data: err.response?.data?.reports ? { reports: [] } : [] }));
       
-      const [usersRes, statsRes, outfitsRes, ticketsRes, chatsRes, reportsRes, communityRes] = await Promise.all([
-        safeGet(`${API_URL}/api/admin/users`),
+      const [statsRes, outfitsRes, ticketsRes, chatsRes, reportsRes, communityRes] = await Promise.all([
         safeGet(`${API_URL}/api/admin/stats`),
         safeGet(`${API_URL}/api/admin/outfits`),
         safeGet(`${API_URL}/api/admin/tickets`),
@@ -113,7 +129,7 @@ const AdminView = ({ token }) => {
         safeGet(`${API_URL}/api/admin/reports`),
         safeGet(`${API_URL}/api/admin/community`)
       ]);
-      setUsers(usersRes.data || []);
+      await fetchUsers(1, '');
       setStats(statsRes.data || {});
       setOutfits(outfitsRes.data || []);
       setTickets(ticketsRes.data || []);
@@ -127,6 +143,18 @@ const AdminView = ({ token }) => {
       setLoading(false);
     }
   };
+
+  // Debounce search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      // Don't refetch on initial mount since fetchData handles it
+      if (users.length > 0 || usersSearch !== '') {
+        fetchUsers(1, usersSearch);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [usersSearch]);
 
   const fetchTickets = async () => {
     try {
@@ -681,9 +709,19 @@ const AdminView = ({ token }) => {
                       <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Gestión de Usuarios</h2>
                       <p className="text-gray-400 text-sm">Administra cuentas, permisos y accesos</p>
                     </div>
-                    <div className="flex w-full sm:w-auto gap-3">
+                    <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+                      <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Buscar por email o nombre..."
+                          value={usersSearch}
+                          onChange={(e) => setUsersSearch(e.target.value)}
+                          className="w-full sm:w-64 pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
                       <button 
-                        onClick={fetchData}
+                        onClick={() => fetchUsers(usersPage, usersSearch)}
                         disabled={isRefreshing}
                         className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
                       >
@@ -908,6 +946,29 @@ const AdminView = ({ token }) => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                  
+                  {/* Paginación */}
+                  <div className="flex items-center justify-between mt-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                    <span className="text-sm text-gray-500">
+                      Página {usersPage} de {usersTotalPages}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        disabled={usersPage === 1}
+                        onClick={() => fetchUsers(usersPage - 1, usersSearch)}
+                        className="px-3 py-1 text-sm border border-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-50"
+                      >
+                        Anterior
+                      </button>
+                      <button
+                        disabled={usersPage >= usersTotalPages}
+                        onClick={() => fetchUsers(usersPage + 1, usersSearch)}
+                        className="px-3 py-1 text-sm border border-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-50"
+                      >
+                        Siguiente
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}

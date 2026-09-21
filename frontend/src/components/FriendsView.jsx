@@ -385,10 +385,21 @@ export default function FriendsView({ token, darkMode, onNavigate }) {
               <h3 className="text-lg font-bold mb-4">Tus Amigos ({friends.length})</h3>
               
               {friends.length === 0 ? (
-                <div className="text-center py-10">
-                  <Users size={48} className={`mx-auto mb-4 ${darkMode ? 'text-gray-700' : 'text-gray-300'}`} />
-                  <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Aún no tienes amigos añadidos.</p>
-                  <button onClick={() => setActiveTab('add')} className="mt-4 text-indigo-500 font-bold hover:underline">¡Añade a alguien!</button>
+                <div className="text-center py-16 flex flex-col items-center justify-center h-full">
+                  <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 ${darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
+                    <Users size={40} className={darkMode ? 'text-indigo-400' : 'text-indigo-500'} />
+                  </div>
+                  <h4 className="text-xl font-bold mb-2">Construye tu círculo</h4>
+                  <p className={`max-w-xs mb-8 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Aún no tienes amigos añadidos. Conecta con otros para compartir outfits y charlar sobre estilo.
+                  </p>
+                  <button 
+                    onClick={() => setActiveTab('add')} 
+                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95"
+                  >
+                    <UserPlus size={18} />
+                    Buscar Amigos
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
