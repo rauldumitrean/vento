@@ -463,7 +463,7 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
 }`;
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.8-flash",
+      model: "gemini-3.1-flash-lite",
       safetySettings: [
         { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
         { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -633,8 +633,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
     }
 
     const model = genAI.getGenerativeModel({ 
-      // FIX: Use gemini-3.8-flash as it supports vision and is in the user's quota
-      model: "gemini-3.8-flash", // Soporta vision
+      // FIX: Use gemini-3.1-flash-lite as it supports vision and is in the user's quota
+      model: "gemini-3.1-flash-lite", // Soporta vision
       systemInstruction: `Eres un experto asesor de moda personal de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
 ${nameTextChat}
 ${ageTextChat}
@@ -1432,7 +1432,7 @@ Genera una lista de maleta PERFECTAMENTE OPTIMIZADA (ni demasiado ni muy poco). 
   "consejo_maleta": "Un consejo clave de packing pro (ej: método de enrollado para ahorrar espacio)"
 }`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
     const result = await model.generateContent(packingPrompt);
     let textResult = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
     
@@ -1983,5 +1983,6 @@ router.delete('/calendar/:id', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
