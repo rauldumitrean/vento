@@ -99,7 +99,7 @@ router.post('/login', async (req, res) => {
     }
     const { email, password } = parseResult.data;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    let user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(400).json({ errorCode: '0x105A', error: 'Credenciales inválidas.' });
 
     if (!user.password) {
@@ -124,10 +124,6 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    if (['raul.dumitrean07@gmail.com', 'asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email.toLowerCase()) && user.role !== 'ADMIN') {
-      user = await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
-    }
-
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { sessionVersion: { increment: 1 } }
@@ -141,8 +137,9 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
+    // C-2 FIX: Never expose stack traces to the client in production
     console.error('Login Error:', error);
-    res.status(500).json({ errorCode: '0x105E', error: 'Error al iniciar sesión.', details: error.message, stack: error.stack });
+    res.status(500).json({ errorCode: '0x105E', error: 'Error al iniciar sesión.' });
   }
 });
 
@@ -154,7 +151,7 @@ router.post('/google', async (req, res) => {
   try {
     const { token, accessToken, gender, age } = req.body;
     
-    // FIX A-9: Validate token presence before calling Google
+    // Validate token presence before calling Google
     if (!token && !accessToken) return res.status(400).json({ errorCode: '0x105F', error: 'Token de Google requerido.' });
     
     let email, providerId, name, picture;
@@ -214,10 +211,6 @@ router.post('/google', async (req, res) => {
       }
     }
 
-    if (['raul.dumitrean07@gmail.com', 'asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email.toLowerCase()) && user.role !== 'ADMIN') {
-      user = await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
-    }
-
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { sessionVersion: { increment: 1 } }
@@ -227,22 +220,23 @@ router.post('/google', async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Dispositivo desconocido';
     await emailService.sendLoginAlertEmail(user, reqIp, userAgent).catch(console.error);
 
-    // FIX A-10: Never return raw Prisma object — whitelist safe fields only
+    // Never return raw Prisma object — whitelist safe fields only
     res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
+    // C-2 FIX: Never expose stack traces to the client in production
     console.error('Google Auth Error:', error);
-    res.status(401).json({ errorCode: '0x1061', error: 'Token de Google inválido o caducado.', details: error.message, stack: error.stack });
+    res.status(401).json({ errorCode: '0x1061', error: 'Token de Google inválido o caducado.' });
   }
 });
 
 router.post('/apple', async (req, res) => {
   try {
     const { token, name: appleName } = req.body;
-    // FIX A-9: Validate token presence
+    // Validate token presence
     if (!token) return res.status(400).json({ errorCode: '0x1062', error: 'Token de Apple requerido.' });
     const { sub: providerId, email } = await appleSignin.verifyIdToken(token, {
       audience: process.env.APPLE_CLIENT_ID,
-      // FIX C-9: REMOVED ignoreExpiration:true — accepting expired Apple tokens is a security vulnerability
+      // REMOVED ignoreExpiration:true — accepting expired Apple tokens is a security vulnerability
     });
 
     let user;
@@ -269,24 +263,18 @@ router.post('/apple', async (req, res) => {
       }
     }
 
-    if (['raul.dumitrean07@gmail.com', 'asdasdpasmdas@gmail.com', 'admin@ventoo.app'].includes(user.email?.toLowerCase()) && user.role !== 'ADMIN') {
-      user = await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
-    }
-
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { sessionVersion: { increment: 1 } }
     });
     const jwtToken = jwt.sign({ id: user.id, sessionVersion: updatedUser.sessionVersion }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    // FIX A-10: Never return raw Prisma object — whitelist safe fields only
+    // Never return raw Prisma object — whitelist safe fields only
     res.json({ token: jwtToken, user: { id: user.id, email: user.email, role: user.role, isPremium: user.isPremium, premiumPlan: user.premiumPlan, name: user.name, gender: user.gender, age: user.age, estiloPersonal: user.estiloPersonal, estiloDetalles: user.estiloDetalles, profilePicture: user.profilePicture, usaGorras: user.usaGorras, morningAlerts: user.morningAlerts, alertHour: user.alertHour, alertCityName: user.alertCityName } });
   } catch (error) {
     console.error('Apple Auth Error:', error);
     res.status(401).json({ errorCode: '0x1065', error: 'Token de Apple inválido.' });
   }
 });
-
-// Removed duplicate authMiddleware import
 
 router.get('/me', authMiddleware, async (req, res) => {
   try {
@@ -306,7 +294,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       }
     });
 
-    // FIX B-M15: Null check BEFORE the dependent query, not after
+    // Null check BEFORE the dependent query, not after
     if (!user) return res.status(404).json({ errorCode: '0x1066', error: 'Usuario no encontrado' });
 
     const consultasHoyCount = await prisma.consulta.count({
@@ -326,7 +314,14 @@ router.get('/me', authMiddleware, async (req, res) => {
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const { name, gender, age, estiloPersonal, estiloDetalles, usaGorras, morningAlerts, alertHour, alertCityName } = req.body;
-    const updateData = { name, gender, estiloPersonal, estiloDetalles };
+
+    // A-2 FIX: Limit field lengths to prevent prompt injection
+    const updateData = {
+      name: name ? String(name).substring(0, 100) : name,
+      gender,
+      estiloPersonal: estiloPersonal ? String(estiloPersonal).substring(0, 150) : estiloPersonal,
+      estiloDetalles: estiloDetalles ? String(estiloDetalles).substring(0, 300) : estiloDetalles
+    };
     
     if (usaGorras !== undefined) {
       updateData.usaGorras = usaGorras;

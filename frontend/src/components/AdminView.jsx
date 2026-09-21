@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import Skeleton from './ui/Skeleton';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const AdminView = ({ token }) => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'outfits' | 'tickets'
@@ -39,6 +40,9 @@ const AdminView = ({ token }) => {
   
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+
+  // A-7 / F-6 FIX: Prevent background scrolling when modals are open
+  useBodyScrollLock(showAdd || editUserId !== null || banModalOpen || selectedChat !== null);
 
   const fetchStats = async () => {
     try {

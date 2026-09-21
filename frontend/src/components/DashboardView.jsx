@@ -327,6 +327,7 @@ const PrendaCard = ({ prenda, darkMode, canLoad, onLoadComplete, token, isOpen, 
                       src={imgSrc} 
                       alt={prenda.nombre_corto || "Prenda"} 
                       className="w-full h-auto max-h-[60vh] object-contain rounded-xl cursor-pointer hover:scale-[1.02] transition-transform" 
+                      fetchpriority="high"
                       onClick={(e) => { e.stopPropagation(); setFullScreenImage(true); }}
                     />
                   ) : (
@@ -715,9 +716,26 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
     }
   };
 
-  const handleSendMessage = async (e) => {
+  // FIX A-5: Use AbortController to cancel pending requests if component unmounts
+  const abortControllerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // FIX M-8: Memoize expensive handlers
+  const handleSendMessage = React.useCallback(async (e) => {
     e.preventDefault();
     if ((!message && !imageBase64) || !consultaId) return;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     const currentBase64 = imageBase64;
     const currentMime = imageMimeType;
@@ -738,17 +756,24 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
         mensaje: userMsg.content || 'Analiza esta imagen',
         imageBase64: currentBase64,
         imageMimeType: currentMime
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      }, { 
+        headers: { Authorization: `Bearer ${token}` },
+        signal: abortControllerRef.current.signal
+      });
 
       setChat([...newChat, { role: 'model', content: res.data.respuesta }]);
     } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log('Chat request cancelled');
+        return;
+      }
       console.error(error);
       showToast('Error enviando mensaje: ' + (error.response?.data?.error || error.message), 'error');
       setChat(prev => prev.filter((_, i) => i !== prev.length - 1));
     } finally {
       setIsChatLoading(false);
     }
-  };
+  }, [message, imageBase64, consultaId, imageMimeType, selectedImage, chat, API_URL, token, showToast]);
 
   return (
     <div className={`rounded-3xl shadow-xl flex flex-col border relative overflow-hidden h-full min-h-0 bg-black/20 backdrop-blur-md border-white/10 shadow-black/50`}>
@@ -1643,68 +1668,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         </div>
       </div>
 
-      {/* ── Mobile Bottom Navigation Bar ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="mx-3 mb-3 flex items-end justify-around bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl px-1 py-2 shadow-2xl shadow-black/50">
-
-          {/* Armario */}
-          <button
-            onClick={() => setView('armario')}
-            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
-              ['armario', 'historial', 'calendario'].includes(view) ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            <Archive size={19} />
-            <span className="text-[8px] font-semibold uppercase tracking-wider">Armario</span>
-          </button>
-
-          {/* Comunidad */}
-          <button
-            onClick={() => setView('community')}
-            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'community' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-500 hover:text-emerald-400'
-            }`}
-          >
-            <Globe size={19} />
-            <span className="text-[8px] font-semibold uppercase tracking-wider">Feed</span>
-          </button>
-
-          {/* Buscar - center elevated button */}
-          <button
-            onClick={() => { setView('dashboard'); setWeather(null); setOutfit(null); setLocation(''); }}
-            className="flex flex-col items-center gap-1 -mt-7 px-3 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/40 border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95"
-          >
-            <Search size={20} />
-            <span className="text-[8px] font-bold uppercase tracking-wider">Buscar</span>
-          </button>
-
-          {/* Maleta */}
-          <button
-            onClick={() => setView('packing')}
-            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 ${
-              view === 'packing' ? 'bg-amber-500/20 text-amber-400' : 'text-gray-500 hover:text-amber-400'
-            }`}
-          >
-            <Luggage size={19} />
-            <span className="text-[8px] font-semibold uppercase tracking-wider">Maleta</span>
-          </button>
-
-          {/* Perfil */}
-          <button
-            onClick={() => setView('profile')}
-            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-2xl transition-all duration-300 overflow-hidden ${
-              view === 'profile' ? 'bg-indigo-600/25 text-indigo-400' : 'text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            {Cookies.get('userProfilePicture') ? (
-              <img src={Cookies.get('userProfilePicture')} alt="Profile" className="w-5 h-5 rounded-full object-cover border border-white/20" />
-            ) : (
-              <User size={19} />
-            )}
-            <span className="text-[8px] font-semibold uppercase tracking-wider">Perfil</span>
-          </button>
-        </div>
-      </div>
+      <MobileNavBar view={view} setView={setView} setWeather={setWeather} setOutfit={setOutfit} setLocation={setLocation} />
 
       {/* Weather Details Modal */}
       <AnimatePresence>

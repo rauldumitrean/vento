@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const axiosLib = require('axios');
 const authMiddleware = require('../middleware/authMiddleware');
 const prisma = require('../prismaClient');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -8,6 +8,37 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const bcrypt = require('bcryptjs');
 const { sendBanNotificationEmail, sendNewTicketEmail } = require('../services/emailService');
 const webpush = require('web-push');
+
+// M-2 FIX: axios instance with global 8s timeout to prevent hanging on slow external APIs
+const axios = axiosLib.create({ timeout: 8000 });
+
+// M-5 FIX: WMO weather code helpers — extracted to avoid code duplication
+function wmoToOwm(code) {
+  if (code === 0) return 800;
+  if (code <= 3) return 801;
+  if (code <= 48) return 741;
+  if (code <= 67) return 500;
+  if (code <= 77) return 601;
+  if (code <= 82) return 521;
+  if (code <= 86) return 601;
+  return 211;
+}
+
+const WMO_DESCS = {
+  0: 'Despejado', 1: 'Mayormente despejado', 2: 'Parcialmente nublado',
+  3: 'Nublado', 45: 'Niebla', 48: 'Niebla helada',
+  51: 'Llovizna ligera', 53: 'Llovizna', 55: 'Llovizna intensa',
+  61: 'Lluvia ligera', 63: 'Lluvia', 65: 'Lluvia fuerte',
+  71: 'Nieve ligera', 73: 'Nieve', 75: 'Nieve fuerte', 77: 'Granizo',
+  80: 'Chubascos ligeros', 81: 'Chubascos', 82: 'Chubascos fuertes',
+  95: 'Tormenta', 96: 'Tormenta con granizo', 99: 'Tormenta con granizo fuerte'
+};
+
+function wmoToDesc(code) {
+  return WMO_DESCS[code] || WMO_DESCS[Object.keys(WMO_DESCS).map(Number).filter(k => k <= code).pop()] || 'Tiempo variable';
+}
+
+
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -21,10 +52,9 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 const geminiKey = process.env.GEMINI_API_KEY || 'MISSING_KEY';
 const genAI = new GoogleGenerativeAI(geminiKey);
 
-// In-memory fallbacks for when DB tables are not yet provisioned (e.g., fresh deploys)
+// In-memory lock to prevent duplicate concurrent requests per user
+// NOTE: This only works within the same serverless instance — acceptable for basic protection
 const activeRequests = new Map();
-const weatherCache = new Map();
-const weatherCacheKeys = [];
 
 // Admin Middleware
 const adminMiddleware = async (req, res, next) => {
@@ -464,10 +494,8 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
         where: { id: req.user.id },
         data: { isBanned: true, bannedUntil, banReason }
       });
-      // Try to send email async
-      setTimeout(() => {
-        sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
-      }, 0);
+      // C-4 FIX: await directly — setTimeout doesn't work in Vercel serverless (process freezes after response)
+      await sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
 
       return res.status(403).json({ 
         errorCode: '0x1019', error: 'BANNED', 
@@ -511,6 +539,11 @@ router.post('/chat', authMiddleware, async (req, res) => {
   try {
     const { consultaId, mensaje, imageBase64, imageMimeType } = req.body;
     if (!consultaId || !mensaje) return res.status(400).json({ errorCode: '0x101B', error: 'Faltan datos' });
+
+    // A-4 FIX: Limit message length to prevent Gemini token abuse / DoS
+    if (typeof mensaje !== 'string' || mensaje.trim().length === 0 || mensaje.length > 1000) {
+      return res.status(400).json({ errorCode: '0x101B2', error: 'El mensaje debe tener entre 1 y 1000 caracteres.' });
+    }
 
     // FIX B-M6: MIME type validation for image uploads
     if (imageBase64 && imageMimeType) {
@@ -615,9 +648,8 @@ Estructura obligatoria del JSON:
           data: { isBanned: true, bannedUntil, banReason }
         });
         
-        setTimeout(() => {
-          sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
-        }, 0);
+        // C-4 FIX: await directly — setTimeout doesn't work in Vercel serverless
+        await sendBanNotificationEmail(dbUser, true, bannedUntil, banReason).catch(console.error);
 
         // Guardar el mensaje del modelo en el historial para auditoría en el panel de admin
         await prisma.mensajeChat.create({
@@ -1039,10 +1071,8 @@ router.put('/admin/users/:id/ban', authMiddleware, adminMiddleware, async (req, 
     
     // Enviar correo de notificación si el usuario ha sido baneado
     if (isBanned) {
-      // Usar setTimeout para no bloquear la respuesta HTTP, el correo se enviará en background
-      setTimeout(() => {
-        sendBanNotificationEmail(user, isBanned, bannedUntil, banReason).catch(console.error);
-      }, 0);
+      // C-4 FIX: await directly — setTimeout doesn't work in Vercel serverless
+      await sendBanNotificationEmail(user, isBanned, bannedUntil, banReason).catch(console.error);
     }
     
     res.json({ id: user.id, isBanned: user.isBanned, bannedUntil: user.bannedUntil, banReason: user.banReason });
@@ -1442,6 +1472,22 @@ router.post('/community/:id/like', authMiddleware, async (req, res) => {
     if (existing) {
       await prisma.outfitLike.delete({ where: { id: existing.id } });
       const count = await prisma.outfitLike.count({ where: { consultaId } });
+      
+      // A-1 FIX: Restar puntos al quitar like para prevenir exploit de gamificación
+      const consulta = await prisma.consulta.findUnique({ where: { id: consultaId } });
+      if (consulta && consulta.userId !== userId) {
+        const owner = await prisma.user.update({
+          where: { id: consulta.userId },
+          data: { points: { decrement: 5 } }
+        });
+        if (getLevelFromPoints(owner.points) !== owner.level) {
+          await prisma.user.update({
+            where: { id: owner.id },
+            data: { level: getLevelFromPoints(owner.points) }
+          });
+        }
+      }
+
       return res.json({ liked: false, likesCount: count });
     } else {
       await prisma.outfitLike.create({ data: { userId, consultaId } });
@@ -1517,6 +1563,11 @@ router.all('/morning-alerts/trigger', async (req, res) => {
     const key = req.headers['x-cron-key'];
     const expectedToken = process.env.CRON_SECRET;
     
+    // C-1 FIX: Asegurar que el secreto esté configurado, sino undefined === undefined pasaría la validación
+    if (!expectedToken) {
+      return res.status(500).json({ error: 'CRON_SECRET no está configurada en el servidor' });
+    }
+
     const isAuthorized = key === expectedToken || (authHeader && authHeader === `Bearer ${expectedToken}`);
     if (!isAuthorized) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -1615,9 +1666,21 @@ router.all('/morning-alerts/trigger', async (req, res) => {
         });
         deletedCount += delRes.count;
       }
-      console.log(`History cleanup: deleted ${deletedCount} old outfits.`);
     } catch (cleanupErr) {
       console.error('Error cleaning up history:', cleanupErr);
+    }
+
+    // F-10 FIX: Limpieza de ImageCache antigua
+    try {
+      const deletedImages = await prisma.imageCache.deleteMany({
+        where: {
+          createdAt: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+          hitCount: { lt: 3 }
+        }
+      });
+      console.log(`ImageCache cleanup: deleted ${deletedImages.count} old unused images.`);
+    } catch (cacheErr) {
+      console.error('Error cleaning up ImageCache:', cacheErr);
     }
 
     res.json({ ok: true, sent, total: users.length });
