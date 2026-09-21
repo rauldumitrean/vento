@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -728,7 +728,7 @@ const FloatingAssistant = ({ outfit, consultaId, token, darkMode, isPremium, set
   }, []);
 
   // FIX M-8: Memoize expensive handlers
-  const handleSendMessage = React.useCallback(async (e) => {
+  const handleSendMessage = useCallback(async (e) => {
     e.preventDefault();
     if ((!message && !imageBase64) || !consultaId) return;
 
