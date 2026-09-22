@@ -1635,7 +1635,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
                                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
                                  className="hidden lg:block absolute bottom-16 right-0 w-[400px] h-[600px] mb-4 origin-bottom-right"
                                >
-                                 <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} />
+                                 <FloatingAssistant outfit={outfit} consultaId={consultaId} token={token} darkMode={darkMode} isPremium={isPremium} setView={setView} showToast={showToast} />
                                </motion.div>
                              )}
                            </AnimatePresence>
