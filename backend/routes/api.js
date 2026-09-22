@@ -55,7 +55,7 @@ const genAI = new GoogleGenerativeAI(geminiKey);
 // Helper: call Gemini with automatic retry (exponential backoff) and model fallback
 // Handles 503 "Service Unavailable" / high-demand errors transparently
 const GEMINI_MODELS = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest'];
-async function geminiWithRetry(promptOrParts, options = {}, maxRetries = 3) {
+async function geminiWithRetry(promptOrParts, options = {}, maxRetries = 2) {
   const safetySettings = options.safetySettings || [
     { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
     { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
@@ -66,14 +66,18 @@ async function geminiWithRetry(promptOrParts, options = {}, maxRetries = 3) {
   for (const modelName of GEMINI_MODELS) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const modelConfig = { model: modelName, safetySettings, ...options };
-        delete modelConfig.safetySettings; // passed separately
-        const m = genAI.getGenerativeModel({ model: modelName, safetySettings });
+        const modelConfig = { model: modelName, safetySettings };
         if (options.systemInstruction) {
-          const chat = m.startChat({ history: options.history || [], systemInstruction: options.systemInstruction });
+          modelConfig.systemInstruction = options.systemInstruction;
+        }
+        const m = genAI.getGenerativeModel(modelConfig);
+        
+        if (options.systemInstruction || options.history) {
+          const chat = m.startChat({ history: options.history || [] });
           const r = await chat.sendMessage(promptOrParts);
           return r.response.text();
         }
+        
         const r = await m.generateContent(promptOrParts);
         return r.response.text();
       } catch (err) {
@@ -81,12 +85,19 @@ async function geminiWithRetry(promptOrParts, options = {}, maxRetries = 3) {
         const msg = err.message || String(err);
         const is503 = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand') || msg.includes('overloaded');
         const is429 = msg.includes('429') || msg.includes('quota') || msg.includes('Resource has been exhausted');
-        if ((is503 || is429) && attempt < maxRetries - 1) {
-          // Wait 1s * 2^attempt before retrying same model
-          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        
+        if (is503) {
+          console.warn('[' + modelName + '] 503 Overloaded. Saltando inmediatamente al siguiente modelo...');
+          break; // Fallback al siguiente modelo de inmediato sin delay
+        }
+        
+        if (is429 && attempt < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, 800)); // Delay muy corto para rate-limits
           continue;
         }
+        
         if (is503 || is429) break; // Try next model
+        
         throw err; // Non-retryable error
       }
     }
