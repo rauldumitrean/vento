@@ -52,49 +52,7 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 const geminiKey = process.env.GEMINI_API_KEY || 'MISSING_KEY';
 const genAI = new GoogleGenerativeAI(geminiKey);
 
-// Helper: call Gemini with automatic retry (exponential backoff) and model fallback
-// Handles 503 "Service Unavailable" / high-demand errors transparently
-const GEMINI_MODELS = ['gemini-3.1-flash-lite', 'gemini-2.0-flash-lite', 'gemini-2.0-flash'];
-async function geminiWithRetry(promptOrParts, options = {}, maxRetries = 3) {
-  const safetySettings = options.safetySettings || [
-    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-  ];
-  let lastErr;
-  for (const modelName of GEMINI_MODELS) {
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const modelConfig = { model: modelName, safetySettings, ...options };
-        delete modelConfig.safetySettings; // passed separately
-        const m = genAI.getGenerativeModel({ model: modelName, safetySettings });
-        if (options.systemInstruction) {
-          const chat = m.startChat({ history: options.history || [], systemInstruction: options.systemInstruction });
-          const r = await chat.sendMessage(promptOrParts);
-          return r.response.text();
-        }
-        const r = await m.generateContent(promptOrParts);
-        return r.response.text();
-      } catch (err) {
-        lastErr = err;
-        const msg = err.message || String(err);
-        const is503 = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand') || msg.includes('overloaded');
-        const is429 = msg.includes('429') || msg.includes('quota') || msg.includes('Resource has been exhausted');
-        if ((is503 || is429) && attempt < maxRetries - 1) {
-          // Wait 1s * 2^attempt before retrying same model
-          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
-          continue;
-        }
-        if (is503 || is429) break; // Try next model
-        throw err; // Non-retryable error
-      }
-    }
-  }
-  throw lastErr;
-}
-
-
+// In-memory lock to prevent duplicate concurrent requests per user
 // NOTE: This only works within the same serverless instance — acceptable for basic protection
 const activeRequests = new Map();
 const weatherCache = new Map();
@@ -504,14 +462,31 @@ Debes devolver la respuesta ESTRICTAMENTE en el siguiente formato JSON, sin bloq
   "infraccion": null
 }`;
 
-    let textResult;
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-3.5-flash",
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
+    });
+    
+    let result;
     try {
-      textResult = await geminiWithRetry(prompt);
+      result = await model.generateContent(prompt);
     } catch (err) {
-      console.error("Gemini Error (all models failed):", err);
+      console.error("Gemini Error:", err);
       return res.status(500).json({ errorCode: '0x101A-GEMINI', error: 'Error del modelo de IA: ' + (err.message || String(err)) });
     }
 
+    let textResult;
+    try {
+      textResult = result.response.text();
+    } catch (err) {
+      return res.status(500).json({ errorCode: '0x101A-TEXT', error: 'Error extrayendo texto de IA: ' + (err.message || String(err)) });
+    }
+    
     if(textResult.includes('```json')) {
         textResult = textResult.replace(/```json/gi, '').replace(/```/g, '').trim();
     } else if (textResult.includes('```')) {
@@ -657,7 +632,10 @@ router.post('/chat', authMiddleware, async (req, res) => {
       nameTextChat = `El usuario se llama ${dbUser.name}. Respóndele por su nombre para ser amigable y cercano.`;
     }
 
-    const systemInstruction = `Eres un experto asesor de moda personal de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
+    const model = genAI.getGenerativeModel({ 
+      // FIX: Use gemini-3.5-flash as it supports vision and is in the user's quota
+      model: "gemini-3.5-flash", // Soporta vision
+      systemInstruction: `Eres un experto asesor de moda personal de la app Ventoo. Acabas de recomendar este outfit: ${consulta.recomendacion_json} basado en este clima: ${consulta.clima_json} en ${consulta.ubicacion}. 
 ${nameTextChat}
 ${ageTextChat}
 ${styleTextChat}
@@ -675,7 +653,10 @@ Estructura obligatoria del JSON:
 1. Responde siempre en JSON.
 2. Si sugieres prendas nuevas (por ejemplo, porque el usuario quiere cambiar una zapatilla por botas), devuélvelas en la clave "nuevas_prendas". Cada nueva prenda debe seguir el formato estricto: {"categoria": "TOP|BOTTOM|CALZADO|ACCESORIO", "nombre_corto": "Nombre corto (Ej: Botas Chelsea)", "descripcion": "Descripción mega detallada y visual", "razon": "Por qué es mejor opción", "tienda_recomendada": "Amazon", "enlace_compra": "https://www.amazon.es/s?k=..."}.
 3. NO incluyas "nuevas_prendas" si solo estás conversando o dando un tip general.
-4. "nombre_corto" es OBLIGATORIO en "nuevas_prendas" y debe ser el título corto de la prenda.`;
+4. "nombre_corto" es OBLIGATORIO en "nuevas_prendas" y debe ser el título corto de la prenda.`
+    });
+    
+    const chat = model.startChat({ history });
 
     let parts = [{ text: mensaje }];
     if (imageBase64 && imageMimeType) {
@@ -687,13 +668,8 @@ Estructura obligatoria del JSON:
       });
     }
 
-    let textResponse;
-    try {
-      textResponse = await geminiWithRetry(parts, { systemInstruction, history });
-    } catch (err) {
-      console.error("Gemini Chat Error (all models failed):", err);
-      return res.status(500).json({ errorCode: '0x101B-GEMINI', error: 'Error del modelo de IA en chat: ' + (err.message || String(err)) });
-    }
+    const result = await chat.sendMessage(parts);
+    let textResponse = result.response.text();
     
     // Parse to check for infractions
     if(textResponse.includes('\`\`\`json')) {
@@ -1456,15 +1432,10 @@ Genera una lista de maleta PERFECTAMENTE OPTIMIZADA (ni demasiado ni muy poco). 
   "consejo_maleta": "Un consejo clave de packing pro (ej: método de enrollado para ahorrar espacio)"
 }`;
 
-    let textResult;
-    try {
-      textResult = await geminiWithRetry(packingPrompt);
-      textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
-    } catch (err) {
-      console.error('Gemini Packing Error (all models failed):', err);
-      return res.status(500).json({ errorCode: '0x1064', error: 'Error generando la lista de maleta: ' + (err.message || String(err)) });
-    }
-
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+    const result = await model.generateContent(packingPrompt);
+    let textResult = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+    
     let packingList;
     try {
       packingList = JSON.parse(textResult);
@@ -2012,6 +1983,7 @@ router.delete('/calendar/:id', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
