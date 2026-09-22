@@ -54,7 +54,7 @@ const genAI = new GoogleGenerativeAI(geminiKey);
 
 // Helper: call Gemini with automatic retry (exponential backoff) and model fallback
 // Handles 503 "Service Unavailable" / high-demand errors transparently
-const GEMINI_MODELS = ['gemini-3.1-flash-lite', 'gemini-2.0-flash-lite', 'gemini-2.0-flash'];
+const GEMINI_MODELS = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest'];
 async function geminiWithRetry(promptOrParts, options = {}, maxRetries = 3) {
   const safetySettings = options.safetySettings || [
     { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
