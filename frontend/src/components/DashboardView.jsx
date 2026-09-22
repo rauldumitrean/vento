@@ -1668,7 +1668,7 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         </div>
       </div>
 
-      <MobileNavBar view={view} setView={setView} setWeather={setWeather} setOutfit={setOutfit} setLocation={setLocation} />
+      <MobileNavBar view={view} setView={setView} setWeather={setWeather} setOutfit={setOutfit} setLocation={setLocation} darkMode={darkMode} setDarkMode={setDarkMode} />
 
       {/* Weather Details Modal */}
       <AnimatePresence>
