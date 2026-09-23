@@ -1312,17 +1312,33 @@ export default function DashboardView({ token, defaultView = 'dashboard', onLogo
         />
 
         <div className="flex-1 min-w-0 h-full rounded-[2rem] overflow-hidden flex flex-col relative shadow-2xl border border-white/10 bg-black/40">
-          <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
-             <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 group">
-               <Cloud className="w-6 h-6 text-white group-hover:text-indigo-400 transition-colors" />
-               <span className="text-xl font-bold tracking-widest text-white group-hover:text-indigo-400 transition-colors">Ventoo</span>
-             </button>
-             <div className="flex items-center gap-3">
-               <button onClick={() => setView('friends')} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 relative shadow-sm ${view === 'friends' ? 'bg-indigo-500 text-white shadow-indigo-500/30' : 'bg-white/10 hover:bg-white/20 text-gray-200 border border-white/5'}`}>
-                 <User size={20} />
-               </button>
-               <NotificationBell token={token} />
-             </div>
+
+          {/* Mobile Top Header */}
+          <div className={`lg:hidden flex items-center justify-between px-4 py-3 border-b sticky top-0 z-50 transition-all duration-300 ${darkMode ? 'bg-[#0f0f13]/95 border-white/10' : 'bg-white/95 border-black/10'}`}
+            style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+          >
+            <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 group">
+              <img src="/favicon.svg" alt="Ventoo" className="w-7 h-7 object-contain" onError={e => { e.target.style.display='none'; }} />
+              <span className={`text-xl font-bold tracking-widest bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent`}>Ventoo</span>
+            </button>
+            <div className="flex items-center gap-2">
+              <NotificationBell token={token} darkMode={darkMode} />
+              <button
+                onClick={() => setView('profile')}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                  view === 'profile'
+                    ? darkMode ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+                    : darkMode ? 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-black/5'
+                }`}
+                title="Mi Perfil"
+              >
+                {Cookies.get('userProfilePicture') ? (
+                  <img src={Cookies.get('userProfilePicture')} alt="Avatar" className="w-full h-full rounded-xl object-cover" />
+                ) : (
+                  <User size={18} />
+                )}
+              </button>
+            </div>
           </div>
 
           <div className={`flex-1 min-w-0 overflow-x-hidden hide-scrollbar flex flex-col relative pb-24 lg:pb-0 bg-[#0A0A0B]/60 ${view === 'dashboard' && !weather && !loading ? 'overflow-hidden' : 'overflow-y-auto'}`}>
